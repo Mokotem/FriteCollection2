@@ -14,6 +14,8 @@ public abstract class MonoGame : Game
     protected GraphicsDeviceManager graphics;
     internal protected SpriteBatch SpriteBatch;
 
+    public SpriteBatch Batch => SpriteBatch;
+
     internal List<FriteCollection2.UI.ButtonCore> _buttons = new List<FriteCollection2.UI.ButtonCore>();
     public virtual event ScreenUpdate OnScreenUpdate;
     protected bool changingScene = false;
@@ -273,15 +275,18 @@ public class MonoGameDefault : MonoGame
         {
             foreach (Executable script in base._currentExecutables.ToArray())
             {
-                script.BeforeUpdate();
+                if (script.Active)
+                    script.BeforeUpdate();
             }
             foreach (Executable script in base._currentExecutables.ToArray())
             {
-                script.Update();
+                if (script.Active)
+                    script.Update();
             }
             foreach (Executable script in base._currentExecutables.ToArray())
             {
-                script.AfterUpdate();
+                if (script.Active)
+                    script.AfterUpdate();
             }
         }
     }
@@ -296,7 +301,7 @@ public class MonoGameDefault : MonoGame
 
         foreach (Executable exe in _currentExecutables)
         {
-            exe.Draw();
+            exe.BeforeDraw();
         }
 
         SpriteBatch.End();
@@ -412,7 +417,7 @@ public class MonoGameDefaultPixel : FriteModel.MonoGame
 
         foreach (Executable exe in _currentExecutables)
         {
-            exe.Draw();
+            exe.BeforeDraw();
         }
 
         SpriteBatch.End();

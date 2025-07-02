@@ -11,6 +11,10 @@ public abstract class Hitbox
     private const int _numberOfLayers = 3;
     private const float Pis2 = float.Pi / 2f;
 
+    public delegate bool MessageBox(string message);
+
+    public MessageBox SendMessage { get; init; }
+
     private readonly static List<Hitbox>[] _hitBoxesList = new List<Hitbox>[_numberOfLayers]
     {
         new(),
@@ -113,14 +117,18 @@ public abstract class Hitbox
 
     private byte _layer = 0;
     internal string _tag = "";
+
+    public string Tag => _tag;
+
     public bool Active = true;
 
-    private protected readonly Space _refSpace;
+    public readonly Space SpaceRef;
+
     public Point PositionOffset;
 
     private Hitbox(in Space _space, string tag = "", byte layer = 0)
     {
-        _refSpace = _space;
+        SpaceRef = _space;
         this._tag = tag;
         _hitBoxesList[layer].Add(this);
         _layer = layer;
@@ -205,6 +213,14 @@ public abstract class Hitbox
     }
 
     /// <summary>
+    /// Remet la hitbox de la liste.
+    /// </summary>
+    public void Reactivate()
+    {
+        _hitBoxesList[_layer].Add(this);
+    }
+
+    /// <summary>
     /// déssine toutes les hitboxs.
     /// </summary>
     public static void Debug()
@@ -212,6 +228,65 @@ public abstract class Hitbox
         foreach (List<Hitbox> list in _hitBoxesList)
             foreach (IDraw hit in list)
                 hit.Draw();
+    }
+
+    public static bool Check(Vector2 pos, byte _layer, string tag = null)
+    {
+        foreach (Hitbox col in _hitBoxesList[_layer])
+        {
+            if (tag is null ? true : tag.Equals(col._tag))
+            {
+                if (col is Rectangle)
+                {
+                    Rectangle hit = col as Rectangle;
+                    hit.UpdatePos();
+                    if (hit.PointInRange(pos))
+                        return true;
+                }
+                else if (col is Circle)
+                {
+                    Circle hit = col as Circle;
+                    hit.UpdatePos();
+                    if (Vector2.Distance(pos, hit._point) < hit.Radius)
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public static bool Check(Vector2 pos, byte _layer, out Hitbox colider, string tag = null)
+    {
+        foreach (Hitbox col in _hitBoxesList[_layer])
+        {
+            if (tag is null ? true : tag.Equals(col._tag))
+            {
+                if (col is Rectangle)
+                {
+                    Rectangle hit = col as Rectangle;
+                    hit.UpdatePos();
+                    if (hit.PointInRange(pos))
+                    {
+                        colider = hit;
+                        return true;
+                    }
+                }
+                else if (col is Circle)
+                {
+                    Circle hit = col as Circle;
+                    hit.UpdatePos();
+                    if (Vector2.Distance(pos, hit._point) < hit.Radius)
+                    {
+                        colider = hit;
+                        return true;
+                    }
+                }
+            }
+        }
+
+        colider = null;
+        return false;
     }
 
     /// <summary>
@@ -232,7 +307,7 @@ public abstract class Hitbox
 
         public Line Copy()
         {
-            return new Line(_refSpace, this.thickness, _tag, this._layer)
+            return new Line(SpaceRef, this.thickness, _tag, this._layer)
             {
                 _point = this._point,
                 _dir = this._dir,
@@ -265,14 +340,14 @@ public abstract class Hitbox
         {
             if (!positionLocked)
             {
-                _point = _refSpace.Position;
+                _point = SpaceRef.Position;
                 _point.X += PositionOffset.X;
                 _point.Y += PositionOffset.Y;
             }
 
             if (!directionLocked)
             {
-                _dir = _refSpace.rotation;
+                _dir = SpaceRef.rotation;
                 norme = new Vector2(float.Cos(_dir),
                     float.Sin(_dir));
             }
@@ -368,7 +443,7 @@ public abstract class Hitbox
         /// </summary>
         public float Radius => _radius;
 
-        public Circle(Space _space, string tag = "", byte layer = 0) : base(_space, tag, layer)
+        public Circle(in Space _space, string tag = "", byte layer = 0) : base(_space, tag, layer)
         {
             this.UpdatePos();
             radiusLocked = false;
@@ -377,7 +452,7 @@ public abstract class Hitbox
 
         public Circle Copy()
         {
-            return new Circle(_refSpace, this._tag, this._layer)
+            return new Circle(SpaceRef, this._tag, this._layer)
             {
                 PositionOffset = this.PositionOffset,
                 _point = this._point,
@@ -391,7 +466,7 @@ public abstract class Hitbox
         {
             if (!positionLocked)
             {
-                _point = _refSpace.Position;
+                _point = SpaceRef.Position;
                 _point.X += PositionOffset.X;
                 _point.Y += PositionOffset.Y;
             }
@@ -586,7 +661,7 @@ public abstract class Hitbox
             if (!isStatic)
             {
                 if (!positionLocked)
-                    _point = _refSpace.Position;
+                    _point = SpaceRef.Position;
 
                 if (sizeLocked)
                 {
@@ -594,7 +669,7 @@ public abstract class Hitbox
                 }
                 else
                 {
-                    p2 = new Vector2(_point.X + _refSpace.Scale.X, _point.Y + _refSpace.Scale.Y);
+                    p2 = new Vector2(_point.X + SpaceRef.Scale.X, _point.Y + SpaceRef.Scale.Y);
                 }
 
                 _point.X += PositionOffset.X;
@@ -608,7 +683,7 @@ public abstract class Hitbox
 
         public Rectangle Copy()
         {
-            return new Rectangle(_refSpace, _tag, this._layer)
+            return new Rectangle(SpaceRef, _tag, this._layer)
             {
                 _point = this._point,
                 p2 = this.p2,
@@ -650,7 +725,17 @@ public abstract class Hitbox
             return false;
         }
 
-        private bool PointInRange(Vector2 p, Vector2 _1, Vector2 _2, bool up, bool right, out float distX, out float distY)
+        private bool InRangeVertical(Vector2 _1, Vector2 _2)
+        {
+            if ((_point.Y > _1.Y && _point.Y < _2.Y) || (p2.Y > _1.Y && p2.Y < _2.Y))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool PointInRange(Vector2 p, Vector2 _1, Vector2 _2, bool up, bool right, out float distX, out float distY)
         {
             if (p.X >= _1.X && p.X <= _2.X && p.Y >= _1.Y && p.Y <= _2.Y)
             {
@@ -664,9 +749,14 @@ public abstract class Hitbox
             return false;
         }
 
-        private bool PointInRange(Vector2 p, Vector2 _1, Vector2 _2)
+        protected static bool PointInRange(Vector2 p, Vector2 _1, Vector2 _2)
         {
-            return (p.X >= _1.X && p.X <= _2.X && p.Y >= _1.Y && p.Y <= _2.Y);
+            return p.X >= _1.X && p.X <= _2.X && p.Y >= _1.Y && p.Y <= _2.Y;
+        }
+
+        public bool PointInRange(Vector2 p)
+        {
+            return p.X >= _point.X && p.X <= p2.X && p.Y >= _point.Y && p.Y <= p2.Y;
         }
 
         public Vector2 CenterPoint => _centerPoint;
@@ -716,7 +806,7 @@ public abstract class Hitbox
             i = 0;
             foreach (Vector2 p in hit)
             {
-                if (PointInRange(p, _point, p2))
+                if (PointInRange(p))
                 {
                     bools[3 - i] = true;
                     global[3 - i] = true;
@@ -783,10 +873,10 @@ public abstract class Hitbox
             return false;
         }
 
-        private Sides _MakeCollisionWith(Rectangle hit)
+        private Sides _MakeCollisionWith(Rectangle hit, out bool[] bools)
         {
             hit.UpdatePos();
-            bool[] bools = new bool[4] { false, false, false, false };
+            bools = new bool[4] { false, false, false, false };
             bool colided = false;
 
             Vector2 closePoint = new Vector2(-1, -1);
@@ -812,7 +902,7 @@ public abstract class Hitbox
             i = 0;
             foreach (Vector2 p in hit)
             {
-                if (PointInRange(p, _point, p2))
+                if (PointInRange(p))
                 {
                     bools[3 - i] = true;
                     colided = true;
@@ -874,10 +964,90 @@ public abstract class Hitbox
             return false;
         }
 
+        public bool Check(byte layer, string tag = null)
+        {
+            this.UpdatePos();
+            foreach (Hitbox col in _hitBoxesList[layer])
+            {
+                if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag)) && col != this)
+                {
+                    Rectangle hit = col as Rectangle;
+                    hit.UpdatePos();
+
+                    if (InRange(hit._point, hit.p2))
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool Check(byte layer, out Hitbox collider, string tag = null)
+        {
+            this.UpdatePos();
+            foreach (Hitbox col in _hitBoxesList[layer])
+            {
+                if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag)) && col != this)
+                {
+                    Rectangle hit = col as Rectangle;
+                    hit.UpdatePos();
+
+                    if (InRange(hit._point, hit.p2))
+                    {
+                        collider = hit;
+                        return true;
+                    }
+                }
+            }
+
+            collider = null;
+            return false;
+        }
+
+        public bool Check(byte layer, Discriminent discr, string tag = null)
+        {
+            this.UpdatePos();
+            foreach (Hitbox col in _hitBoxesList[layer])
+            {
+                if (col is Rectangle && col.Active && discr(col) && col != this)
+                {
+                    Rectangle hit = col as Rectangle;
+                    hit.UpdatePos();
+
+                    if (InRange(hit._point, hit.p2))
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
         public bool Check(out Hitbox.Rectangle rect, string tag = null)
         {
             this.UpdatePos();
             foreach (Hitbox col in _hitBoxesList[_layer])
+            {
+                if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag)) && col != this)
+                {
+                    Rectangle hit = col as Rectangle;
+                    hit.UpdatePos();
+
+                    if (InRange(hit._point, hit.p2))
+                    {
+                        rect = hit;
+                        return true;
+                    }
+                }
+            }
+
+            rect = null;
+            return false;
+        }
+
+        public bool Check(out Hitbox.Rectangle rect, byte layer, string tag = null)
+        {
+            this.UpdatePos();
+            foreach (Hitbox col in _hitBoxesList[layer])
             {
                 if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag)) && col != this)
                 {
@@ -904,6 +1074,18 @@ public abstract class Hitbox
                 Rectangle hit = col as Rectangle;
                 hit.UpdatePos();
                 return InRange(hit._point, hit.p2);
+            }
+            return false;
+        }
+
+        public bool CheckWithVeritcal(Hitbox col)
+        {
+            if (col is Rectangle && col.Active && col != this)
+            {
+                this.UpdatePos();
+                Rectangle hit = col as Rectangle;
+                hit.UpdatePos();
+                return InRangeVertical(hit._point, hit.p2);
             }
             return false;
         }
@@ -1030,9 +1212,22 @@ public abstract class Hitbox
             Vector2 centerPoint = this.CenterPoint;
             if (col is Rectangle && col.Active && col != this)
             {
-                return _MakeCollisionWith(col as Rectangle);
+                return _MakeCollisionWith(col as Rectangle, out _);
             }
 
+            return Sides.None;
+        }
+
+        public Sides AdvancedCheckWith(Hitbox col, out bool[] cornerInfo)
+        {
+            this.UpdatePos();
+            Vector2 centerPoint = this.CenterPoint;
+            if (col is Rectangle && col.Active && col != this)
+            {
+                return _MakeCollisionWith(col as Rectangle, out cornerInfo);
+            }
+
+            cornerInfo = Array.Empty<bool>();
             return Sides.None;
         }
 

@@ -76,6 +76,15 @@ public static class Interpolation
         return a * (1 - q) + (b * q);
     }
 
+    public static float Parable(float a, float b, float t)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return a;
+        float q = float.Sin(float.Pi * t);
+        float q2 = q * q;
+        return a * (1 - q2) + (b * q2);
+    }
+
     private static Color Add(Color c1, Color c2)
     {
         return new Color(c1.R + c2.R, c1.G + c2.G, c1.B + c2.B);
@@ -149,6 +158,15 @@ public static class Interpolation
         return Add(a * (1 - q), b * q);
     }
 
+    public static Color Parable(Color a, Color b, float t)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return a;
+        float q = float.Sin(float.Pi * t);
+        float q2 = q * q;
+        return Add(a * (1 - q2), b * q2);
+    }
+
     public static Vector2 Linear(Vector2 a, Vector2 b, float t)
     {
         if (t <= 0) return a;
@@ -215,5 +233,14 @@ public static class Interpolation
         if (t >= 1) return a;
         float q = 1 - (2 * float.Abs(t - 0.5f));
         return a * (1 - q) + (b * q);
+    }
+
+    public static Vector2 Parable(Vector2 a, Vector2 b, float t)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return a;
+        float q = float.Sin(float.Pi * t);
+        float q2 = q * q;
+        return a * (1 - q2) + (b * q2);
     }
 }

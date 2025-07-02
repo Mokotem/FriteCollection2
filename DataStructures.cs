@@ -214,10 +214,11 @@ public abstract class Executable : IDisposable
     /// </summary>
     public virtual void AfterUpdate() { }
 
-    /// <summary>
-    /// Les appelles de dessins se font ici.
-    /// </summary>
-    public virtual void Draw() { }
+
+    public virtual void DrawBackground() { }
+    public virtual void BeforeDraw() { }
+    public virtual void DrawShader(in SpriteBatch batch) { }
+    public virtual void AfterDraw() { }
     /// <summary>
     /// Les appelles de dessins se font ici, Avec un mélange des couleurs additif.
     /// </summary>
@@ -379,7 +380,8 @@ public abstract class Clone : Executable
 
     }
 
-    public override bool Active => true;
+    private bool _active;
+    public override bool Active => _active;
 
     /// <summary>
     /// Vérifie si le Clone a été retiré de la scène.
@@ -393,6 +395,7 @@ public abstract class Clone : Executable
 
     public Clone()
     {
+        _active = true;
         ++_count;
         _id = _count;
         GameManager.Instance.CurrentExecutables.Add(this);
@@ -413,6 +416,7 @@ public abstract class Clone : Executable
     /// </summary>
     public void Destroy()
     {
+        this._active = false;
         this.OnDestroy();
         this.Dispose();
         GameManager.Instance.CurrentExecutables.Remove(this);

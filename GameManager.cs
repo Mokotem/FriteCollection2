@@ -191,7 +191,44 @@ public static class GameManager
 /// </summary>
 public static class Camera
 {
-    public static Vector2 Position;
+    private static Vector2 _position;
+    private static Vector2 _roundPosition;
+
+    public static Vector2 Position
+    {
+        get => _roundPosition;
+        set
+        {
+            _position = value;
+        }
+    }
+
+    public static Vector2 Value => _position;
+
+    public static void Round()
+    {
+        _roundPosition = new Vector2(float.Round(_position.X), _position.Y);
+    }
+
+    public static void Add(Vector2 value)
+    {
+        _position += value;
+    }
+
+    public static void Add(float x, float y)
+    {
+        _position.X += x;
+        _position.Y += y;
+    }
+
+    public static void SetX(float x)
+    {
+        _position.X = x;
+    }
+    public static void SetY(float y)
+    {
+        _position.Y = y;
+    }
 }
 
 /// <summary>

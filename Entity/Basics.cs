@@ -92,6 +92,8 @@ public class Space : ICopy<Space>, IEnumerable
     /// </summary>
     public Vector2 Position;
 
+    public Vector2 CenterPoint => new Vector2(Position.X + (Scale.X / 2f), Position.Y + (Scale.Y / 2f));
+
     public float X
     {
         get => Position.X;
@@ -197,6 +199,13 @@ public class Renderer : ICopy<Renderer>, ILayer
     public float GetLayer() => layer;
 
     public SpriteEffects effect = SpriteEffects.None;
+
+    public static float ToLayer(short value)
+    {
+        if (value > 1000) throw new ArgumentOutOfRangeException("value cannot be greater than 1000");
+        if (value < -1000) throw new ArgumentOutOfRangeException("value cannot be less than -1000");
+        return (value + 1000f) / 2000f;
+    }
 
     public short Layer
     {

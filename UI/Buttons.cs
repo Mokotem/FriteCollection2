@@ -1,5 +1,4 @@
-﻿using FriteCollection2.Scripting;
-using FriteCollection2.Tools.TileMap;
+﻿using FriteCollection2.Tools.TileMap;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;

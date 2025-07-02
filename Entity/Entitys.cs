@@ -29,12 +29,8 @@ public partial class Object : Entity, ICopy<Object>, IDraw
 
     public override void Draw()
     {
-        if (Renderer.hide == false)
+        if (!Renderer.hide)
         {
-            float flipFactor = 0f;
-
-            float rot = Space.rotation + flipFactor;
-
             GameManager.Instance.SpriteBatch.Draw
             (
                 Renderer.Texture,
@@ -46,7 +42,7 @@ public partial class Object : Entity, ICopy<Object>, IDraw
                 ),
                 null,
                 Renderer.Color * Renderer.Alpha,
-                rot,
+                Space.rotation,
                 Vector2.Zero,
                 Renderer.effect,
                 Renderer.GetLayer()

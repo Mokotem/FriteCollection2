@@ -73,7 +73,6 @@ public class TileSet : IDisposable
 
     public Rectangle GetRectangle(int index)
     {
-        // PETETRE UN BUG LA !!!
         Point positon = new Point
         (
             index * (_tileSize.X + _tileSeparation.X) % (sheet.X + _tileSeparation.X),
@@ -88,9 +87,70 @@ public class TileSet : IDisposable
         );
     }
 
+    public Rectangle GetRectangle(Point p)
+    {
+        return new Rectangle
+        (
+            p.X * _tileSize.X,
+            p.Y * _tileSize.Y,
+            _tileSize.X,
+            _tileSize.Y
+        );
+    }
+
     public void Dispose()
     {
         _texture.Dispose();
+    }
+}
+
+public class TileRandomizer
+{
+    private readonly Rectangle rect1, rect2;
+    private readonly Point offset;
+
+    public TileRandomizer(Point p1, Point p2)
+    {
+        if (p2.X <= p1.X)
+            throw new System.Exception("p2 doit etre a droite.");
+
+        rect1 = new Rectangle(p1, new Point(1));
+        rect2 = new Rectangle(p2, new Point(1));
+
+        offset = new Point(p2.X - p1.X, p2.Y - p1.Y);
+    }
+
+    public TileRandomizer(Rectangle r1, Rectangle r2)
+    {
+        if (r2.X <= r1.X)
+            throw new System.Exception("p2 doit etre a droite.");
+
+        rect1 = r1;
+        rect2 = r2;
+
+        offset = new Point(r2.X - r1.X, r2.Y - r1.Y);
+    }
+
+    private static bool PointInRect(Point p, Rectangle r)
+    {
+        return p.X >= r.X && p.Y >= r.Y && p.X < r.X + r.Width && p.Y < r.Y + r.Height;
+    }
+
+    public bool Has(Point p)
+    {
+        return PointInRect(p, rect1) || PointInRect(p, rect2);
+    }
+
+    public Point GetTile(Point p, in System.Random rand)
+    {
+        if (p.X < rect2.X)
+        {
+            return rand.Next(2) == 0 ? p : p + offset;
+        }
+        else
+        {
+            return rand.Next(2) == 0 ? p : p - offset;
+        }
     }
 }
 
@@ -124,48 +184,26 @@ public class TileMap : IDisposable, ILayer
     public TileMap(TileSet sheet,
         OgmoFile file,
         in Hitbox.Rectangle[] hitboxesreplaces,
-        Color? background = null,
-        Texture2D backgroundTexture = null)
+        TileRandomizer[] randomize,
+        int seed)
     {
+        Random rand = new Random(seed);
+
         Width = file.width;
         Height = file.height;
-        Color bg;
-        if (background is not null && background.HasValue)
-        {
-            bg = background.Value;
-        }
-        else { bg = new(0, 0, 0); }
+
         _sheet = sheet;
         _file = file;
 
         SpriteBatch batch = GameManager.Instance.SpriteBatch;
 
-        _renderTarget = new RenderTarget2D
-        (
-            GameManager.Instance.GraphicsDevice,
-            xCount * sheet.TileSize.X,
-            yCount * sheet.TileSize.Y
-        );
+        _targets = new RenderTarget2D[3];
 
-        GameManager.Instance.GraphicsDevice.SetRenderTarget(_renderTarget);
-        GameManager.Instance.GraphicsDevice.Clear(Color.Transparent);
-        batch.Begin(samplerState: SamplerState.PointClamp);
-        if (backgroundTexture is not null)
-        {
-            batch.Draw
-            (
-                backgroundTexture,
-                new Rectangle(0, 0,
-                xCount * sheet.TileSize.X,
-                yCount * sheet.TileSize.Y),
-                null,
-                bg
-            );
-        }
+        Random r = new Random();
 
         _hitboxData = new Hitbox.Rectangle[xCount, yCount];
 
-        foreach (OgmoLayer layer in _file.layers)
+        foreach (OgmoLayer layer in file.layers)
         {
             if (layer is OgmoLayerGrid)
             {
@@ -180,8 +218,23 @@ public class TileMap : IDisposable, ILayer
                     }
                 }
             }
-            else if (layer is OgmoLayerBlock)
+            else if (layer is OgmoLayerEntity)
             {
+
+            }
+            else
+            {
+                int layer_id = layer is OgmoLayerBackground ? 0 : (layer is OgmoLayerForeground ? 2 : 1);
+                _targets[layer_id] = new RenderTarget2D
+                (
+                    GameManager.Instance.GraphicsDevice,
+                    file.width,
+                    file.height
+                );
+                GameManager.Instance.GraphicsDevice.SetRenderTarget(_targets[layer_id]);
+                GameManager.Instance.GraphicsDevice.Clear(Color.Transparent);
+                batch.Begin(samplerState: SamplerState.PointClamp);
+
                 OgmoLayerBlock data = layer as OgmoLayerBlock;
                 for (int i = 0; i < data.data.Length; i++)
                 {
@@ -190,8 +243,14 @@ public class TileMap : IDisposable, ILayer
                         int x = i % xCount;
                         int y = i / xCount;
 
-                        int sx = data.data[i] % _sheet.Xlenght;
-                        int sy = data.data[i] / _sheet.Xlenght;
+                        Point s = new Point(data.data[i] % _sheet.Xlenght, data.data[i] / _sheet.Xlenght);
+
+                        byte id_random = 0;
+                        while (id_random < randomize.Length && !randomize[id_random].Has(s))
+                            ++id_random;
+
+                        if (id_random < randomize.Length)
+                            s = randomize[id_random].GetTile(s, in rand);
 
                         batch.Draw
                         (
@@ -203,40 +262,39 @@ public class TileMap : IDisposable, ILayer
                                 sheet.TileSize.X,
                                 sheet.TileSize.Y
                             ),
-                            sheet.GetRectangle(data.data[i]),
+                            sheet.GetRectangle(s),
                             Color.White
                         );
                     }
                 }
+                batch.End();
             }
         }
-        batch.End();
+
         Color = Color.White;
     }
 
+    private Hitbox.Rectangle[] savedHitboxes;
+
     public void GenerateHitboxs(bool mergeHitBoxes = true)
     {
-        MakeHitboxes(mergeHitBoxes, in _hitboxData);
-    }
-
-    private void MakeHitboxes(bool merge, in Hitbox.Rectangle[,] _hitboxData)
-    {
-        if (merge)
-            MergeHitBoxes(in _hitboxData);
+        if (mergeHitBoxes)
+            savedHitboxes = MergeHitBoxes(in _hitboxData);
         else
-            PlaceHitboxes(in _hitboxData, _sheet.TileSize);
+            savedHitboxes = PlaceHitboxes(in _hitboxData, _sheet.TileSize);
     }
 
-    private void MakeHitboxes(bool merge, in Hitbox.Rectangle[,] _hitboxData, Point size)
+    public void GenerateHitboxs(Point size, bool mergeHitBoxes = true)
     {
-        if (merge)
-            MergeHitBoxes(in _hitboxData);
+        if (mergeHitBoxes)
+            savedHitboxes = MergeHitBoxes(in _hitboxData);
         else
-            PlaceHitboxes(in _hitboxData, size);
+            savedHitboxes = PlaceHitboxes(in _hitboxData, size);
     }
 
-    private void PlaceHitboxes(in Hitbox.Rectangle[,] _hitboxData, Point tileSize)
+    private Hitbox.Rectangle[] PlaceHitboxes(in Hitbox.Rectangle[,] _hitboxData, Point tileSize)
     {
+        List<Hitbox.Rectangle> result = new List<Hitbox.Rectangle>();
         for (int x = 0; x < xCount; ++x)
         {
             for (int y = 0; y < yCount; ++y)
@@ -249,16 +307,27 @@ public class TileMap : IDisposable, ILayer
                     hit.PositionOffset.Y += y * tileSize.Y;
                     hit.LockSize(new Vector2(
                         _hitboxData[x, y].Size.X,
-                        _hitboxData[x, y].Size.Y));
+                        _hitboxData[x, y].Size.Y)
+                        );
+                    result.Add(hit);
                 }
             }
+        }
+        return result.ToArray();
+    }
+
+    public void ReactivateHitboxs()
+    {
+        foreach(Hitbox.Rectangle hit in savedHitboxes)
+        {
+            hit.Reactivate();
         }
     }
 
     /// <summary>
     /// algo banger que j'ai fais pour éviter la redondance de hitboxes
     /// </summary>
-    private List<Hitbox.Rectangle> MergeHitBoxes(in Hitbox.Rectangle[,] lst)
+    private Hitbox.Rectangle[] MergeHitBoxes(in Hitbox.Rectangle[,] lst)
     {
         List<Hitbox.Rectangle> result = new List<Hitbox.Rectangle>();
         int i = -1;
@@ -316,7 +385,7 @@ public class TileMap : IDisposable, ILayer
                 hit.Layer = hit1.Layer;
                 hit.Active = true;
                 hit.PositionOffset.X += x * _file.layers[0].gridCellWidth + this.Position.X;
-                hit.PositionOffset.Y += y * _file.layers[0].gridCellHeight + this.Position.X;
+                hit.PositionOffset.Y += y * _file.layers[0].gridCellHeight + this.Position.Y;
                 float a = 0f;
                 float b = 0f;
                 if (hit._tag == "red" || hit._tag == "green")
@@ -334,55 +403,82 @@ public class TileMap : IDisposable, ILayer
                     hit1.Size.X * width + a,
                     hit1.Size.Y * height + b));
                 hit.IsStatic = true;
+
+                result.Add(hit);
+
                 lst[x, y] = null;
 
                 i = -1;
             }
         }
 
-        return result;
+        return result.ToArray();
     }
 
     private readonly TileSet _sheet;
     private readonly OgmoFile _file;
 
-    private readonly RenderTarget2D _renderTarget;
-    public Texture2D Texture
+    private readonly RenderTarget2D[] _targets;
+    private float[] _targetLayers;
+
+    public void SetTargetLayers(short back, short ground, short fore)
     {
-        get
+        _targetLayers = new float[3]
         {
-            return _renderTarget;
-        }
+            (back + 1000f) / 2000f,
+            (ground + 1000f) / 2000f,
+            (fore + 1000f) / 2000f
+        };
     }
 
     public Point Position;
 
     public Color Color { get; set; }
 
-    public void Draw()
+    public void Draw(byte i)
     {
         GameManager.Instance.SpriteBatch.Draw
-        (
-            _renderTarget,
-            new Rectangle
             (
-                (int)(Position.X - Camera.Position.X),
-                (int)(Position.Y - Camera.Position.Y),
-                _renderTarget.Width,
-                _renderTarget.Height
-            ),
-            null,
-            Color,
-            0,
-            Vector2.Zero,
-            SpriteEffects.None,
-            this.layer
-        );
+                _targets[i],
+                new Rectangle
+                (
+                    (int)float.Round(Position.X - Camera.Position.X),
+                    (int)float.Round(Position.Y - Camera.Position.Y),
+                    _targets[i].Width,
+                    _targets[i].Height
+                ),
+                null,
+                Color,
+                0,
+                Vector2.Zero,
+                SpriteEffects.None,
+                _targetLayers[i]
+            );
+    }
+
+    public void Draw()
+    {
+        for(byte i = 0; i < 3; ++i)
+        {
+            Draw(i);
+        }
+    }
+
+
+
+    public void DestroyHitboxs()
+    {
+        foreach (Hitbox.Rectangle hit in this.savedHitboxes)
+        {
+            hit.Destroy();
+        }
     }
 
     public void Dispose()
     {
-        _renderTarget.Dispose();
+        foreach (RenderTarget2D t in _targets)
+            t.Dispose();
+        this.savedHitboxes = null;
     }
 }
 
@@ -455,16 +551,18 @@ public class OgmoLayerEntity : OgmoLayer
 }
 
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "name")]
-[JsonDerivedType(typeof(StartPos), typeDiscriminator: "spawn")]
+[JsonDerivedType(typeof(Ent.StartPos), typeDiscriminator: "spawn")]
+[JsonDerivedType(typeof(Ent.Cleaner), typeDiscriminator: "cleaner")]
 public abstract class Ent
 {
     public string name { get; init; }
     public short id { get; init; }
     public short x { get; init; }
     public short y { get; init; }
-}
 
-public class StartPos : Ent { }
+    public class StartPos : Ent { }
+    public class Cleaner : Ent { }
+}
 
 public static class MetroidMaker
 {
@@ -477,19 +575,24 @@ public static class MetroidMaker
         public readonly short ID;
         public readonly short width, height;
         public readonly string name;
-        public readonly bool[] data;
+        public readonly byte[] data;
 
         public Room(MoonOgmoFile room, short id)
         {
             this.ID = id;
-            this.width = (short)(room.width / RoomWidth / TileSize);
-            this.height = (short)(room.height / RoomHeight / TileSize);
+            this.width = (short)float.Round(room.width / TRoomWidth);
+            this.height = (short)float.Round(room.height / TRoomHeight);
             this.name = room.values.Name;
             OgmoLayerGrid layer = room.layers[0] as OgmoLayerGrid;
-            this.data = new bool[layer.grid.Length];
+            OgmoLayerBackground bg = room.layers[4] as OgmoLayerBackground;
+            this.data = new byte[layer.grid.Length];
             for (int i = 0; i < layer.grid.Length; ++i)
             {
-                this.data[i] = layer.grid[i] == '0' ? false : true;
+                this.data[i] = 0;
+                if (!layer.grid[i].Equals('0'))
+                    this.data[i] = 1;
+                else if (bg.data[i] >= 0)
+                    this.data[i] = 2;
             }
         }
     }
@@ -522,18 +625,8 @@ public static class MetroidMaker
 
         public bool IsNew { get; set; }
 
-        private int _numberofRooms;
-        public int NumberOfRooms
-        {
-            get => _numberofRooms;
-            set
-            {
-                _numberofRooms = value;
-                IsSaved = false;
-            }
-        }
-        public short Width { get; init; }
-        public short Height { get; init; }
+        public short Width { get; set; }
+        public short Height { get; set; }
         public short TotalWidth => (short)(Width * RoomWidth);
         public short TotalHeight => (short)(Height * RoomHeight);
 
@@ -542,19 +635,18 @@ public static class MetroidMaker
 
         }
 
-        public P[] Data { get; set; }
+        public List<P> Data { get; set; }
+        public short[][] Position { get; set; }
 
         public List<P[]> PosLinks { get; set; }
         public List<short[]> IdLinks { get; set; }
-        public short[][] Position { get; set; }
 
         public void Start(int numberRooms)
         {
-            NumberOfRooms = numberRooms;
-            Data = new P[numberRooms];
+            Data = new List<P>();
             for (int i = 0; i < numberRooms; ++i)
             {
-                Data[i] = new P(-1, -1);
+                Data.Add(new P(-1, -1));
             }
             PosLinks = new List<P[]>();
             Position = new short[Width][];
