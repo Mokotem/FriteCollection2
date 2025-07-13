@@ -6,11 +6,13 @@ public class State
     public System.Action Start { get; init; }
     public UpdateState Update { get; init; }
     public System.Action Draw { get; init; }
+    public System.Action DrawAdditive { get; init; }
 
     public State()
     {
         Start = () => { };
         Draw = () => { };
+        DrawAdditive = () => { };
     }
 }
 
@@ -18,32 +20,64 @@ public class StateMachine : IDraw
 {
     private float dt;
     private State current;
+    public bool active;
+    private readonly State start;
 
-    public StateMachine(State start)
+    public StateMachine(in State start)
     {
-        dt = 0f;
-        current = start;
-        start.Start();
-        start.Update(0);
+        this.start = start;
+        active = false;
+    }
+
+    public void Restart()
+    {
+        active = true;
+        ForceState(start);
     }
 
     public void Update()
     {
-        State newState = current.Update(dt);
-        dt += Time.FrameTime;
-        if (newState is not null)
-            ForceState(newState);
+        if (active)
+        {
+            State newState = current.Update(dt);
+            dt += Time.FrameTime;
+            if (newState is not null)
+                ForceState(newState);
+        }
     }
 
-    public void ForceState(State state)
+    public void ResetTimer()
+    {
+        dt = 0f;
+    }
+
+    public void ForceState(in State state)
     {
         dt = 0f;
         state.Start();
-        current = state;
+        State newState = state.Update(0);
+        if (newState is not null)
+        {
+            ForceState(newState);
+            current = newState;
+        }
+        else
+            current = state;
     }
 
     public void Draw()
     {
-        current.Draw();
+        if (active)
+        {
+            current.Draw();
+        }
+    }
+
+    public void DrawAdditive()
+    {
+        if (active)
+        {
+            current.Draw();
+        }
     }
 }

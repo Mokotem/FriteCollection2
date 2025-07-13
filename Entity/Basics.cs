@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended;
 using System;
 using System.Collections;
 
@@ -62,7 +63,6 @@ public class Space : ICopy<Space>, IEnumerable
     {
         Position = Vector2.Zero;
         Scale = new Vector2(30, 30);
-        rotation = 0;
     }
 
     public Space()
@@ -82,8 +82,7 @@ public class Space : ICopy<Space>, IEnumerable
         return new Space()
         {
             Position = Position,
-            Scale = Scale,
-            rotation = rotation
+            Scale = Scale
         };
     }
 
@@ -92,7 +91,14 @@ public class Space : ICopy<Space>, IEnumerable
     /// </summary>
     public Vector2 Position;
 
+    public void SetPosition(Vector2 pos, Bounds centerPoint)
+    {
+        Position = pos - BoundFunc.BoundToVector(centerPoint, Scale.X, Scale.Y);
+    }
+
     public Vector2 CenterPoint => new Vector2(Position.X + (Scale.X / 2f), Position.Y + (Scale.Y / 2f));
+    public float CenterPointX => Position.X + (Scale.X / 2f);
+    public float CenterPointY => Position.Y + (Scale.Y / 2f);
 
     public float X
     {
@@ -122,26 +128,25 @@ public class Space : ICopy<Space>, IEnumerable
     /// <remarks>Les tailles négatives sont prises en charges.</remarks>
     public Vector2 Scale;
 
-    /// <summary>
-    /// Rotation.
-    /// </summary>
-    public float rotation;
-
     public override bool Equals(object obj)
     {
         if (obj is Space)
         {
             Space sp = obj as Space;
-            return Scale == sp.Scale && Position == sp.Position
-                && rotation == sp.rotation;
+            return Scale == sp.Scale && Position == sp.Position;
         }
         return false;
     }
 
     public override string ToString()
     {
-        return "Transform (position:" + Position.ToString() + ", scale:" + Scale.ToString() + ", direction:" + rotation + ")";
+        return "Transform (position:" + Position.ToString() + ", scale:" + Scale.ToString() + ")";
     }
+}
+
+public class SpaceDirection : Space
+{
+    public float direction = 0f;
 }
 
 public static class BoundFunc
@@ -192,13 +197,18 @@ public interface ILayer
 /// </summary>
 public class Renderer : ICopy<Renderer>, ILayer
 {
-    internal static Texture2D _defaultTexture;
+    internal static Texture2D _defaultTexture, _notFoundTexture;
     public static Texture2D DefaultTexture => _defaultTexture;
+    public static Texture2D NotFoundTexture => _notFoundTexture;
 
     private float layer;
     public float GetLayer() => layer;
 
     public SpriteEffects effect = SpriteEffects.None;
+
+    public static float outlineLayer;
+    public bool outline = true;
+    public Color outlineColor = Color.Black;
 
     public static float ToLayer(short value)
     {
@@ -221,8 +231,6 @@ public class Renderer : ICopy<Renderer>, ILayer
             layer = (value + 1000f) / 2000f;
         }
     }
-
-    public float Alpha = 1f;
 
     public static Texture2D CreateCircleTexture(int width)
     {
@@ -331,7 +339,7 @@ public class Renderer : ICopy<Renderer>, ILayer
         }
     }
 
-    public Color Color = new(255, 255, 255, 255);
+    public Color Color = Color.White;
 
     /// <summary>
     /// Masquer.

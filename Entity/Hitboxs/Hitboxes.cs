@@ -11,7 +11,7 @@ public abstract class Hitbox
     private const int _numberOfLayers = 3;
     private const float Pis2 = float.Pi / 2f;
 
-    public delegate bool MessageBox(string message);
+    public delegate bool MessageBox(int message);
 
     public MessageBox SendMessage { get; init; }
 
@@ -33,8 +33,6 @@ public abstract class Hitbox
         _hitBoxesList[1] = new();
         _hitBoxesList[2] = new();
     }
-
-    public delegate bool Discriminent(Hitbox hit);
 
     /// <summary>
     /// Supprime TOUTES les hitboxs d'une couche.
@@ -70,7 +68,7 @@ public abstract class Hitbox
     /// <param name="id">numéro de la couche</param>
     /// <param name="discr">fonction</param>
     /// <example>ClearLayer(0, (Hitbox hit) => hit is Hitbox.Rectangle && hit.PositionOffset.X > 30)</example>
-    public static void ClearLayer(byte id, Discriminent discr)
+    public static void ClearLayer(byte id, GameManager.Discriminent<Hitbox> discr)
     {
         ushort i = 0;
         while (i < _hitBoxesList[id].Count)
@@ -115,7 +113,7 @@ public abstract class Hitbox
         }
     }
 
-    private byte _layer = 0;
+    private readonly byte _layer = 0, _secondlayer;
     internal string _tag = "";
 
     public string Tag => _tag;
@@ -126,31 +124,21 @@ public abstract class Hitbox
 
     public Point PositionOffset;
 
-    private Hitbox(in Space _space, string tag = "", byte layer = 0)
+    private Hitbox(in Space _space, string tag = "", byte primaryLayer = 0, byte secondaryLayer = 255)
     {
         SpaceRef = _space;
         this._tag = tag;
-        _hitBoxesList[layer].Add(this);
-        _layer = layer;
+        _hitBoxesList[primaryLayer].Add(this);
+        if (secondaryLayer < 200)
+            _hitBoxesList[secondaryLayer].Add(this);
+        _layer = primaryLayer;
+        _secondlayer = secondaryLayer;
     }
 
     /// <summary>
     /// Seulement les hitboxs de la meme couche peuvent se toucher.
     /// </summary>
-    public byte Layer
-    {
-        get
-        {
-            return _layer;
-        }
-
-        set
-        {
-            _hitBoxesList[_layer].Remove(this);
-            _layer = value;
-            _hitBoxesList[value].Add(this);
-        }
-    }
+    public byte Layer => _layer;
 
     public enum Sides
     {
@@ -204,12 +192,19 @@ public abstract class Hitbox
         public bool CheckWith(Hitbox collider);
     }
 
+    private bool destroyed = false;
     /// <summary>
     /// Retire la hitbox de la liste.
     /// </summary>
     public void Destroy()
     {
-        _hitBoxesList[_layer].Remove(this);
+        if (!destroyed)
+        {
+            _hitBoxesList[_layer].Remove(this);
+            if (_secondlayer < 250)
+                _hitBoxesList[_secondlayer].Remove(this);
+            destroyed = true;
+        }
     }
 
     /// <summary>
@@ -292,27 +287,18 @@ public abstract class Hitbox
     /// <summary>
     /// Ligne infini.
     /// </summary>
-    public class Line : Hitbox, ICollider, IDraw, ICopy<Line>
+    public class Line : Hitbox, ICollider, IDraw
     {
         float _dir;
         private Vector2 norme;
         private float thickness;
 
-        public Line(Space _space, float thickness = 0, string tag = "", byte layer = 0) : base(_space, tag, layer)
+        public Line(SpaceDirection _space, float thickness = 0, string tag = "", byte layer = 0, byte slayer = 255)
+            : base(_space, tag, layer, slayer)
         {
             this.thickness = thickness;
             this.UpdatePos();
-            norme = new Vector2(float.Cos(_space.rotation), float.Sin(_space.rotation));
-        }
-
-        public Line Copy()
-        {
-            return new Line(SpaceRef, this.thickness, _tag, this._layer)
-            {
-                _point = this._point,
-                _dir = this._dir,
-                PositionOffset = this.PositionOffset
-            };
+            norme = new Vector2(float.Cos(_space.direction), float.Sin(_space.direction));
         }
 
         private bool directionLocked;
@@ -347,7 +333,7 @@ public abstract class Hitbox
 
             if (!directionLocked)
             {
-                _dir = SpaceRef.rotation;
+                _dir = (SpaceRef as SpaceDirection).direction;
                 norme = new Vector2(float.Cos(_dir),
                     float.Sin(_dir));
             }
@@ -443,7 +429,7 @@ public abstract class Hitbox
         /// </summary>
         public float Radius => _radius;
 
-        public Circle(in Space _space, string tag = "", byte layer = 0) : base(_space, tag, layer)
+        public Circle(in Space _space, string tag = "", byte layer = 0, byte slayer = 255) : base(_space, tag, layer, slayer)
         {
             this.UpdatePos();
             radiusLocked = false;
@@ -628,7 +614,7 @@ public abstract class Hitbox
             return new RectangleEnum(_point, p2);
         }
 
-        public Rectangle(in Space _space, string tag = "", byte layer = 0) : base(in _space, tag, layer)
+        public Rectangle(in Space _space, string tag = "", byte layer = 0, byte secondaryLayer = 255) : base(in _space, tag, layer, secondaryLayer)
         {
             this.UpdatePos();
         }
@@ -1004,7 +990,7 @@ public abstract class Hitbox
             return false;
         }
 
-        public bool Check(byte layer, Discriminent discr, string tag = null)
+        public bool Check(byte layer, GameManager.Discriminent<Hitbox> discr, string tag = null)
         {
             this.UpdatePos();
             foreach (Hitbox col in _hitBoxesList[layer])
@@ -1240,8 +1226,8 @@ public abstract class Hitbox
                 (
                     new Microsoft.Xna.Framework.Rectangle
                     (
-                        (int)float.Round(_point.X - Camera.Position.X),
-                        (int)float.Round(_point.Y - Camera.Position.Y),
+                        (int)(float.Round(_point.X) - Camera.Position.X),
+                        (int)(float.Round(_point.Y) - Camera.Position.Y),
                         (int)float.Round(p2.X - _point.X),
                         (int)float.Round(p2.Y - _point.Y)
                     ),

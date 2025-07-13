@@ -39,6 +39,17 @@ public static class Interpolation
         return (a * (1 - k)) + (b * k);
     }
 
+    public static Point EaseInOut(Point a, Point b, float t)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float s = float.Sin((float.Pi * t) / 2f);
+        float k = s * s;
+        return new Point(
+            (int)float.Round(a.X * (1 - k) + (b.X * k)),
+            (int)float.Round(a.Y * (1 - k) + (b.Y * k)));
+    }
+
     public static float BackIn(float a, float b, float t, float k = 4)
     {
         if (t <= 0) return a;

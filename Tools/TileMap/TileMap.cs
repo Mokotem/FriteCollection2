@@ -106,6 +106,7 @@ public class TileSet : IDisposable
 
 public class TileRandomizer
 {
+    private readonly bool twoRectangle;
     private readonly Rectangle rect1, rect2;
     private readonly Point offset;
 
@@ -118,6 +119,7 @@ public class TileRandomizer
         rect2 = new Rectangle(p2, new Point(1));
 
         offset = new Point(p2.X - p1.X, p2.Y - p1.Y);
+        twoRectangle = true;
     }
 
     public TileRandomizer(Rectangle r1, Rectangle r2)
@@ -129,6 +131,13 @@ public class TileRandomizer
         rect2 = r2;
 
         offset = new Point(r2.X - r1.X, r2.Y - r1.Y);
+        twoRectangle = true;
+    }
+
+    public TileRandomizer(Rectangle r1)
+    {
+        rect1 = r1;
+        twoRectangle = false;
     }
 
     private static bool PointInRect(Point p, Rectangle r)
@@ -138,18 +147,31 @@ public class TileRandomizer
 
     public bool Has(Point p)
     {
-        return PointInRect(p, rect1) || PointInRect(p, rect2);
+        if (twoRectangle)
+            return PointInRect(p, rect1) || PointInRect(p, rect2);
+        else
+            return PointInRect(p, rect1);
     }
 
-    public Point GetTile(Point p, in System.Random rand)
+    public Point GetTile(Point p, in Random rand)
     {
-        if (p.X < rect2.X)
+        if (twoRectangle)
         {
-            return rand.Next(2) == 0 ? p : p + offset;
+            if (p.X < rect2.X)
+            {
+                return rand.Next(2) == 0 ? p : p + offset;
+            }
+            else
+            {
+                return rand.Next(2) == 0 ? p : p - offset;
+            }
         }
         else
         {
-            return rand.Next(2) == 0 ? p : p - offset;
+            return new Point(
+                rect1.X + rand.Next(rect1.Width),
+                rect1.Y + rand.Next(rect1.Height)
+                );
         }
     }
 }
@@ -382,7 +404,6 @@ public class TileMap : IDisposable, ILayer
                 }
 
                 Hitbox.Rectangle hit = hit1.Copy();
-                hit.Layer = hit1.Layer;
                 hit.Active = true;
                 hit.PositionOffset.X += x * _file.layers[0].gridCellWidth + this.Position.X;
                 hit.PositionOffset.Y += y * _file.layers[0].gridCellHeight + this.Position.Y;

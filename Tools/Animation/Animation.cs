@@ -1,5 +1,4 @@
 ﻿
-using Microsoft.Xna.Framework.Input;
 
 namespace FriteCollection2.Tools.Animation;
 

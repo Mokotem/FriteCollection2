@@ -169,7 +169,6 @@ public abstract class UI : IDisposable
             ApplySpace(papa is null ? space.EnviRect : papa.mRect);
         }
     }
-    public float alpha = 1f;
 
     public bool Active
     {
@@ -335,6 +334,7 @@ public class Image : UI, IEdit<Texture2D>
     {
         this.image = image;
         this.space = space;
+        this.papa = parent;
         base.ApplyScale(parent.mRect);
         base.ApplyPosition(parent.mRect);
         this.depth = parent.depth - 0.05f;
@@ -348,7 +348,7 @@ public class Image : UI, IEdit<Texture2D>
                 image,
                 rect,
                 null,
-                this.Color * alpha,
+                this.Color,
                 0, Vector2.Zero, SpriteEffects.None,
                 this.depth);
             foreach (UI element in childs)
@@ -371,6 +371,8 @@ public class Text : UI, IEdit<string>
     private Microsoft.Xna.Framework.Rectangle par;
     private string text;
     public bool Outline;
+
+    public static Color OutlineColor = Color.Black;
 
     private static Point fontaspect;
     public static void SetFontAspect(Point p)
@@ -524,14 +526,14 @@ public class Text : UI, IEdit<string>
                 {
                     GameManager.Instance.SpriteBatch.DrawString
                     (GameManager.Font, text, new Vector2(rect.X + r.X, rect.Y + r.Y),
-                    Color.Black * alpha, 0, Vector2.Zero, Size,
+                    OutlineColor, 0, Vector2.Zero, Size,
                     SpriteEffects.None, this.depth + 0.0001f);
                 }
             }
         }
         GameManager.Instance.SpriteBatch.DrawString
                     (GameManager.Font, text, new Vector2(rect.X, rect.Y),
-                    this.Color * alpha, 0, Vector2.Zero, Size,
+                    this.Color, 0, Vector2.Zero, Size,
                     SpriteEffects.None, this.depth);
     }
 }

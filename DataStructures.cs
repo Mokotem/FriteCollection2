@@ -166,7 +166,7 @@ public static class Time
 
     internal static void UpdateGameTime(in GameTime gt)
     {
-        timer += (float)gt.ElapsedGameTime.TotalMicroseconds / 1000000f;
+        timer += _frameTime * _sp;
         dtf = (float)gt.ElapsedGameTime.TotalMilliseconds / 1000f;
     }
 
@@ -200,6 +200,7 @@ public abstract class Executable : IDisposable
     /// Appelé au début de la scène
     /// </summary>
     public virtual void Start() { }
+    public virtual void AfterStart() { }
 
     /// <summary>
     /// s'execute à chaque frame. Avant tout 'Update'.
@@ -222,7 +223,7 @@ public abstract class Executable : IDisposable
     /// <summary>
     /// Les appelles de dessins se font ici, Avec un mélange des couleurs additif.
     /// </summary>
-    public virtual void DrawAdditive() { }
+    public virtual void BeforeDrawAdditive() { }
 
     /// <summary>
     /// Méthode supplémentaire pour dessiner, utilisé de base pour l'interface.
@@ -231,7 +232,7 @@ public abstract class Executable : IDisposable
     /// <summary>
     /// Méthode supplémentaire pour dessiner, encore.
     /// </summary>
-    public virtual void DrawMain() { }
+    public virtual void AfterDrawAdditive() { }
 
     /// <summary>
     /// Ici, disposer toutes les ressources.
@@ -371,6 +372,17 @@ public abstract class Clone : Executable
         }
     }
 
+    public static void DestroyAll(GameManager.Discriminent<Clone> discr)
+    {
+        foreach (Executable exe in GameManager.Instance.CurrentExecutables.ToArray())
+        {
+            if (exe is Clone && discr(exe as Clone))
+            {
+                (exe as Clone).Destroy();
+            }
+        }
+    }
+
     /// <summary>
     /// Est appelé quand le clone est retiré de la scène.
     /// Ne pas disposer les ressources ici mais dans 'Dispose'.
@@ -399,7 +411,6 @@ public abstract class Clone : Executable
         ++_count;
         _id = _count;
         GameManager.Instance.CurrentExecutables.Add(this);
-        this.Start();
     }
 
     public override bool Equals(object obj)

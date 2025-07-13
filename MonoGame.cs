@@ -1,10 +1,10 @@
-﻿using System;
-using FriteCollection2;
+﻿using FriteCollection2;
 using FriteCollection2.Entity;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
+using System;
 using System.Collections.Generic;
 
 namespace FriteModel;
@@ -42,14 +42,41 @@ public abstract class MonoGame : Game
         GameManager.SetGameInstance(this);
     }
 
-    private static Texture2D CreateTexture(GraphicsDevice device, int w, int h, Color color)
+    private Texture2D CreateTexture(int w, int h, Color color)
     {
-        Texture2D texture = new Texture2D(device, w, h);
+        Texture2D texture = new Texture2D(GraphicsDevice, w, h);
 
         Color[] data = new Color[w * h];
         for (int pixel = 0; pixel < w * h; pixel++)
         {
             data[pixel] = color;
+        }
+
+        texture.SetData(data);
+
+        return texture;
+    }
+
+    public Texture2D CreateNotFoundTexture(int w, int h)
+    {
+        Texture2D texture = new Texture2D(GraphicsDevice, w, h);
+
+        float ws2 = w / 2 - 0.5f;
+        float hs2 = h / 2 - 0.5f;
+
+        Color[] data = new Color[w * h];
+        for (int pixel = 0; pixel < w * h; pixel++)
+        {
+            int x = pixel % w;
+            int y = pixel / w;
+            if ((x - ws2) * (y - hs2) < 0)
+            {
+                data[pixel] = new Color(255, 0, 255);
+            }
+            else
+            {
+                data[pixel] = new Color(0, 0, 0);
+            }
         }
 
         texture.SetData(data);
@@ -72,7 +99,14 @@ public abstract class MonoGame : Game
         graphics.PreferredBackBufferHeight = GameManager.Settings.WindowHeight;
         FullScreen = GameManager.Settings.FullScreen;
 
-        Renderer._defaultTexture = CreateTexture(GraphicsDevice, 2, 2, Color.White);
+        Renderer._defaultTexture = CreateTexture(2, 2, Color.White);
+
+        Color[] data = new Color[4]
+        {
+            new Color(0, 0, 0), new Color(255, 0, 255), new Color(0, 0, 0), new Color(255, 0, 255),
+        };
+        Renderer._notFoundTexture = new Texture2D(GraphicsDevice, 2, 2);
+        Renderer._notFoundTexture.SetData<Color>(data);
 
         base.Initialize();
 
@@ -107,7 +141,7 @@ public abstract class MonoGame : Game
         CurrentExecutables.Clear();
 
         LoadingText = "Loading scripts ...";
-        Camera.Position = Vector2.Zero;
+        Camera.Position = Point.Zero;
         Screen.backGround = new Color(0.1f, 0.2f, 0.3f);
 
         foreach (Type type in _childTypes)
@@ -134,6 +168,10 @@ public abstract class MonoGame : Game
         foreach (Executable script in CurrentExecutables.ToArray())
         {
             script.Start();
+        }
+        foreach (Executable script in CurrentExecutables.ToArray())
+        {
+            script.AfterStart();
         }
 
         LoadingText = "Grabage collector ...";
@@ -311,7 +349,7 @@ public class MonoGameDefault : MonoGame
 
         foreach (Executable exe in _currentExecutables)
         {
-            exe.DrawAdditive();
+            exe.BeforeDrawAdditive();
         }
 
         SpriteBatch.End();
@@ -428,7 +466,7 @@ public class MonoGameDefaultPixel : FriteModel.MonoGame
 
         foreach (Executable exe in _currentExecutables)
         {
-            exe.DrawAdditive();
+            exe.BeforeDrawAdditive();
         }
 
         SpriteBatch.End();
