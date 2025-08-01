@@ -96,7 +96,7 @@ public class Space : ICopy<Space>, IEnumerable
         Position = pos - BoundFunc.BoundToVector(centerPoint, Scale.X, Scale.Y);
     }
 
-    public Vector2 CenterPoint => new Vector2(Position.X + (Scale.X / 2f), Position.Y + (Scale.Y / 2f));
+    public Vector2 CenterPoint => new Vector2(CenterPointX, CenterPointY);
     public float CenterPointX => Position.X + (Scale.X / 2f);
     public float CenterPointY => Position.Y + (Scale.Y / 2f);
 
@@ -167,7 +167,27 @@ public static class BoundFunc
             Bounds.Bottom => new Vector2(width / 2f, height),
             Bounds.BottomRight => new Vector2(width, height),
 
-            _ => new Vector2(0, 0)
+            _ => Vector2.Zero
+        };
+    }
+
+    public static Point BoundToVector(Bounds b, int width, int height)
+    {
+        return b switch
+        {
+            Bounds.TopLeft => new Point(0, 0),
+            Bounds.Top => new Point(width / 2, 0),
+            Bounds.TopRight => new Point(width, 0),
+
+            Bounds.Left => new Point(0, height / 2),
+            Bounds.Center => new Point(width / 2, height / 2),
+            Bounds.Right => new Point(width, height / 2),
+
+            Bounds.BottomLeft => new Point(0, height),
+            Bounds.Bottom => new Point(width / 2, height),
+            Bounds.BottomRight => new Point(width, height),
+
+            _ => Point.Zero
         };
     }
 
@@ -201,6 +221,12 @@ public class Renderer : ICopy<Renderer>, ILayer
     public static Texture2D DefaultTexture => _defaultTexture;
     public static Texture2D NotFoundTexture => _notFoundTexture;
 
+    public static void SetDefaultTexture(Texture2D t)
+    {
+        _defaultTexture.Dispose();
+        _defaultTexture = t;
+    }
+
     private float layer;
     public float GetLayer() => layer;
 
@@ -208,7 +234,9 @@ public class Renderer : ICopy<Renderer>, ILayer
 
     public static float outlineLayer;
     public bool outline = true;
-    public Color outlineColor = Color.Black;
+
+    public static Color DefaultOutline = Color.Black;
+    public Color outlineColor;
 
     public static float ToLayer(short value)
     {
@@ -228,7 +256,7 @@ public class Renderer : ICopy<Renderer>, ILayer
         {
             if (value > 1000) throw new ArgumentOutOfRangeException("value cannot be greater than 1000");
             if (value < -1000) throw new ArgumentOutOfRangeException("value cannot be less than -1000");
-            layer = (value + 1000f) / 2000f;
+            layer = ToLayer(value);
         }
     }
 
@@ -304,6 +332,7 @@ public class Renderer : ICopy<Renderer>, ILayer
     {
         _texture = _defaultTexture;
         layer = 0.5f;
+        outlineColor = DefaultOutline;
     }
 
     public static RenderTarget2D CreateRenderTarget(int width, int height)
@@ -339,7 +368,9 @@ public class Renderer : ICopy<Renderer>, ILayer
         }
     }
 
-    public Color Color = Color.White;
+    public Color Color = DefaultColor;
+
+    public static Color DefaultColor = Color.White;
 
     /// <summary>
     /// Masquer.

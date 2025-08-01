@@ -40,6 +40,8 @@ public abstract class ButtonCore : Panel
      && pos.X >= this.mRect.X && pos.X < this.mRect.X + this.mRect.Width
      && pos.Y >= this.mRect.Y && pos.Y < this.mRect.Y + this.mRect.Height;
 
+    protected bool b;
+
     private protected bool selected = false;
     private bool previousClic = false;
 
@@ -64,15 +66,16 @@ public abstract class ButtonCore : Panel
             titleText.Color = new Color(0.7f, 0.7f, 0.7f);
     }
 
-    internal void Update()
+    internal virtual void Update()
     {
+        b = clic;
         if (_active)
         {
             if (enabled)
             {
                 selected = IsInRange(Input.Mouse.GetPointPosition(in this.Space.environment));
 
-                if (clic)
+                if (b)
                 {
                     SetGreyColor();
                 }
@@ -94,7 +97,7 @@ public abstract class ButtonCore : Panel
             else SetGreyColor();
         }
 
-        previousClic = clic;
+        previousClic = b;
     }
 
     public string EditText
@@ -217,6 +220,9 @@ public class Toggle : ButtonCore
         OnDeactivate();
     }
 
+    public Color OnColor { get; init; }
+    public Color OffColor { get; init; }
+
     public Toggle(TileSet tileset, Rectangle space, UI parent) : base(tileset, space, parent) { _fonction = OnClic; }
     public Toggle(Texture2D image, Rectangle space, UI parent) : base(image, space, parent) { _fonction = OnClic; }
     public Toggle(string title, TileSet tileset, Rectangle space, UI parent) : base(title, tileset, space, parent) { _fonction = OnClic; }
@@ -230,12 +236,27 @@ public class Toggle : ButtonCore
     private void OnClic()
     {
         foreach (Toggle tog in voisins)
-            tog.Deactivate();
+        {
+            if (tog != this)
+                tog.Deactivate();
+        }
         _on = !_on;
         if (_on)
             OnActivate();
         else
+        {
             OnDeactivate();
+            this.Color = OffColor;
+        }
+    }
+
+    internal override void Update()
+    {
+        base.Update();
+        if (!b)
+        {
+            this.Color = _on ? OnColor : OffColor;
+        }
     }
 }
 

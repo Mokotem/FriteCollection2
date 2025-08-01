@@ -32,6 +32,11 @@ public abstract class MonoGame : Game
         get;
     }
 
+    protected internal virtual void TogglePause(bool value)
+    {
+
+    }
+
     public MonoGame(Type[] childTypes)
     {
         _childTypes = childTypes;
@@ -344,16 +349,6 @@ public class MonoGameDefault : MonoGame
 
         SpriteBatch.End();
 
-        SpriteBatch.Begin(sortMode: SpriteSortMode.BackToFront,
-           blendState: BlendState.Additive);
-
-        foreach (Executable exe in _currentExecutables)
-        {
-            exe.BeforeDrawAdditive();
-        }
-
-        SpriteBatch.End();
-
         GraphicsDevice.SetRenderTarget(ui.Target);
         GraphicsDevice.Clear(Color.Transparent);
 
@@ -456,17 +451,6 @@ public class MonoGameDefaultPixel : FriteModel.MonoGame
         foreach (Executable exe in _currentExecutables)
         {
             exe.BeforeDraw();
-        }
-
-        SpriteBatch.End();
-
-        SpriteBatch.Begin(sortMode: SpriteSortMode.BackToFront,
-                        samplerState: SamplerState.PointClamp,
-           blendState: BlendState.Additive);
-
-        foreach (Executable exe in _currentExecutables)
-        {
-            exe.BeforeDrawAdditive();
         }
 
         SpriteBatch.End();

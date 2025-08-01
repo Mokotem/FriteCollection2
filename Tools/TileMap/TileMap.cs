@@ -10,216 +10,70 @@ using System.Text.Json.Serialization;
 
 namespace FriteCollection2.Tools.TileMap;
 
-public class TileSet : IDisposable
+public class TileMap : IDisposable
 {
-    public int Xlenght { get; private set; }
-    public int Ylenght { get; private set; }
+    public class Settings
+    {
+        internal readonly Dictionary<string, TileSet> TileSets;
+        internal readonly Dictionary<char, Hitbox.Rectangle> hitboxesreplaces;
+        internal readonly float[] layers;
 
-    public TileSet(Texture2D texture, Point tileSize, Point tileSeparation, Point tileMargin)
-    {
-        sheet = new Point(texture.Width, texture.Height);
-        _tileSize = tileSize;
-        _tileSeparation = tileSeparation;
-        _tileMargin = tileMargin;
-        Apply();
-        _texture = texture;
-    }
-    private Texture2D _texture;
-    public Texture2D Texture
-    {
-        get { return _texture; }
-    }
-
-    private void Apply()
-    {
-        Xlenght =
-        (sheet.X + _tileSeparation.X) / (_tileSize.X + _tileSeparation.X);
-
-        Ylenght =
-            (sheet.Y + _tileSeparation.Y) / (_tileSize.Y + _tileSeparation.Y);
-    }
-    public readonly Point sheet;
-    private Point _tileSize;
-    public Point TileSize
-    {
-        get { return _tileSize; }
-        set
+        public void LoadTileset(string key, TileSet value)
         {
-            _tileSize = value;
-            Apply();
+            TileSets[key] = value;
         }
-    }
 
-    private Point _tileSeparation = new(0, 0);
-    public Point TileSeparation
-    {
-        get { return _tileSeparation; }
-        set
+        public void DisposeTileset(string key)
         {
-            _tileSeparation = value;
-            Apply();
+            TileSets[key].Dispose();
+            TileSets[key] = null;
         }
-    }
-    private Point _tileMargin = new(0, 0);
-    public Point TileMargin
-    {
-        get { return _tileMargin; }
-        set
+
+        public Settings(short back, short ground, short general, short fore,
+            string[] _tilesets, in Dictionary<char, Hitbox.Rectangle> _hitReplaces)
         {
-            _tileMargin = value;
-            Apply();
-        }
-    }
-
-    public Rectangle GetRectangle(int index)
-    {
-        Point positon = new Point
-        (
-            index * (_tileSize.X + _tileSeparation.X) % (sheet.X + _tileSeparation.X),
-            (index / ((sheet.X + _tileSeparation.X) / (_tileSize.X + _tileSeparation.X))) * (_tileSize.Y + _tileSeparation.Y)
-        );
-        return new Rectangle
-        (
-            positon.X,
-            positon.Y,
-            _tileSize.X,
-            _tileSize.Y
-        );
-    }
-
-    public Rectangle GetRectangle(Point p)
-    {
-        return new Rectangle
-        (
-            p.X * _tileSize.X,
-            p.Y * _tileSize.Y,
-            _tileSize.X,
-            _tileSize.Y
-        );
-    }
-
-    public void Dispose()
-    {
-        _texture.Dispose();
-    }
-}
-
-public class TileRandomizer
-{
-    private readonly bool twoRectangle;
-    private readonly Rectangle rect1, rect2;
-    private readonly Point offset;
-
-    public TileRandomizer(Point p1, Point p2)
-    {
-        if (p2.X <= p1.X)
-            throw new System.Exception("p2 doit etre a droite.");
-
-        rect1 = new Rectangle(p1, new Point(1));
-        rect2 = new Rectangle(p2, new Point(1));
-
-        offset = new Point(p2.X - p1.X, p2.Y - p1.Y);
-        twoRectangle = true;
-    }
-
-    public TileRandomizer(Rectangle r1, Rectangle r2)
-    {
-        if (r2.X <= r1.X)
-            throw new System.Exception("p2 doit etre a droite.");
-
-        rect1 = r1;
-        rect2 = r2;
-
-        offset = new Point(r2.X - r1.X, r2.Y - r1.Y);
-        twoRectangle = true;
-    }
-
-    public TileRandomizer(Rectangle r1)
-    {
-        rect1 = r1;
-        twoRectangle = false;
-    }
-
-    private static bool PointInRect(Point p, Rectangle r)
-    {
-        return p.X >= r.X && p.Y >= r.Y && p.X < r.X + r.Width && p.Y < r.Y + r.Height;
-    }
-
-    public bool Has(Point p)
-    {
-        if (twoRectangle)
-            return PointInRect(p, rect1) || PointInRect(p, rect2);
-        else
-            return PointInRect(p, rect1);
-    }
-
-    public Point GetTile(Point p, in Random rand)
-    {
-        if (twoRectangle)
-        {
-            if (p.X < rect2.X)
+            layers = new float[4]
             {
-                return rand.Next(2) == 0 ? p : p + offset;
-            }
-            else
+                Renderer.ToLayer(back),
+                Renderer.ToLayer(ground),
+                Renderer.ToLayer(general),
+                Renderer.ToLayer(fore),
+            };
+
+            this.TileSets = new Dictionary<string, TileSet>();
+            foreach (string key in _tilesets)
             {
-                return rand.Next(2) == 0 ? p : p - offset;
+                this.TileSets[key] = null;
             }
-        }
-        else
-        {
-            return new Point(
-                rect1.X + rand.Next(rect1.Width),
-                rect1.Y + rand.Next(rect1.Height)
-                );
+
+            this.hitboxesreplaces = _hitReplaces;
         }
     }
-}
 
-public class TileMap : IDisposable, ILayer
-{
     private int xCount => _file.layers[0].gridCellsX;
     private int yCount => _file.layers[0].gridCellsY;
 
     public delegate void DoAt(Point pos);
     public delegate void Entity(Point pos);
 
-    private float layer = 0.5f;
-    public short Layer
-    {
-        get
-        {
-            return (short)((layer * 2000) - 1000);
-        }
-
-        set
-        {
-            if (value > 1000) throw new ArgumentOutOfRangeException("value cannot be greater than 1000");
-            if (value < -1000) throw new ArgumentOutOfRangeException("value cannot be less than -1000");
-            layer = (value + 1000f) / 2000f;
-        }
-    }
-
     public readonly int Width, Height;
     private readonly Hitbox.Rectangle[,] _hitboxData;
 
-    public TileMap(TileSet sheet,
-        OgmoFile file,
-        in Hitbox.Rectangle[] hitboxesreplaces,
-        TileRandomizer[] randomize,
-        int seed)
+    private readonly float[] _targetLayers;
+
+    public TileMap(OgmoFile file, Settings settings, int seed)
     {
         Random rand = new Random(seed);
 
         Width = file.width;
         Height = file.height;
 
-        _sheet = sheet;
+        this._targetLayers = settings.layers;
         _file = file;
 
         SpriteBatch batch = GameManager.Instance.SpriteBatch;
 
-        _targets = new RenderTarget2D[3];
+        _targets = new RenderTarget2D[4];
 
         Random r = new Random();
 
@@ -236,23 +90,31 @@ public class TileMap : IDisposable, ILayer
                     {
                         int x = i % xCount;
                         int y = i / xCount;
-                        _hitboxData[x, y] = hitboxesreplaces[0];
+                        _hitboxData[x, y] = settings.hitboxesreplaces[grid.grid[i]];
                     }
                 }
             }
-            else if (layer is OgmoLayerEntity)
+            else if (layer is not OgmoLayerEntity)
             {
+                int layer_id;
+                if (layer is OgmoLayerBackground)
+                    layer_id = 0;
+                else if (layer is OgmoLayerGround)
+                    layer_id = 1;
+                else if (layer is OgmoLayerGeneral)
+                    layer_id = 2;
+                else
+                    layer_id = 3;
 
-            }
-            else
-            {
-                int layer_id = layer is OgmoLayerBackground ? 0 : (layer is OgmoLayerForeground ? 2 : 1);
                 _targets[layer_id] = new RenderTarget2D
                 (
                     GameManager.Instance.GraphicsDevice,
                     file.width,
                     file.height
                 );
+
+                TileSet _refTileSet = settings.TileSets[layer.tileset];
+
                 GameManager.Instance.GraphicsDevice.SetRenderTarget(_targets[layer_id]);
                 GameManager.Instance.GraphicsDevice.Clear(Color.Transparent);
                 batch.Begin(samplerState: SamplerState.PointClamp);
@@ -265,26 +127,17 @@ public class TileMap : IDisposable, ILayer
                         int x = i % xCount;
                         int y = i / xCount;
 
-                        Point s = new Point(data.data[i] % _sheet.Xlenght, data.data[i] / _sheet.Xlenght);
-
-                        byte id_random = 0;
-                        while (id_random < randomize.Length && !randomize[id_random].Has(s))
-                            ++id_random;
-
-                        if (id_random < randomize.Length)
-                            s = randomize[id_random].GetTile(s, in rand);
-
                         batch.Draw
                         (
-                            sheet.Texture,
+                            _refTileSet.Texture,
                             new Rectangle
                             (
-                                x * sheet.TileSize.X,
-                                y * sheet.TileSize.Y,
-                                sheet.TileSize.X,
-                                sheet.TileSize.Y
+                                x * _refTileSet.settings.tileSize.X,
+                                y * _refTileSet.settings.tileSize.Y,
+                                _refTileSet.settings.tileSize.X,
+                                _refTileSet.settings.tileSize.Y
                             ),
-                            sheet.GetRectangle(s),
+                            _refTileSet.GetRectangle(data.data[i], in rand),
                             Color.White
                         );
                     }
@@ -303,7 +156,7 @@ public class TileMap : IDisposable, ILayer
         if (mergeHitBoxes)
             savedHitboxes = MergeHitBoxes(in _hitboxData);
         else
-            savedHitboxes = PlaceHitboxes(in _hitboxData, _sheet.TileSize);
+            savedHitboxes = PlaceHitboxes(in _hitboxData, _sheet.settings.tileSize);
     }
 
     public void GenerateHitboxs(Point size, bool mergeHitBoxes = true)
@@ -340,7 +193,7 @@ public class TileMap : IDisposable, ILayer
 
     public void ReactivateHitboxs()
     {
-        foreach(Hitbox.Rectangle hit in savedHitboxes)
+        foreach (Hitbox.Rectangle hit in savedHitboxes)
         {
             hit.Reactivate();
         }
@@ -440,17 +293,6 @@ public class TileMap : IDisposable, ILayer
     private readonly OgmoFile _file;
 
     private readonly RenderTarget2D[] _targets;
-    private float[] _targetLayers;
-
-    public void SetTargetLayers(short back, short ground, short fore)
-    {
-        _targetLayers = new float[3]
-        {
-            (back + 1000f) / 2000f,
-            (ground + 1000f) / 2000f,
-            (fore + 1000f) / 2000f
-        };
-    }
 
     public Point Position;
 
@@ -479,13 +321,11 @@ public class TileMap : IDisposable, ILayer
 
     public void Draw()
     {
-        for(byte i = 0; i < 3; ++i)
+        for (byte i = 0; i < 3; ++i)
         {
             Draw(i);
         }
     }
-
-
 
     public void DestroyHitboxs()
     {
@@ -503,83 +343,115 @@ public class TileMap : IDisposable, ILayer
     }
 }
 
-public class OgmoFile
-{
-    public static T Open<T>(string path) where T: OgmoFile
+    public class OgmoFile
     {
-        string file;
-        using (StreamReader sr = new StreamReader(System.Environment.CurrentDirectory + "/" + path))
-            file = sr.ReadToEnd();
-        return JsonSerializer.Deserialize<T>(file);
+        public static T Open<T>(string path) where T : OgmoFile
+        {
+            string file;
+            using (StreamReader sr = new StreamReader(System.Environment.CurrentDirectory + "/" + path))
+                file = sr.ReadToEnd();
+            return JsonSerializer.Deserialize<T>(file);
+        }
+
+        public string ogmoVersion { get; init; }
+        public short width { get; set; }
+        public short height { get; set; }
+        public short offsetX { get; init; }
+        public short offsetY { get; init; }
+        public OgmoLayer[] layers { get; init; }
     }
 
-    public string ogmoVersion { get; init; }
-    public short width { get; set; }
-    public short height { get; set; }
-    public short offsetX { get; init; }
-    public short offsetY { get; init; }
-    public OgmoLayer[] layers { get; init; }
-}
+    [JsonPolymorphic(TypeDiscriminatorPropertyName = "name")]
+    [JsonDerivedType(typeof(OgmoLayerGrid), typeDiscriminator: "hitboxs")]
+    [JsonDerivedType(typeof(OgmoLayerForeground), typeDiscriminator: "foreground")]
+    [JsonDerivedType(typeof(OgmoLayerGround), typeDiscriminator: "ground")]
+    [JsonDerivedType(typeof(OgmoLayerGeneral), typeDiscriminator: "general")]
+    [JsonDerivedType(typeof(OgmoLayerBackground), typeDiscriminator: "background")]
+    [JsonDerivedType(typeof(OgmoLayerEntity), typeDiscriminator: "entities")]
+    public abstract class OgmoLayer
+    {
+        public string name { get; init; }
+        public string _eid { get; init; }
+        public int offsetX { get; init; }
+        public int offsetY { get; init; }
+        public int gridCellWidth { get; set; }
+        public int gridCellHeight { get; set; }
+        public int gridCellsX { get; init; }
+        public int gridCellsY { get; init; }
+        public string tileset { get; init; }
+        public int exportMode { get; init; }
+        public int arrayMode { get; init; }
+    }
 
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "name")]
-[JsonDerivedType(typeof(OgmoLayerGrid), typeDiscriminator: "hitboxs")]
-[JsonDerivedType(typeof(OgmoLayerForeground), typeDiscriminator: "foreground")]
-[JsonDerivedType(typeof(OgmoLayerGround), typeDiscriminator: "ground")]
-[JsonDerivedType(typeof(OgmoLayerBackground), typeDiscriminator: "background")]
-[JsonDerivedType(typeof(OgmoLayerEntity), typeDiscriminator: "entities")]
-public abstract class OgmoLayer
-{
-    public string name { get; init; }
-    public string _eid { get; init; }
-    public int offsetX { get; init; }
-    public int offsetY { get; init; }
-    public int gridCellWidth { get; set; }
-    public int gridCellHeight { get; set; }
-    public int gridCellsX { get; init; }
-    public int gridCellsY { get; init; }
-    public string tileset { get; init; }
-    public int exportMode { get; init; }
-    public int arrayMode { get; init; }
-}
+    public class MoonValues
+    {
+        public string Name { get; init; }
+    }
 
-public class MoonValues
-{
-    public string Name { get; init; }
-}
+    public class MoonOgmoFile : OgmoFile
+    {
+        public MoonValues values { get; init; }
+    }
 
-public class MoonOgmoFile : OgmoFile
-{
-    public MoonValues values { get; init; }
-}
+    public class OgmoLayerBlock : OgmoLayer
+    {
+        public int[] data { get; init; }
+    }
 
-public class OgmoLayerBlock : OgmoLayer
-{
-    public int[] data { get; init; }
-}
+    public class OgmoLayerGround : OgmoLayerBlock { }
+    public class OgmoLayerGeneral : OgmoLayerBlock { }
+    public class OgmoLayerForeground : OgmoLayerBlock { }
+    public class OgmoLayerBackground : OgmoLayerBlock { }
 
-public class OgmoLayerGround : OgmoLayerBlock { }
-public class OgmoLayerForeground : OgmoLayerBlock { }
-public class OgmoLayerBackground : OgmoLayerBlock { }
+    public class OgmoLayerGrid : OgmoLayer
+    {
+        public char[] grid { get; init; }
+    }
 
-public class OgmoLayerGrid : OgmoLayer
-{
-    public char[] grid { get; init; }
-}
-
-public class OgmoLayerEntity : OgmoLayer
-{
-    public Ent[] entities { get; init; }
-}
+    public class OgmoLayerEntity : OgmoLayer
+    {
+        public Ent[] entities { get; init; }
+    }
 
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "name")]
 [JsonDerivedType(typeof(Ent.StartPos), typeDiscriminator: "spawn")]
 [JsonDerivedType(typeof(Ent.Cleaner), typeDiscriminator: "cleaner")]
+[JsonDerivedType(typeof(Ent.Door), typeDiscriminator: "door")]
+[JsonDerivedType(typeof(Ent.DoorOpener), typeDiscriminator: "door opener")]
 public abstract class Ent
 {
     public string name { get; init; }
-    public short id { get; init; }
+    public ushort id { get; init; }
     public short x { get; init; }
     public short y { get; init; }
+
+    public enum DoorTypes
+    {
+        gold, key, mana, health
+    }
+
+    public class ValueType
+    {
+        public string valuetype { get; init; }
+        public DoorTypes DoorType { get; set; }
+    }
+
+    public class ValueTypeOpener : ValueType
+    {
+        public ushort doorID { get; init; }
+        public ushort amount { get; init; }
+    }
+
+    public class Door : Ent
+    {
+        public byte height { get; init; }
+        public ValueType values { get; init; }
+    }
+
+    public class DoorOpener : Ent
+    {
+        public ValueTypeOpener values { get; init; }
+    }
 
     public class StartPos : Ent { }
     public class Cleaner : Ent { }

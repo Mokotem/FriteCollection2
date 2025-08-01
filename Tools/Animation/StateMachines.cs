@@ -55,14 +55,7 @@ public class StateMachine : IDraw
     {
         dt = 0f;
         state.Start();
-        State newState = state.Update(0);
-        if (newState is not null)
-        {
-            ForceState(newState);
-            current = newState;
-        }
-        else
-            current = state;
+        current = state;
     }
 
     public void Draw()

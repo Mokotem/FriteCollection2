@@ -1,14 +1,22 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using FriteCollection2.Tools.TileMap;
 using Microsoft.Xna.Framework;
-using FriteCollection2.Tools.TileMap;
-using System.Collections.Generic;
+using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended;
 using System;
+using System.Collections.Generic;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FriteCollection2.UI;
 
 public enum Extend
 {
     Horizontal, Vertical, Full, None
+}
+
+public interface IHaveRectangle
+{
+    public Rectangle mRect { get; }
+    public float Depth { get; }
 }
 
 public interface IEdit<T>
@@ -20,9 +28,13 @@ public interface IEdit<T>
     }
 }
 
-public abstract class UI : IDisposable
+public abstract class UI : IDisposable, IHaveRectangle
 {
     internal float depth = 0.5f;
+    public float Depth => depth;
+
+    public virtual void Dispose() { }
+
     public class Rectangle
     {
         public Extend Extend = Extend.None;
@@ -119,7 +131,6 @@ public abstract class UI : IDisposable
 
     public virtual int PositionY
     {
-        get => papa.Position.Y;
         set
         {
             space.Position.Y = value;
@@ -137,28 +148,9 @@ public abstract class UI : IDisposable
         }
     }
 
-    public virtual void Dispose()
-    {
-        if (papa is not null)
-            papa.Dispose();
-    }
-
     private protected bool _active = true;
     public delegate void Procedure();
-    private protected UI papa;
-
-    public UI()
-    {
-        GameManager.Instance.OnScreenUpdate += this.OnScreenUpdate;
-    }
-
-    private void OnScreenUpdate(bool full)
-    {
-        if (papa is null)
-        {
-            this.ApplySpace();
-        }
-    }
+    private protected IHaveRectangle papa;
 
     public Point Scale
     {
@@ -188,12 +180,19 @@ public abstract class UI : IDisposable
     private protected List<UI> childs = new List<UI>();
     public UI[] Childs => childs.ToArray();
 
+    public void DesroyChilds()
+    {
+        foreach (UI child in childs)
+            child.Dispose();
+        childs.Clear();
+    }
+
     public void Add(UI element)
     {
         element.depth = this.depth - 0.05f;
         childs.Add(element);
     }
-    public void FlexChilds(Point spacing, Point offset)
+    public void FlexChilds(Point spacing, Point offset, bool leftAlgn = false)
     {
         Point cursor = spacing + offset;
         int maxHeight = -1;
@@ -201,7 +200,7 @@ public abstract class UI : IDisposable
         {
             if (u.Active)
             {
-                if (cursor.X + u.rect.Width + spacing.X > this.rect.Width)
+                if (leftAlgn || cursor.X + u.rect.Width + spacing.X > this.rect.Width)
                 {
                     cursor.X = spacing.X;
                     cursor.Y += maxHeight + spacing.Y;
@@ -312,7 +311,7 @@ public abstract class UI : IDisposable
     public virtual void Draw() { }
 }
 
-public class Image : UI, IEdit<Texture2D>
+public class Image : UI, IEdit<Texture2D>, IDisposable
 {
     private Texture2D image;
 
@@ -322,7 +321,7 @@ public class Image : UI, IEdit<Texture2D>
         set => image = value;
     }
 
-    public Image(Texture2D image, Rectangle space) : base()
+    public Image(Texture2D image, Rectangle space)
     {
         this.image = image;
         this.space = space;
@@ -330,14 +329,14 @@ public class Image : UI, IEdit<Texture2D>
         base.ApplyPosition(space.EnviRect);
     }
 
-    public Image(Texture2D image, Rectangle space, UI parent) : base()
+    public Image(Texture2D image, Rectangle space, IHaveRectangle parent)
     {
         this.image = image;
         this.space = space;
         this.papa = parent;
         base.ApplyScale(parent.mRect);
         base.ApplyPosition(parent.mRect);
-        this.depth = parent.depth - 0.05f;
+        this.depth = parent.Depth - 0.05f;
     }
 
     public override void Draw()
@@ -393,6 +392,7 @@ public class Text : UI, IEdit<string>
             if (value != text)
             {
                 this.text = value;
+                this.ApplyText(value);
             }
         }
     }
@@ -404,7 +404,6 @@ public class Text : UI, IEdit<string>
 
     public override int PositionY
     {
-        get => papa.Position.Y;
         set
         {
             space.Position.Y = value;
@@ -419,6 +418,31 @@ public class Text : UI, IEdit<string>
         ApplyPosition(parent);
     }
 
+    private int lenght;
+    private string resultString;
+    private int lastHideIndex;
+
+    private void Hide(int startIndex)
+    {
+        resultString = text.Remove(lastHideIndex);
+        int i = lastHideIndex;
+        int n = lastHideIndex;
+        while (n < startIndex)
+        {
+            if (i < text.Length - 1 && (text[i] + text[i + 1]).Equals("\n"))
+            {
+                resultString += "\n";
+                i += 2;
+            }
+            else
+            {
+                resultString += text[i];
+                ++n;
+                ++i;
+            }
+        }
+    }
+
     private void ApplyText(string input)
     {
         text = "";
@@ -426,7 +450,8 @@ public class Text : UI, IEdit<string>
         int i = 0;
         Point s = Point.Zero;
         int ln = 1;
-        if (txt.Length < 2 || par.Width < 2)
+        lenght = 0;
+        if (txt.Length < 2 || rect.Width < 2)
         {
             text = input;
         }
@@ -434,18 +459,23 @@ public class Text : UI, IEdit<string>
         {
             if (HasFontAspect)
             {
+                int maxX = rect.Width / fontaspect.X;
+                int w = 0;
                 while (i < txt.Length)
                 {
-                    string line = "";
-                    while (i < txt.Length && line.Length * fontaspect.X < par.Width)
+                    w += txt[i].Length + 1;
+                    if (w - 1 > maxX)
                     {
-                        s.X += fontaspect.X;
-                        line += txt[i] + " ";
-                        i += 1;
+                        w = txt[i].Length;
+                        text += "\n" + txt[i] + " ";
                     }
-                    text += line + "\n";
-                    ln += 1;
-                    s.Y += fontaspect.Y;
+                    else
+                    {
+                        text += txt[i] + " ";
+                    }
+                    lenght += txt[i].Length + 1;
+
+                    ++i;
                 }
             }
             else
@@ -453,9 +483,10 @@ public class Text : UI, IEdit<string>
                 while (i < txt.Length)
                 {
                     string line = "";
-                    while (i < txt.Length && GameManager.Font.MeasureString(line).X < par.Width)
+                    while (i < txt.Length && GameManager.Font.MeasureString(line).X < rect.Width)
                     {
                         line += txt[i] + " ";
+                        lenght += txt[i].Length + 1;
                         i += 1;
                     }
                     text += line + "\n";
@@ -464,44 +495,41 @@ public class Text : UI, IEdit<string>
                 }
             }
             ln += -1;
-            text = text.Remove(text.Length - 2);
+            text = text.Remove(text.Length - 1);
         }
 
-        if (HasFontAspect)
-        {
-            rect.Width = ((text.Length - 2) * fontaspect.X);
-            rect.Height = fontaspect.Y * ln - 2;
-        }
-        else
-        {
-            Vector2 fa = GameManager.Font.MeasureString(text);
-            rect.Width = (int)fa.X;
-            rect.Height = (int)fa.Y;
-        }
+        --lenght;
+        resultString = text;
     }
 
-    public Text(string txt, Rectangle space) : base()
+    public Text(string txt, Rectangle space)
     {
+        space.Scale.X += 1;
         this.Size = 1f;
         this.space = space;
         base.ApplyScale(space.EnviRect);
+        //rect.Height += 2;
+        ++rect.Width;
         ApplyText(txt);
         base.ApplyPosition(space.EnviRect);
         par = space.EnviRect;
         Outline = true;
+        lastHideIndex = 0;
     }
 
-    public Text(string txt, Rectangle space, UI parent) : base()
+    public Text(string txt, Rectangle space, IHaveRectangle parent) : base()
     {
         this.papa = parent;
         this.Size = 1f;
         this.space = space;
         base.ApplyScale(parent.mRect);
+        ++rect.Width;
         ApplyText(txt);
         base.ApplyPosition(parent.mRect);
         par = parent.mRect;
         Outline = true;
-        this.depth = parent.depth - 0.05f;
+        this.depth = parent.Depth - 0.05f;
+        lastHideIndex = 0;
     }
 
     public override void Draw()
@@ -525,16 +553,23 @@ public class Text : UI, IEdit<string>
                 })
                 {
                     GameManager.Instance.SpriteBatch.DrawString
-                    (GameManager.Font, text, new Vector2(rect.X + r.X, rect.Y + r.Y),
+                    (GameManager.Font, resultString, new Vector2(rect.X + r.X, rect.Y + r.Y),
                     OutlineColor, 0, Vector2.Zero, Size,
                     SpriteEffects.None, this.depth + 0.0001f);
                 }
             }
+            GameManager.Instance.SpriteBatch.DrawString
+                        (GameManager.Font, resultString, new Vector2(rect.X, rect.Y),
+                        this.Color, 0, Vector2.Zero, Size,
+                        SpriteEffects.None, this.depth);
         }
-        GameManager.Instance.SpriteBatch.DrawString
-                    (GameManager.Font, text, new Vector2(rect.X, rect.Y),
-                    this.Color, 0, Vector2.Zero, Size,
-                    SpriteEffects.None, this.depth);
+    }
+
+    public void Debug()
+    {
+        GameManager.Instance.Batch.DrawRectangle(
+            rect.ToRectangleF(), Entity.Hitboxs.Hitbox.DebugColor,
+            1, this.depth + 0.0001f);
     }
 }
 
@@ -554,9 +589,9 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
         TileSet set,
         Point size)
     {
-        int sx = set.TileSize.X;
-        int sy = set.TileSize.Y;
-        if (size.X< sx * 2)
+        int sx = set.settings.tileSize.X;
+        int sy = set.settings.tileSize.Y;
+        if (size.X < sx * 2)
         {
             sx = size.X/ 2;
         }
@@ -626,50 +661,50 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
         this.childs.Clear();
     }
 
-    public Panel(Rectangle space) : base()
+    public Panel(Rectangle space)
     {
         this.space = space;
         ApplySpace(space.EnviRect);
     }
 
-    public Panel(Rectangle space, UI parent) : base()
+    public Panel(Rectangle space, IHaveRectangle parent)
     {
         this.papa = parent;
         this.space = space;
         ApplySpace(parent.mRect);
-        this.depth = parent.depth - 0.05f;
+        this.depth = parent.Depth - 0.05f;
     }
 
-    public Panel(TileSet tileSet, Rectangle space) : base()
+    public Panel(TileSet tileSet, Rectangle space)
     {
         this.space = space;
         ApplySpace(space.EnviRect);
         this.texture = CreatePanelTexture(tileSet, new Point(rect.Width, rect.Height));
     }
 
-    public Panel(TileSet tileSet, Rectangle space, UI parent) : base()
+    public Panel(TileSet tileSet, Rectangle space, IHaveRectangle parent)
     {
         this.papa = parent;
         this.space = space;
         ApplySpace(parent.mRect);
         this.texture = CreatePanelTexture(tileSet, new Point(rect.Width, rect.Height));
-        this.depth = parent.depth - 0.05f;
+        this.depth = parent.Depth - 0.05f;
     }
 
-    public Panel(Texture2D image, Rectangle space) : base()
+    public Panel(Texture2D image, Rectangle space)
     {
         this.space = space;
         ApplySpace(space.EnviRect);
         this.texture = image;
     }
 
-    public Panel(Texture2D image, Rectangle space, UI parent) : base()
+    public Panel(Texture2D image, Rectangle space, IHaveRectangle parent)
     {
         this.papa = parent;
         this.space = space;
         ApplySpace(parent.mRect);
         this.texture = image;
-        this.depth = parent.depth - 0.05f;
+        this.depth = parent.Depth - 0.05f;
     }
 
     public override void Draw()
@@ -680,7 +715,7 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
                 GameManager.Instance.SpriteBatch.Draw
                  (texture, rect, null, Color,
                  0, Vector2.Zero, SpriteEffects.None, this.depth);
-            foreach (UI element in childs)
+            foreach (UI element in childs.ToArray())
                 element.Draw();
         }
     }

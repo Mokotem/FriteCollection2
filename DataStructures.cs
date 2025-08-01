@@ -220,19 +220,13 @@ public abstract class Executable : IDisposable
     public virtual void BeforeDraw() { }
     public virtual void DrawShader(in SpriteBatch batch) { }
     public virtual void AfterDraw() { }
-    /// <summary>
-    /// Les appelles de dessins se font ici, Avec un mélange des couleurs additif.
-    /// </summary>
-    public virtual void BeforeDrawAdditive() { }
+
+    public virtual void WhenPaused() { }
 
     /// <summary>
     /// Méthode supplémentaire pour dessiner, utilisé de base pour l'interface.
     /// </summary>
     public virtual void DrawUI() { }
-    /// <summary>
-    /// Méthode supplémentaire pour dessiner, encore.
-    /// </summary>
-    public virtual void AfterDrawAdditive() { }
 
     /// <summary>
     /// Ici, disposer toutes les ressources.

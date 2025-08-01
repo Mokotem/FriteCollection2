@@ -34,6 +34,11 @@ public static class GameManager
 
     private static FriteModel.MonoGame _nstnc;
 
+    public static void TogglePause(bool value)
+    {
+        _nstnc.TogglePause(value);
+    }
+
     /// <summary>
     /// Donner la référence de l'instance MonoGame.
     /// </summary>

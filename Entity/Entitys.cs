@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace FriteCollection2.Entity;
 
@@ -14,7 +15,7 @@ public abstract class Entity
 /// <summary>
 /// Object.
 /// </summary>
-public partial class Object : Entity, ICopy<Object>, IDraw
+public class Object : Entity, ICopy<Object>, IDraw
 {
     public Object Copy()
     {
@@ -63,6 +64,7 @@ public partial class Object : Entity, ICopy<Object>, IDraw
             );
                 }
             }
+
             GameManager.Instance.SpriteBatch.Draw
             (
                 Renderer.Texture,
@@ -90,5 +92,89 @@ public partial class Object : Entity, ICopy<Object>, IDraw
     public override string ToString()
     {
         return "Object (" + Space.ToString() + ", " + Renderer.ToString() + ")";
+    }
+}
+
+public class Text : IDraw
+{
+    public static Point EvaluateText(string txt, byte fw, byte fh)
+    {
+        Point result = new Point(1, 1);
+        ushort i = 0;
+        int count = 1;
+        while (i < txt.Length - 1)
+        {
+            if ((txt[i] + txt[i + 1]).Equals("\n"))
+            {
+                i += 2;
+                count = 1;
+                ++result.Y;
+            }
+            else
+            {
+                ++count;
+                if (count > result.X)
+                    result.X = count;
+                ++i;
+            }
+        }
+        return new Point(result.X * fw, result.Y * fh);
+    }
+
+    public readonly string txt;
+    public readonly Point Scale;
+    public Point Position;
+
+    public Renderer Renderer;
+    public Color Background;
+
+    public Text(string value)
+    {
+        this.Renderer = new Renderer();
+        this.Scale = EvaluateText(value, 4, 6);
+        ++Scale.X;
+        ++Scale.Y;
+        this.txt = value;
+        Background = Color.Black;
+    }
+
+    public void Draw()
+    {
+        if (!Renderer.hide)
+        {
+            GameManager.Instance.Batch.Draw
+            (
+                Renderer.DefaultTexture,
+                new Rectangle
+                (
+                    Position.X - Camera.Position.X,
+                    Position.Y - Camera.Position.Y,
+                    Scale.X,
+                    Scale.Y
+                ),
+                null,
+                Background,
+                0,
+                Vector2.Zero,
+                SpriteEffects.None,
+                Renderer.GetLayer() + 0.0001f
+                ); 
+
+            GameManager.Instance.Batch.DrawString(
+                GameManager.Font,
+                txt,
+                new Vector2(Position.X + 1 - Camera.Position.X, Position.Y - Camera.Position.Y),
+                Renderer.Color,
+                0f,
+                Vector2.Zero,
+                1f,
+                SpriteEffects.None,
+                Renderer.GetLayer());
+        }
+    }
+
+    public override string ToString()
+    {
+        return "Text " + txt + " (" + Renderer.ToString() + ")";
     }
 }

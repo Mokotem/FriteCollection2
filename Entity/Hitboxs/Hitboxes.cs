@@ -1,5 +1,5 @@
-﻿using MonoGame.Extended;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
+using MonoGame.Extended;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -88,6 +88,8 @@ public abstract class Hitbox
         new Color(0, 255, 0),
         new Color(0, 0, 255)
     };
+
+    internal static Color DebugColor => _color[0];
 
     /// <summary>
     /// Modifie la couleur d'une couche.
@@ -213,6 +215,7 @@ public abstract class Hitbox
     public void Reactivate()
     {
         _hitBoxesList[_layer].Add(this);
+        destroyed = false;
     }
 
     /// <summary>
@@ -942,8 +945,34 @@ public abstract class Hitbox
                     Rectangle hit = col as Rectangle;
                     hit.UpdatePos();
 
-                    if (InRange(hit._point, hit.p2))
-                        return true;
+                    foreach (Vector2 p in hit)
+                        if (this.PointInRange(p))
+                            return true;
+                    foreach (Vector2 p in this)
+                        if (hit.PointInRange(p))
+                            return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool Check(GameManager.Discriminent<Hitbox> discr)
+        {
+            this.UpdatePos();
+            foreach (Hitbox col in _hitBoxesList[_layer])
+            {
+                if (col is Rectangle && col.Active && discr(col) && col != this)
+                {
+                    Rectangle hit = col as Rectangle;
+                    hit.UpdatePos();
+
+                    foreach (Vector2 p in hit)
+                        if (this.PointInRange(p))
+                            return true;
+                    foreach (Vector2 p in this)
+                        if (hit.PointInRange(p))
+                            return true;
                 }
             }
 
@@ -960,8 +989,12 @@ public abstract class Hitbox
                     Rectangle hit = col as Rectangle;
                     hit.UpdatePos();
 
-                    if (InRange(hit._point, hit.p2))
-                        return true;
+                    foreach (Vector2 p in hit)
+                        if (this.PointInRange(p))
+                            return true;
+                    foreach (Vector2 p in this)
+                        if (hit.PointInRange(p))
+                            return true;
                 }
             }
 
@@ -990,6 +1023,28 @@ public abstract class Hitbox
             return false;
         }
 
+        public bool Check(out Hitbox.Rectangle collider, GameManager.Discriminent<Hitbox> discr)
+        {
+            this.UpdatePos();
+            foreach (Hitbox col in _hitBoxesList[_layer])
+            {
+                if (col is Rectangle && col.Active && discr(col) && col != this)
+                {
+                    Rectangle hit = col as Rectangle;
+                    hit.UpdatePos();
+
+                    if (InRange(hit._point, hit.p2))
+                    {
+                        collider = hit;
+                        return true;
+                    }
+                }
+            }
+
+            collider = null;
+            return false;
+        }
+
         public bool Check(byte layer, GameManager.Discriminent<Hitbox> discr, string tag = null)
         {
             this.UpdatePos();
@@ -1000,11 +1055,37 @@ public abstract class Hitbox
                     Rectangle hit = col as Rectangle;
                     hit.UpdatePos();
 
-                    if (InRange(hit._point, hit.p2))
-                        return true;
+                    foreach (Vector2 p in hit)
+                        if (this.PointInRange(p))
+                            return true;
+                    foreach (Vector2 p in this)
+                        if (hit.PointInRange(p))
+                            return true;
                 }
             }
 
+            return false;
+        }
+
+        public bool Check(byte layer, GameManager.Discriminent<Hitbox> discr, out Hitbox.Rectangle colider)
+        {
+            this.UpdatePos();
+            foreach (Hitbox col in _hitBoxesList[layer])
+            {
+                if (col is Rectangle && col.Active && discr(col) && col != this)
+                {
+                    Rectangle hit = col as Rectangle;
+                    hit.UpdatePos();
+
+                    if (InRange(hit._point, hit.p2))
+                    {
+                        colider = hit;
+                        return true;
+                    }
+                }
+            }
+
+            colider = null;
             return false;
         }
 
@@ -1083,6 +1164,25 @@ public abstract class Hitbox
             out Sides side,
             string tag = null)
         {
+            if (tag is null)
+            {
+                return _advancedCheck(out side, (Hitbox h) => true);
+            }
+            else
+            {
+                return _advancedCheck(out side, (Hitbox h) => h.Tag.Equals(tag));
+            }
+        }
+
+        public Collision[] AdvancedCheck(
+            out Sides side, GameManager.Discriminent<Hitbox> discr)
+        {
+            return _advancedCheck(out side, discr);
+        }
+
+        private Collision[] _advancedCheck(
+            out Sides side, GameManager.Discriminent<Hitbox> discr)
+        {
             this.UpdatePos();
             List<Collision> cols = new List<Collision>();
             side = Sides.None;
@@ -1091,8 +1191,7 @@ public abstract class Hitbox
 
             foreach (Hitbox col in _hitBoxesList[_layer])
             {
-                if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag))
-                    && col != this)
+                if (col is Rectangle && col.Active && discr(col) && col != this)
                 {
                     Rectangle hit = col as Rectangle;
                     if (_MakeCollisionWith(hit, out Collision c, ref global))
@@ -1129,7 +1228,7 @@ public abstract class Hitbox
                 switch (global[0], global[1], global[2], global[3])
                 {
                     case (true, true, true, false):
-                        foreach(Collision col in cols)
+                        foreach (Collision col in cols)
                         {
                             if (col.side == Sides.Down)
                             {

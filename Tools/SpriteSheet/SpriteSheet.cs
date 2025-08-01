@@ -30,8 +30,6 @@ public class SpriteSheet : IDisposable
                 textures[x, y] = tex;
             }
         }
-
-        texture.Dispose();
     }
 
     public virtual Texture2D this[int x, int y]
