@@ -96,6 +96,27 @@ public static class Interpolation
         return a * (1 - q2) + (b * q2);
     }
 
+    private const float sqrt6 = 2.449489742783178f;
+    public static float BounceOut(float a, float b, float t, bool twoBounces = false)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float q = 0;
+        if (twoBounces)
+            q = float.Min(4 * t * t, 4 * float.Pow(t - (3f / 4f), 2) + (3f / 4f));
+        else
+        {
+            float sxc = 6 * t * t;
+            q = float.Min(
+                sxc,
+                float.Min(
+                    sxc - (3 * sqrt6 * t) + 3,
+                    sxc - (2 * t * (sqrt6 + 3)) + (2 * sqrt6) + 1
+                    ));
+        }
+        return (a * (1 - q)) + (b * q);
+    }
+
     private static Color Add(Color c1, Color c2)
     {
         return new Color(c1.R + c2.R, c1.G + c2.G, c1.B + c2.B);
