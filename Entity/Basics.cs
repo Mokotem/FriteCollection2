@@ -176,15 +176,15 @@ public static class BoundFunc
         return b switch
         {
             Bounds.TopLeft => new Point(0, 0),
-            Bounds.Top => new Point(width / 2, 0),
+            Bounds.Top => new Point((int)float.Round(width / 2f), 0),
             Bounds.TopRight => new Point(width, 0),
 
-            Bounds.Left => new Point(0, height / 2),
-            Bounds.Center => new Point(width / 2, height / 2),
-            Bounds.Right => new Point(width, height / 2),
+            Bounds.Left => new Point(0, (int)float.Round(height / 2f)),
+            Bounds.Center => new Point((int)float.Round(width / 2f), (int)float.Round(height / 2f)),
+            Bounds.Right => new Point(width, (int)float.Round(height / 2f)),
 
             Bounds.BottomLeft => new Point(0, height),
-            Bounds.Bottom => new Point(width / 2, height),
+            Bounds.Bottom => new Point((int)float.Round(width / 2f), height),
             Bounds.BottomRight => new Point(width, height),
 
             _ => Point.Zero

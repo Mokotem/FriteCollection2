@@ -42,7 +42,6 @@ public abstract class MonoGame : Game
         _childTypes = childTypes;
         IsMouseVisible = true;
         graphics = new GraphicsDeviceManager(this);
-        Window.AllowAltF4 = false;
         Window.AllowUserResizing = S.AllowUserResizeing;
         GameManager.SetGameInstance(this);
     }

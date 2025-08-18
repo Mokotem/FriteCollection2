@@ -139,11 +139,11 @@ public abstract class ButtonCore : Panel
         RestColor = defaultColor;
     }
 
-    private static readonly Point offs = new(-3, -2);
+    private static readonly Point offs = new(16, 3);
 
     public ButtonCore(string title, TileSet tileset, Rectangle space, UI parent) : base(tileset, space, parent)
     {
-        titleText = new Text(title, new Rectangle(in space.environment, Bounds.Center, Extend.Full, Point.Zero, offs), this);
+        titleText = new Text(title, new Rectangle(in space.environment, Bounds.TopLeft, Extend.Full, Point.Zero, offs), this);
         titleText.Outline = true;
         this.Add(titleText);
         I._buttons.Add(this);
@@ -152,7 +152,7 @@ public abstract class ButtonCore : Panel
 
     public ButtonCore(string title, TileSet tileset, Rectangle space) : base(tileset, space)
     {
-        titleText = new Text(title, new Rectangle(in space.environment, Bounds.Center, Extend.Full, Point.Zero, offs), this);
+        titleText = new Text(title, new Rectangle(in space.environment, Bounds.TopLeft, Extend.Full, Point.Zero, offs), this);
         titleText.Outline = true;
         this.Add(titleText);
         I._buttons.Add(this);
@@ -161,7 +161,7 @@ public abstract class ButtonCore : Panel
 
     public ButtonCore(string title, Texture2D image, Rectangle space, UI parent) : base(image, space, parent)
     {
-        titleText = new Text(title, new Rectangle(in space.environment, Bounds.Center, Extend.Full, Point.Zero, offs), this);
+        titleText = new Text(title, new Rectangle(in space.environment, Bounds.TopLeft, Extend.Full, Point.Zero, offs), this);
         titleText.Outline = true;
         this.Add(titleText);
         I._buttons.Add(this);
@@ -170,7 +170,7 @@ public abstract class ButtonCore : Panel
 
     public ButtonCore(string title, Texture2D image, Rectangle space) : base(image, space)
     {
-        titleText = new Text(title, new Rectangle(in space.environment, Bounds.Center, Extend.Full, Point.Zero, offs), this);
+        titleText = new Text(title, new Rectangle(in space.environment, Bounds.TopLeft, Extend.Full, Point.Zero, offs), this);
         titleText.Outline = true;
         this.Add(titleText);
         I._buttons.Add(this);

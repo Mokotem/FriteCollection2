@@ -301,7 +301,7 @@ public abstract class Script : Executable
     /// <exception cref="Exception">le scripte n'existe pas dans la scène.</exception>
     public static T GetScript<T>() where T : Script
     {
-        foreach (Script s in GameManager.Instance.CurrentExecutables)
+        foreach (Executable s in GameManager.Instance.CurrentExecutables)
         {
             if (s.GetType().Name == typeof(T).Name)
                 return s as T;

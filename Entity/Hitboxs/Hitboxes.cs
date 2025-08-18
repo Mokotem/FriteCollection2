@@ -3,6 +3,7 @@ using MonoGame.Extended;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using static FriteCollection2.Tools.TileMap.MetroidMaker;
 
 namespace FriteCollection2.Entity.Hitboxs;
 
@@ -11,7 +12,7 @@ public abstract class Hitbox
     private const int _numberOfLayers = 3;
     private const float Pis2 = float.Pi / 2f;
 
-    public delegate bool MessageBox(int message);
+    public delegate bool MessageBox(short message);
 
     public MessageBox SendMessage { get; init; }
 
@@ -22,7 +23,7 @@ public abstract class Hitbox
         new()
     };
 
-    public virtual Vector2 Size => Vector2.One;
+    public virtual Point Size => Point.Zero;
 
     /// <summary>
     /// Supprime TOUTES les hitboxs.
@@ -169,9 +170,9 @@ public abstract class Hitbox
     /// <summary>
     /// Informations sur une collision détectée.
     /// </summary>
-    public class Collision
+    public class Collision<H> where H: Hitbox
     {
-        public Hitbox collider;
+        public H collider;
         public Sides side;
 
         public void SetSide(Sides value)
@@ -498,10 +499,10 @@ public abstract class Hitbox
         /// <summary>
         /// Donne des informations supplémentaires sur les collisions.
         /// </summary>
-        public Collision[] AdvancedCheck(
+        public Collision<Circle>[] AdvancedCheck(
                 string tag = null)
         {
-            List<Collision> result = new List<Collision>();
+            List<Collision<Circle>> result = new List<Collision<Circle>>();
             this.UpdatePos();
             foreach (Hitbox col in _hitBoxesList[_layer])
             {
@@ -512,7 +513,7 @@ public abstract class Hitbox
 
                     if (Vector2.Distance(_point, hit._point) < _radius + hit._radius)
                     {
-                        Collision c = new Collision();
+                        Collision<Circle> c = new Collision<Circle>();
                         c.collider = hit;
                         c.side = Sides.None;
                         result.Add(c);
@@ -575,6 +576,51 @@ public abstract class Hitbox
 
     public class Rectangle : Hitbox, IEnumerable, ICollider, IDraw, ICopy<Rectangle>
     {
+        public bool ApplyColision(Collision<Rectangle> col, Vector2 vitesse, Action OnUp, Action OnDown, Action OnLeft, Action OnRight)
+        {
+            switch (col.side)
+            {
+                case Sides.Down:
+                    if (vitesse.Y >= 0)
+                    {
+                        SpaceRef.Y = col.collider.PositionOffset.Y - SpaceRef.Scale.Y
+                            + (SpaceRef.Scale.Y - Size.Y - PositionOffset.Y);
+                        OnDown();
+                        return true;
+                    }
+                    else return false;
+                case Hitbox.Sides.Up:
+                    if (vitesse.Y <= 0)
+                    {
+                        SpaceRef.Y = col.collider.PositionOffset.Y + col.collider.Size.Y
+                             - (SpaceRef.Scale.Y - Size.Y - PositionOffset.Y);
+                        OnUp();
+                        return true;
+                    }
+                    else return false;
+                case Hitbox.Sides.Left:
+                    if (vitesse.X <= 0)
+                    {
+                        SpaceRef.X = col.collider.PositionOffset.X + col.collider.Size.X
+                             - (SpaceRef.Scale.X - Size.X - PositionOffset.X);
+                        OnLeft();
+                        return true;
+                    }
+                    else return false;
+                case Hitbox.Sides.Right:
+                    if (vitesse.X >= 0)
+                    {
+                        SpaceRef.X = col.collider.PositionOffset.X - SpaceRef.Scale.X
+                            + (SpaceRef.Scale.X - Size.X - PositionOffset.X);
+                        OnRight();
+                        return true;
+                    }
+                    else return false;
+                default:
+                    return false;
+            }
+        }
+
         private struct RectangleEnum : IEnumerator
         {
             private readonly Vector2 _point, _p2;
@@ -625,14 +671,20 @@ public abstract class Hitbox
         private Vector2 p2;
 
         private bool sizeLocked = false;
-        private Vector2 lockSize;
-        public void LockSize(Vector2 value)
+        private Point lockSize;
+        public void LockSize(Point value)
         {
             sizeLocked = true;
             lockSize = value;
         }
 
-        public override Vector2 Size => lockSize;
+        public void LockSize(int w, int h)
+        {
+            sizeLocked = true;
+            lockSize = new Point(w, h);
+        }
+
+        public override Point Size => lockSize;
 
         public void UnlockSize()
         {
@@ -763,11 +815,11 @@ public abstract class Hitbox
 
         private bool _MakeCollisionWith(
             Hitbox.Rectangle hit,
-            out Collision col,
+            out Collision<Rectangle> col,
             ref readonly bool[] global)
         {
             hit.UpdatePos();
-            col = new Collision();
+            col = new Collision<Rectangle>();
             bool[] bools = new bool[4] { false, false, false, false };
             bool colided = false;
 
@@ -1023,6 +1075,30 @@ public abstract class Hitbox
             return false;
         }
 
+        public bool Check(byte layer, out Hitbox[] colliders, string tag = null)
+        {
+            bool c = false;
+            List<Hitbox> result = new List<Hitbox>();
+            this.UpdatePos();
+            foreach (Hitbox col in _hitBoxesList[layer])
+            {
+                if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag)) && col != this)
+                {
+                    Rectangle hit = col as Rectangle;
+                    hit.UpdatePos();
+
+                    if (InRange(hit._point, hit.p2))
+                    {
+                        result.Add(hit);
+                        c = true;
+                    }
+                }
+            }
+
+            colliders = result.ToArray();
+            return c;
+        }
+
         public bool Check(out Hitbox.Rectangle collider, GameManager.Discriminent<Hitbox> discr)
         {
             this.UpdatePos();
@@ -1160,7 +1236,7 @@ public abstract class Hitbox
         /// <summary>
         /// Donne des informations supplémentaires sur les collisions.
         /// </summary>
-        public Collision[] AdvancedCheck(
+        public Collision<Rectangle>[] AdvancedCheck(
             out Sides side,
             string tag = null)
         {
@@ -1174,17 +1250,17 @@ public abstract class Hitbox
             }
         }
 
-        public Collision[] AdvancedCheck(
+        public Collision<Rectangle>[] AdvancedCheck(
             out Sides side, GameManager.Discriminent<Hitbox> discr)
         {
             return _advancedCheck(out side, discr);
         }
 
-        private Collision[] _advancedCheck(
+        private Collision<Rectangle>[] _advancedCheck(
             out Sides side, GameManager.Discriminent<Hitbox> discr)
         {
             this.UpdatePos();
-            List<Collision> cols = new List<Collision>();
+            List<Collision<Rectangle>> cols = new List<Collision<Rectangle>>();
             side = Sides.None;
 
             bool[] global = new bool[4] { false, false, false, false };
@@ -1194,7 +1270,7 @@ public abstract class Hitbox
                 if (col is Rectangle && col.Active && discr(col) && col != this)
                 {
                     Rectangle hit = col as Rectangle;
-                    if (_MakeCollisionWith(hit, out Collision c, ref global))
+                    if (_MakeCollisionWith(hit, out Collision<Rectangle> c, ref global))
                     {
                         cols.Add(c);
                     }
@@ -1228,7 +1304,7 @@ public abstract class Hitbox
                 switch (global[0], global[1], global[2], global[3])
                 {
                     case (true, true, true, false):
-                        foreach (Collision col in cols)
+                        foreach (Collision<Rectangle> col in cols)
                         {
                             if (col.side == Sides.Down)
                             {
@@ -1242,7 +1318,7 @@ public abstract class Hitbox
                         break;
 
                     case (true, true, false, true):
-                        foreach (Collision col in cols)
+                        foreach (Collision<Rectangle> col in cols)
                         {
                             if (col.side == Sides.Down)
                             {
@@ -1256,7 +1332,7 @@ public abstract class Hitbox
                         break;
 
                     case (false, true, true, true):
-                        foreach (Collision col in cols)
+                        foreach (Collision<Rectangle> col in cols)
                         {
                             if (col.side == Sides.Left)
                             {
@@ -1270,7 +1346,7 @@ public abstract class Hitbox
                         break;
 
                     case (true, false, true, true):
-                        foreach (Collision col in cols)
+                        foreach (Collision<Rectangle> col in cols)
                         {
                             if (col.side == Sides.Right)
                             {

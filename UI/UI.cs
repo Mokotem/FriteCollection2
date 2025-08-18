@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using System;
 using System.Collections.Generic;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Linq;
 
 namespace FriteCollection2.UI;
 
@@ -138,6 +138,15 @@ public abstract class UI : IDisposable, IHaveRectangle
         }
     }
 
+    public virtual int PositionX
+    {
+        set
+        {
+            space.Position.X = value;
+            ApplyPosition(papa is null ? space.EnviRect : papa.mRect);
+        }
+    }
+
     public virtual Point Position
     {
         get => space.Position;
@@ -203,7 +212,14 @@ public abstract class UI : IDisposable, IHaveRectangle
                 if (leftAlgn || cursor.X + u.rect.Width + spacing.X > this.rect.Width)
                 {
                     cursor.X = spacing.X;
-                    cursor.Y += maxHeight + spacing.Y;
+                    if (u is Text && (u as Text).Edit is not null)
+                    {
+                        cursor.Y += (int)GameManager.Font.MeasureString((u as Text).Edit).Y + spacing.Y;
+                    }
+                    else
+                    {
+                        cursor.Y += maxHeight + spacing.Y;
+                    }
                     maxHeight = u.rect.Height;
                 }
                 if (u.rect.Height > maxHeight)
@@ -373,11 +389,18 @@ public class Text : UI, IEdit<string>
 
     public static Color OutlineColor = Color.Black;
 
-    private static Point fontaspect;
+    private static Point _fontaspect;
+    public static Point FontAspect => _fontaspect;
+
     public static void SetFontAspect(Point p)
     {
-        fontaspect = p;
+        _fontaspect = p;
         HasFontAspect = true;
+    }
+
+    public static void RemoveFontAspect()
+    {
+        HasFontAspect = false;
     }
 
     private static bool HasFontAspect = false;
@@ -418,40 +441,29 @@ public class Text : UI, IEdit<string>
         ApplyPosition(parent);
     }
 
-    private int lenght;
     private string resultString;
-    private int lastHideIndex;
 
-    private void Hide(int startIndex)
+    public static int GetWordLength(string word, char[] exepts)
     {
-        resultString = text.Remove(lastHideIndex);
-        int i = lastHideIndex;
-        int n = lastHideIndex;
-        while (n < startIndex)
+        int n = 0;
+        for(ushort i = 0; i < word.Length; ++i)
         {
-            if (i < text.Length - 1 && (text[i] + text[i + 1]).Equals("\n"))
-            {
-                resultString += "\n";
-                i += 2;
-            }
-            else
-            {
-                resultString += text[i];
+            if (!exepts.Contains(word[i]))
                 ++n;
-                ++i;
-            }
         }
+        return n;
     }
 
-    private void ApplyText(string input)
+    public static string FormatText(string input, char[] exepts,
+        Microsoft.Xna.Framework.Rectangle rect, ushort maxLine,
+        out byte lineNumber,
+        out ushort exedent)
     {
-        text = "";
-        string[] txt = input.Split(" ");
+        string text = "";
+        string[] words = input.Split(" ");
         int i = 0;
-        Point s = Point.Zero;
-        int ln = 1;
-        lenght = 0;
-        if (txt.Length < 2 || rect.Width < 2)
+        lineNumber = 1;
+        if (words.Length < 2 || rect.Width < 2)
         {
             text = input;
         }
@@ -459,47 +471,76 @@ public class Text : UI, IEdit<string>
         {
             if (HasFontAspect)
             {
-                int maxX = rect.Width / fontaspect.X;
+                int maxX = rect.Width / _fontaspect.X;
                 int w = 0;
-                while (i < txt.Length)
+                while (i < words.Length)
                 {
-                    w += txt[i].Length + 1;
-                    if (w - 1 > maxX)
+                    int l = GetWordLength(words[i], exepts);
+
+                    if (l > maxX)
                     {
-                        w = txt[i].Length;
-                        text += "\n" + txt[i] + " ";
+                        exedent = (ushort)(l - maxX);
+                        return string.Empty;
+                    }
+
+                    w += l + 1;
+
+                    if (w > maxX)
+                    {
+                        ++lineNumber;
+                        if (lineNumber > maxLine)
+                        {
+                            exedent = (ushort)(w - maxX);
+                            return string.Empty;
+                        }
+                        w = GetWordLength(words[i], exepts);
+                        text = text.Remove(text.Length - 1);
+                        text += "\n" + words[i] + " ";
                     }
                     else
                     {
-                        text += txt[i] + " ";
+                        text += words[i] + " ";
                     }
-                    lenght += txt[i].Length + 1;
 
                     ++i;
                 }
             }
             else
             {
-                while (i < txt.Length)
+                float w = 0;
+                while (i < words.Length)
                 {
-                    string line = "";
-                    while (i < txt.Length && GameManager.Font.MeasureString(line).X < rect.Width)
+                    string test = text + words[i];
+                    if (GameManager.Font.MeasureString(test).X > rect.Width)
                     {
-                        line += txt[i] + " ";
-                        lenght += txt[i].Length + 1;
-                        i += 1;
+                        ++lineNumber;
+                        if (lineNumber > maxLine)
+                        {
+                            exedent = 1;
+                            return string.Empty;
+                        }
+                        w = GameManager.Font.MeasureString(words[i]).X;
+                        text = text.Remove(text.Length - 1);
+                        text += "\n" + words[i] + " ";
                     }
-                    text += line + "\n";
-                    ln += 1;
-                    s.Y += fontaspect.Y;
+                    else
+                    {
+                        text = test + " ";
+                    }
+
+                    ++i;
                 }
             }
-            ln += -1;
             text = text.Remove(text.Length - 1);
         }
 
-        --lenght;
-        resultString = text;
+        exedent = 0;
+        return text;
+    }
+
+    private void ApplyText(string input)
+    {
+        this.resultString = FormatText(input, Array.Empty<char>(), this.rect, ushort.MaxValue, out _, out _);
     }
 
     public Text(string txt, Rectangle space)
@@ -508,13 +549,11 @@ public class Text : UI, IEdit<string>
         this.Size = 1f;
         this.space = space;
         base.ApplyScale(space.EnviRect);
-        //rect.Height += 2;
         ++rect.Width;
         ApplyText(txt);
         base.ApplyPosition(space.EnviRect);
         par = space.EnviRect;
         Outline = true;
-        lastHideIndex = 0;
     }
 
     public Text(string txt, Rectangle space, IHaveRectangle parent) : base()
@@ -529,7 +568,6 @@ public class Text : UI, IEdit<string>
         par = parent.mRect;
         Outline = true;
         this.depth = parent.Depth - 0.05f;
-        lastHideIndex = 0;
     }
 
     public override void Draw()

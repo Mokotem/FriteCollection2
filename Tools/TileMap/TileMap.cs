@@ -180,7 +180,7 @@ public class TileMap : IDisposable
                     hit.Active = true;
                     hit.PositionOffset.X += x * tileSize.X;
                     hit.PositionOffset.Y += y * tileSize.Y;
-                    hit.LockSize(new Vector2(
+                    hit.LockSize(new Point(
                         _hitboxData[x, y].Size.X,
                         _hitboxData[x, y].Size.Y)
                         );
@@ -260,22 +260,22 @@ public class TileMap : IDisposable
                 hit.Active = true;
                 hit.PositionOffset.X += x * _file.layers[0].gridCellWidth + this.Position.X;
                 hit.PositionOffset.Y += y * _file.layers[0].gridCellHeight + this.Position.Y;
-                float a = 0f;
-                float b = 0f;
+                int a = 0;
+                int b = 0;
                 if (hit._tag == "red" || hit._tag == "green")
                 {
                     if (width >= height)
                     {
-                        a = -6f;
+                        a = -6;
                     }
                     else
                     {
-                        b = -6f;
+                        b = -6;
                     }
                 }
-                hit.LockSize(new Vector2(
+                hit.LockSize(
                     hit1.Size.X * width + a,
-                    hit1.Size.Y * height + b));
+                    hit1.Size.Y * height + b);
                 hit.IsStatic = true;
 
                 result.Add(hit);
@@ -477,7 +477,7 @@ public static class MetroidMaker
             this.height = (short)float.Round(room.height / TRoomHeight);
             this.name = room.values.Name;
             OgmoLayerGrid layer = room.layers[0] as OgmoLayerGrid;
-            OgmoLayerBackground bg = room.layers[4] as OgmoLayerBackground;
+            OgmoLayerBackground bg = room.layers[5] as OgmoLayerBackground;
             this.data = new byte[layer.grid.Length];
             for (int i = 0; i < layer.grid.Length; ++i)
             {

@@ -26,12 +26,12 @@ public class Object : Entity, ICopy<Object>, IDraw
         };
     }
 
-    public override void Draw()
+    public void DrawOutline()
     {
         if (!Renderer.hide)
         {
             Point pos = new Point((int)(float.Round(Space.Position.X) - Camera.Position.X),
-                    (int)(float.Round(Space.Position.Y) - Camera.Position.Y));
+        (int)(float.Round(Space.Position.Y) - Camera.Position.Y));
             Point scale = new Point((int)float.Round(Space.Scale.X),
                     (int)float.Round(Space.Scale.Y));
 
@@ -64,18 +64,37 @@ public class Object : Entity, ICopy<Object>, IDraw
             );
                 }
             }
+        }
+    }
 
+    public void DrawBody()
+    {
+        if (!Renderer.hide)
+        {
+            Point pos = new Point((int)(float.Round(Space.Position.X) - Camera.Position.X),
+        (int)(float.Round(Space.Position.Y) - Camera.Position.Y));
+            Point scale = new Point((int)float.Round(Space.Scale.X),
+                    (int)float.Round(Space.Scale.Y));
             GameManager.Instance.SpriteBatch.Draw
-            (
-                Renderer.Texture,
-                new Rectangle(pos, scale),
-                null,
-                Renderer.Color,
-                0,
-                Vector2.Zero,
-                Renderer.effect,
-                Renderer.GetLayer()
-            );
+    (
+        Renderer.Texture,
+        new Rectangle(pos, scale),
+        null,
+        Renderer.Color,
+        0,
+        Vector2.Zero,
+        Renderer.effect,
+        Renderer.GetLayer()
+    );
+        }
+    }
+
+    public override void Draw()
+    {
+        if (!Renderer.hide)
+        {
+            DrawOutline();
+            DrawBody();
         }
     }
 
