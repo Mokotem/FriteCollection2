@@ -181,7 +181,7 @@ public abstract class ButtonCore : Panel
     {
         if (selected && enabled && Input.Mouse.State.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Released)
         {
-            I.SpriteBatch.Draw(Entity.Renderer.DefaultTexture,
+            I.Batch.Draw(Entity.Renderer.DefaultTexture,
                 new Microsoft.Xna.Framework.Rectangle(
                     this.rect.X - 1,
                     this.rect.Y - 1,

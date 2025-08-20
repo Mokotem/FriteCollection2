@@ -140,6 +140,7 @@ public abstract class UI : IDisposable, IHaveRectangle
 
     public virtual int PositionX
     {
+        get => space.Position.X;
         set
         {
             space.Position.X = value;
@@ -359,7 +360,7 @@ public class Image : UI, IEdit<Texture2D>, IDisposable
     {
         if (_active)
         {
-            GameManager.Instance.SpriteBatch.Draw(
+            GameManager.Draw.Batch.Draw(
                 image,
                 rect,
                 null,
@@ -387,7 +388,9 @@ public class Text : UI, IEdit<string>
     private string text;
     public bool Outline;
 
-    public static Color OutlineColor = Color.Black;
+    public static Color DefaultOutlineColor = Color.Black;
+
+    public Color OutlineColor = DefaultOutlineColor;
 
     private static Point _fontaspect;
     public static Point FontAspect => _fontaspect;
@@ -416,6 +419,7 @@ public class Text : UI, IEdit<string>
             {
                 this.text = value;
                 this.ApplyText(value);
+                this.ApplyPosition(par);
             }
         }
     }
@@ -454,18 +458,21 @@ public class Text : UI, IEdit<string>
         return n;
     }
 
-    public static string FormatText(string input, char[] exepts,
+    public static string FormatText(string input, bool sl, char[] exepts,
         Microsoft.Xna.Framework.Rectangle rect, ushort maxLine,
         out byte lineNumber,
-        out ushort exedent)
+        out ushort exedent,
+        out int textWidth)
     {
+        textWidth = 0;
         string text = "";
         string[] words = input.Split(" ");
         int i = 0;
         lineNumber = 1;
-        if (words.Length < 2 || rect.Width < 2)
+        if (sl || words.Length < 2 || rect.Width < 2)
         {
             text = input;
+            textWidth = input.Length * FontAspect.X;
         }
         else
         {
@@ -483,6 +490,8 @@ public class Text : UI, IEdit<string>
                         return string.Empty;
                     }
 
+                    if (w > textWidth)
+                        textWidth = w;
                     w += l + 1;
 
                     if (w > maxX)
@@ -520,6 +529,8 @@ public class Text : UI, IEdit<string>
                             return string.Empty;
                         }
                         w = GameManager.Font.MeasureString(words[i]).X;
+                        if (w > textWidth)
+                            textWidth = (int)float.Round(w);
                         text = text.Remove(text.Length - 1);
                         text += "\n" + words[i] + " ";
                     }
@@ -538,36 +549,62 @@ public class Text : UI, IEdit<string>
         return text;
     }
 
+    private readonly Align TextAlign;
+    private int _textWidth;
+    private int posX;
+
+    public bool SingleLine = true;
+
+    public int TextWidth => _textWidth;
+
     private void ApplyText(string input)
     {
-        this.resultString = FormatText(input, Array.Empty<char>(), this.rect, ushort.MaxValue, out _, out _);
+        this.resultString = FormatText(input, SingleLine, Array.Empty<char>(), this.rect, ushort.MaxValue, out _, out _,
+            out _textWidth);
     }
 
-    public Text(string txt, Rectangle space)
+    public Text(string txt, Rectangle space, Align textAlign = Align.Left)
     {
+        this.TextAlign = textAlign;
         space.Scale.X += 1;
         this.Size = 1f;
         this.space = space;
         base.ApplyScale(space.EnviRect);
-        ++rect.Width;
         ApplyText(txt);
-        base.ApplyPosition(space.EnviRect);
+        this.ApplyPosition(space.EnviRect);
         par = space.EnviRect;
         Outline = true;
     }
 
-    public Text(string txt, Rectangle space, IHaveRectangle parent) : base()
+    public Text(string txt, Rectangle space, IHaveRectangle parent, Align textAlign = Align.Left) : base()
     {
+        this.TextAlign = textAlign;
         this.papa = parent;
         this.Size = 1f;
         this.space = space;
         base.ApplyScale(parent.mRect);
-        ++rect.Width;
         ApplyText(txt);
-        base.ApplyPosition(parent.mRect);
+        this.ApplyPosition(parent.mRect);
         par = parent.mRect;
         Outline = true;
         this.depth = parent.Depth - 0.05f;
+    }
+
+    internal override void ApplyPosition(Microsoft.Xna.Framework.Rectangle parent)
+    {
+        base.ApplyPosition(parent);
+        switch (TextAlign)
+        {
+            case Align.Center:
+                posX = (rect.Width - _textWidth) / 2;
+                return;
+            case Align.Right:
+                posX = rect.Width - _textWidth;
+                return;
+            default:
+                posX = 0;
+                return;
+        }
     }
 
     public override void Draw()
@@ -590,14 +627,14 @@ public class Text : UI, IEdit<string>
                 new(1, -1)
                 })
                 {
-                    GameManager.Instance.SpriteBatch.DrawString
-                    (GameManager.Font, resultString, new Vector2(rect.X + r.X, rect.Y + r.Y),
+                    GameManager.Draw.Batch.DrawString
+                    (GameManager.Font, resultString, new Vector2(rect.X + r.X + posX, rect.Y + r.Y),
                     OutlineColor, 0, Vector2.Zero, Size,
                     SpriteEffects.None, this.depth + 0.0001f);
                 }
             }
-            GameManager.Instance.SpriteBatch.DrawString
-                        (GameManager.Font, resultString, new Vector2(rect.X, rect.Y),
+            GameManager.Draw.Batch.DrawString
+                        (GameManager.Font, resultString, new Vector2(rect.X + posX, rect.Y),
                         this.Color, 0, Vector2.Zero, Size,
                         SpriteEffects.None, this.depth);
         }
@@ -605,7 +642,7 @@ public class Text : UI, IEdit<string>
 
     public void Debug()
     {
-        GameManager.Instance.Batch.DrawRectangle(
+        GameManager.Draw.Batch.DrawRectangle(
             rect.ToRectangleF(), Entity.Hitboxs.Hitbox.DebugColor,
             1, this.depth + 0.0001f);
     }
@@ -638,8 +675,8 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
             sy = size.Y / 2;
         }
 
-        GraphicsDevice gd = GameManager.Instance.GraphicsDevice;
-        SpriteBatch sb = GameManager.Instance.SpriteBatch;
+        GraphicsDevice gd = GameManager.Draw.Device;
+        SpriteBatch sb = GameManager.Draw.Batch;
         RenderTarget2D rt = new RenderTarget2D(gd, size.X, size.Y);
 
         gd.SetRenderTarget(rt);
@@ -750,7 +787,7 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
         if (_active)
         {
             if (texture != null)
-                GameManager.Instance.SpriteBatch.Draw
+                GameManager.Draw.Batch.Draw
                  (texture, rect, null, Color,
                  0, Vector2.Zero, SpriteEffects.None, this.depth);
             foreach (UI element in childs.ToArray())

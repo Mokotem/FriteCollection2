@@ -9,12 +9,14 @@ using System.Collections.Generic;
 
 namespace FriteModel;
 
-public abstract class MonoGame : Game
+public abstract class MonoGame : Game, IHaveDrawingTools
 {
     protected GraphicsDeviceManager graphics;
-    internal protected SpriteBatch SpriteBatch;
+    private protected SpriteBatch SpriteBatch;
 
     public SpriteBatch Batch => SpriteBatch;
+    public GraphicsDeviceManager Graphics => graphics;
+    public GraphicsDevice Device => GraphicsDevice;
 
     internal List<FriteCollection2.UI.ButtonCore> _buttons = new List<FriteCollection2.UI.ButtonCore>();
     public virtual event ScreenUpdate OnScreenUpdate;
@@ -46,48 +48,6 @@ public abstract class MonoGame : Game
         GameManager.SetGameInstance(this);
     }
 
-    private Texture2D CreateTexture(int w, int h, Color color)
-    {
-        Texture2D texture = new Texture2D(GraphicsDevice, w, h);
-
-        Color[] data = new Color[w * h];
-        for (int pixel = 0; pixel < w * h; pixel++)
-        {
-            data[pixel] = color;
-        }
-
-        texture.SetData(data);
-
-        return texture;
-    }
-
-    public Texture2D CreateNotFoundTexture(int w, int h)
-    {
-        Texture2D texture = new Texture2D(GraphicsDevice, w, h);
-
-        float ws2 = w / 2 - 0.5f;
-        float hs2 = h / 2 - 0.5f;
-
-        Color[] data = new Color[w * h];
-        for (int pixel = 0; pixel < w * h; pixel++)
-        {
-            int x = pixel % w;
-            int y = pixel / w;
-            if ((x - ws2) * (y - hs2) < 0)
-            {
-                data[pixel] = new Color(255, 0, 255);
-            }
-            else
-            {
-                data[pixel] = new Color(0, 0, 0);
-            }
-        }
-
-        texture.SetData(data);
-
-        return texture;
-    }
-
     protected List<Executable> _currentExecutables = new List<Executable>();
     internal List<Executable> CurrentExecutables => _currentExecutables;
     private GameTime lastGametime;
@@ -102,8 +62,6 @@ public abstract class MonoGame : Game
         graphics.PreferredBackBufferWidth = GameManager.Settings.WindowWidth;
         graphics.PreferredBackBufferHeight = GameManager.Settings.WindowHeight;
         FullScreen = GameManager.Settings.FullScreen;
-
-        Renderer._defaultTexture = CreateTexture(2, 2, Color.White);
 
         Color[] data = new Color[4]
         {

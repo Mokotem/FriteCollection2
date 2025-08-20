@@ -389,7 +389,7 @@ public abstract class Hitbox
                 this.UpdatePos();
                 if (float.Abs(float.Sin(_dir)) < 0.001f)
                 {
-                    GameManager.Instance.SpriteBatch.DrawLine
+                    GameManager.Draw.Batch.DrawLine
                     (
                         _point.X, 0,
                         _point.X, Screen.height,
@@ -412,7 +412,7 @@ public abstract class Hitbox
                         p2 = new Vector2(g(Screen.height), Screen.height);
                     }
 
-                    GameManager.Instance.SpriteBatch.DrawLine
+                    GameManager.Draw.Batch.DrawLine
                     (
                         p1.X, p1.Y,
                         p2.X, p2.Y,
@@ -564,7 +564,7 @@ public abstract class Hitbox
             if (this.Active)
             {
                 this.UpdatePos();
-                GameManager.Instance.SpriteBatch.DrawCircle
+                GameManager.Draw.Batch.DrawCircle
                 (
                     new CircleF(_point, _radius),
                     (int)(float.Sqrt(_radius + 10) * 2),
@@ -578,53 +578,100 @@ public abstract class Hitbox
     {
         public bool ApplyColision(Collision<Rectangle> col, Vector2 vitesse, Action OnUp, Action OnDown, Action OnLeft, Action OnRight)
         {
-            switch (col.side)
+            if (col.collider.positionLocked)
             {
-                case Sides.Down:
-                    if (vitesse.Y >= 0)
-                    {
-                        SpaceRef.Y = col.collider.PositionOffset.Y - SpaceRef.Scale.Y
-                            + (SpaceRef.Scale.Y - Size.Y - PositionOffset.Y);
-                        OnDown();
-                        return true;
-                    }
-                    else return false;
-                case Hitbox.Sides.Up:
-                    if (vitesse.Y <= 0)
-                    {
-                        SpaceRef.Y = col.collider.PositionOffset.Y + col.collider.Size.Y
-                             - (SpaceRef.Scale.Y - Size.Y - PositionOffset.Y);
-                        OnUp();
-                        return true;
-                    }
-                    else return false;
-                case Hitbox.Sides.Left:
-                    if (vitesse.X <= 0)
-                    {
-                        SpaceRef.X = col.collider.PositionOffset.X + col.collider.Size.X
-                             - (SpaceRef.Scale.X - Size.X - PositionOffset.X);
-                        OnLeft();
-                        return true;
-                    }
-                    else return false;
-                case Hitbox.Sides.Right:
-                    if (vitesse.X >= 0)
-                    {
-                        SpaceRef.X = col.collider.PositionOffset.X - SpaceRef.Scale.X
-                            + (SpaceRef.Scale.X - Size.X - PositionOffset.X);
-                        OnRight();
-                        return true;
-                    }
-                    else return false;
-                default:
-                    return false;
+                switch (col.side)
+                {
+                    case Sides.Down:
+                        if (vitesse.Y >= 0)
+                        {
+                            SpaceRef.Y = col.collider._point.Y + col.collider.PositionOffset.Y - SpaceRef.Scale.Y
+                                + (SpaceRef.Scale.Y - Size.Y - PositionOffset.Y);
+                            OnDown();
+                            return true;
+                        }
+                        else return false;
+                    case Sides.Up:
+                        if (vitesse.Y <= 0)
+                        {
+                            SpaceRef.Y = col.collider._point.Y + col.collider.PositionOffset.Y + col.collider.Size.Y
+                                 - (SpaceRef.Scale.Y - Size.Y - PositionOffset.Y);
+                            OnUp();
+                            return true;
+                        }
+                        else return false;
+                    case Sides.Left:
+                        if (vitesse.X <= 0)
+                        {
+                            SpaceRef.X = col.collider._point.X + col.collider.PositionOffset.X + col.collider.Size.X
+                                 - (SpaceRef.Scale.X - Size.X - PositionOffset.X);
+                            OnLeft();
+                            return true;
+                        }
+                        else return false;
+                    case Sides.Right:
+                        if (vitesse.X >= 0)
+                        {
+                            SpaceRef.X = col.collider._point.X + col.collider.PositionOffset.X - SpaceRef.Scale.X
+                                + (SpaceRef.Scale.X - Size.X - PositionOffset.X);
+                            OnRight();
+                            return true;
+                        }
+                        else return false;
+                    default:
+                        return false;
+                }
+            }
+            else
+            {
+                switch (col.side)
+                {
+                    case Sides.Down:
+                        if (vitesse.Y >= 0)
+                        {
+                            SpaceRef.Y = col.collider.SpaceRef.Y + col.collider.PositionOffset.Y - SpaceRef.Scale.Y
+                                + (SpaceRef.Scale.Y - Size.Y - PositionOffset.Y);
+                            OnDown();
+                            return true;
+                        }
+                        else return false;
+                    case Sides.Up:
+                        if (vitesse.Y <= 0)
+                        {
+                            SpaceRef.Y = col.collider.SpaceRef.Y + col.collider.PositionOffset.Y + col.collider.Size.Y
+                                 - (SpaceRef.Scale.Y - Size.Y - PositionOffset.Y);
+                            OnUp();
+                            return true;
+                        }
+                        else return false;
+                    case Sides.Left:
+                        if (vitesse.X <= 0)
+                        {
+                            SpaceRef.X = col.collider.SpaceRef.X + col.collider.PositionOffset.X + col.collider.Size.X
+                                 - (SpaceRef.Scale.X - Size.X - PositionOffset.X);
+                            OnLeft();
+                            return true;
+                        }
+                        else return false;
+                    case Sides.Right:
+                        if (vitesse.X >= 0)
+                        {
+                            SpaceRef.X = col.collider.SpaceRef.X + col.collider.PositionOffset.X - SpaceRef.Scale.X
+                                + (SpaceRef.Scale.X - Size.X - PositionOffset.X);
+                            OnRight();
+                            return true;
+                        }
+                        else return false;
+                    default:
+                        return false;
+                }
             }
         }
 
         private struct RectangleEnum : IEnumerator
         {
-            private readonly Vector2 _point, _p2;
-            private short index;
+            public Vector2 _point, _p2;
+            public short index;
 
             public RectangleEnum(Vector2 p1, Vector2 p2)
             {
@@ -658,15 +705,22 @@ public abstract class Hitbox
             }
         }
 
+        private RectangleEnum rectenum;
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return new RectangleEnum(_point, p2);
+            rectenum._point = this._point;
+            rectenum._p2 = this.p2;
+            rectenum.index = -1;
+            return rectenum;
         }
 
         public Rectangle(in Space _space, string tag = "", byte layer = 0, byte secondaryLayer = 255) : base(in _space, tag, layer, secondaryLayer)
         {
+            rectenum = new RectangleEnum();
             this.UpdatePos();
         }
+
+        public Bounds IsInfinitOn = Bounds.Center;
 
         private Vector2 p2;
 
@@ -813,6 +867,35 @@ public abstract class Hitbox
             return n;
         }
 
+        private static Sides ApplyInfinit(Sides side, Bounds infinit)
+        {
+            switch (side)
+            {
+                case Sides.Up:
+                    if ((byte)infinit > 5)
+                        return Sides.Down;
+                    return Sides.Up;
+
+                case Sides.Down:
+                    if ((byte)infinit < 3)
+                        return Sides.Up;
+                    return Sides.Down;
+
+                case Sides.Left:
+                    if ((byte)infinit % 3 == 2)
+                        return Sides.Right;
+                    return Sides.Left;
+
+                case Sides.Right:
+                    if ((byte)infinit % 3 == 0)
+                        return Sides.Left;
+                    return Sides.Right;
+
+                default:
+                    return side;
+            }
+        }
+
         private bool _MakeCollisionWith(
             Hitbox.Rectangle hit,
             out Collision<Rectangle> col,
@@ -907,9 +990,13 @@ public abstract class Hitbox
                     }
                 }
 
+                col.side = ApplyInfinit(col.side, hit.IsInfinitOn);
+
                 col.collider = hit;
                 return true;
             }
+
+            col.side = ApplyInfinit(col.side, hit.IsInfinitOn);
 
             return false;
         }
@@ -1373,7 +1460,7 @@ public abstract class Hitbox
             Vector2 centerPoint = this.CenterPoint;
             if (col is Rectangle && col.Active && col != this)
             {
-                return _MakeCollisionWith(col as Rectangle, out _);
+                return ApplyInfinit(_MakeCollisionWith(col as Rectangle, out _), (col as Rectangle).IsInfinitOn);
             }
 
             return Sides.None;
@@ -1385,7 +1472,7 @@ public abstract class Hitbox
             Vector2 centerPoint = this.CenterPoint;
             if (col is Rectangle && col.Active && col != this)
             {
-                return _MakeCollisionWith(col as Rectangle, out cornerInfo);
+                return ApplyInfinit(_MakeCollisionWith(col as Rectangle, out cornerInfo), (col as Rectangle).IsInfinitOn);
             }
 
             cornerInfo = Array.Empty<bool>();
@@ -1397,7 +1484,7 @@ public abstract class Hitbox
             if (Active)
             {
                 UpdatePos();
-                GameManager.Instance.SpriteBatch.DrawRectangle
+                GameManager.Draw.Batch.DrawRectangle
                 (
                     new Microsoft.Xna.Framework.Rectangle
                     (

@@ -51,7 +51,7 @@ public class Object : Entity, ICopy<Object>, IDraw
                 new(1, -1)
                 })
                 {
-                    GameManager.Instance.SpriteBatch.Draw
+                    GameManager.Draw.Batch.Draw
             (
                 Renderer.Texture,
                 new Rectangle(pos + r, scale),
@@ -75,7 +75,7 @@ public class Object : Entity, ICopy<Object>, IDraw
         (int)(float.Round(Space.Position.Y) - Camera.Position.Y));
             Point scale = new Point((int)float.Round(Space.Scale.X),
                     (int)float.Round(Space.Scale.Y));
-            GameManager.Instance.SpriteBatch.Draw
+            GameManager.Draw.Batch.Draw
     (
         Renderer.Texture,
         new Rectangle(pos, scale),
@@ -161,7 +161,7 @@ public class Text : IDraw
     {
         if (!Renderer.hide)
         {
-            GameManager.Instance.Batch.Draw
+            GameManager.Draw.Batch.Draw
             (
                 Renderer.DefaultTexture,
                 new Rectangle
@@ -179,7 +179,7 @@ public class Text : IDraw
                 Renderer.GetLayer() + 0.0001f
                 ); 
 
-            GameManager.Instance.Batch.DrawString(
+            GameManager.Draw.Batch.DrawString(
                 GameManager.Font,
                 txt,
                 new Vector2(Position.X + 1 - Camera.Position.X, Position.Y - Camera.Position.Y),

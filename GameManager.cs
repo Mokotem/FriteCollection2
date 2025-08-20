@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using FriteCollection2.Entity;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
@@ -9,6 +10,20 @@ public enum Bounds
     TopLeft, Top, TopRight,
     Left, Center, Right,
     BottomLeft, Bottom, BottomRight,
+}
+
+public enum Align
+{
+    Left, Center, Right
+}
+
+
+public interface IHaveDrawingTools
+{
+    public SpriteBatch Batch { get; }
+    public GraphicsDeviceManager Graphics { get; }
+    public GraphicsDevice Device { get; }
+    public void Exit();
 }
 
 public class Settings
@@ -32,7 +47,20 @@ public static class GameManager
 {
     public delegate bool Discriminent<T>(T truc);
 
-    private static FriteModel.MonoGame _nstnc;
+    public static void DisposeInstance()
+    {
+        _mg = null;
+        if (_nstnc is not null)
+        {
+            _nstnc.Dispose();
+            _nstnc = null;
+        }
+    }
+
+    private static FriteModel.MonoGameDefault _nstnc;
+    private static IHaveDrawingTools _mg;
+
+    internal static FriteModel.MonoGameDefault Instance => _nstnc;
 
     public static void TogglePause(bool value)
     {
@@ -43,9 +71,15 @@ public static class GameManager
     /// Donner la référence de l'instance MonoGame.
     /// </summary>
     /// <param name="_instance"></param>
-    public static void SetGameInstance(in FriteModel.MonoGame _instance)
+    public static void SetGameInstance(in FriteModel.MonoGameDefault _instance)
     {
         _nstnc = _instance;
+        _mg = _nstnc;
+    }
+
+    public static void SetGameInstance(in IHaveDrawingTools _instance)
+    {
+        _mg = _instance;
     }
 
     public static void DebugScriptOrder()
@@ -64,7 +98,7 @@ public static class GameManager
     /// </summary>
     public static void Quit()
     {
-        _nstnc.Exit();
+        _mg.Exit();
     }
 
     /// <summary>
@@ -76,16 +110,58 @@ public static class GameManager
         set => _nstnc.FullScreen = value;
     }
 
+    public static Texture2D CreateTexture(int w, int h, Color color)
+    {
+        Texture2D texture = new Texture2D(_mg.Device, w, h);
+
+        Color[] data = new Color[w * h];
+        for (int pixel = 0; pixel < w * h; pixel++)
+        {
+            data[pixel] = color;
+        }
+
+        texture.SetData(data);
+
+        return texture;
+    }
+
     /// <summary>
     /// Environements de dessins principales.
     /// </summary>
     /// <example>généralement, [0] jeu principale, [1] interface.</example>
     public static Environment[] Environments => _nstnc.Environments;
 
+    public static Texture2D CreateNotFoundTexture(int w, int h)
+    {
+        Texture2D texture = new Texture2D(_mg.Device, w, h);
+
+        float ws2 = w / 2 - 0.5f;
+        float hs2 = h / 2 - 0.5f;
+
+        Color[] data = new Color[w * h];
+        for (int pixel = 0; pixel < w * h; pixel++)
+        {
+            int x = pixel % w;
+            int y = pixel / w;
+            if ((x - ws2) * (y - hs2) < 0)
+            {
+                data[pixel] = new Color(255, 0, 255);
+            }
+            else
+            {
+                data[pixel] = new Color(0, 0, 0);
+            }
+        }
+
+        texture.SetData(data);
+
+        return texture;
+    }
+
     /// <summary>
     /// Instance MonoGame.
     /// </summary>
-    public static FriteModel.MonoGame Instance => _nstnc;
+    public static IHaveDrawingTools Draw => _mg;
 
     /// <summary>
     /// Mets à jour les environements, lors de changement de la taille d'écran.
@@ -98,17 +174,15 @@ public static class GameManager
     private static Settings _settings;
     
     private static ushort _fps;
-    internal static ushort Fps
+    public static ushort Fps
     {
         get => _fps;
         set
         {
             _fps = value;
-            Instance.TargetElapsedTime = TimeSpan.FromMilliseconds(1000.0f / value);
+            _nstnc.TargetElapsedTime = TimeSpan.FromMilliseconds(1000.0f / value);
         }
     }
-
-    public static GraphicsDevice GraphicsDevice => _nstnc.GraphicsDevice;
 
     /// <summary>
     /// Parramètres du projet.
@@ -140,6 +214,7 @@ public static class GameManager
     {
         _settings = settings;
         _currentScene = settings.StartScene;
+        Time._frameTime = 1f / settings.FPS;
     }
 
     /// <summary>
@@ -167,13 +242,13 @@ public static class GameManager
         set
         {
             _currentScene = value;
-            Instance.UpdateScriptToScene();
+            _nstnc.UpdateScriptToScene();
         }
     }
 
-    public delegate Texture2D TextureCreator(GraphicsDevice graphic, in SpriteBatch batch);
-    public delegate void TextureModifier(GraphicsDevice graphic, in SpriteBatch batch, Texture2D texture);
-    public delegate void TextureMaker(GraphicsDevice graphic, in SpriteBatch batch);
+    public delegate Texture2D TextureCreator(GraphicsDevice graphic, SpriteBatch batch);
+    public delegate void TextureModifier(GraphicsDevice graphic, SpriteBatch batch, Texture2D texture);
+    public delegate void TextureMaker(GraphicsDevice graphic, SpriteBatch batch);
 
     /// <summary>
     /// Appelle une fonction qui créé une Texture2D.
@@ -182,7 +257,7 @@ public static class GameManager
     /// <returns></returns>
     public static Texture2D MakeTextureCreator(TextureCreator method)
     {
-        return method(Instance.GraphicsDevice, in Instance.SpriteBatch);
+        return method(Draw.Device, Draw.Batch);
     }
 
     /// <summary>
@@ -191,7 +266,7 @@ public static class GameManager
     /// <param name="method">void Exemple(GraphicsDevice graphic, in SpriteBatch batch, Texture2D texture)</param>
     public static void MakeTexture(TextureModifier method, Texture2D texture)
     {
-        method(Instance.GraphicsDevice, in Instance.SpriteBatch, texture);
+        method(Draw.Device, Draw.Batch, texture);
     }
 
     /// <summary>
@@ -200,7 +275,7 @@ public static class GameManager
     /// <param name="method">void Exemple(GraphicsDevice graphic, in SpriteBatch batch)</param>
     public static void MakeTexture(TextureMaker method)
     {
-        method(Instance.GraphicsDevice, in Instance.SpriteBatch);
+        method(Draw.Device, Draw.Batch);
     }
 }
 

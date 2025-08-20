@@ -71,7 +71,7 @@ public class TileMap : IDisposable
         this._targetLayers = settings.layers;
         _file = file;
 
-        SpriteBatch batch = GameManager.Instance.SpriteBatch;
+        SpriteBatch batch = GameManager.Draw.Batch;
 
         _targets = new RenderTarget2D[4];
 
@@ -108,15 +108,15 @@ public class TileMap : IDisposable
 
                 _targets[layer_id] = new RenderTarget2D
                 (
-                    GameManager.Instance.GraphicsDevice,
+                    GameManager.Draw.Device,
                     file.width,
                     file.height
                 );
 
                 TileSet _refTileSet = settings.TileSets[layer.tileset];
 
-                GameManager.Instance.GraphicsDevice.SetRenderTarget(_targets[layer_id]);
-                GameManager.Instance.GraphicsDevice.Clear(Color.Transparent);
+                GameManager.Draw.Device.SetRenderTarget(_targets[layer_id]);
+                GameManager.Draw.Device.Clear(Color.Transparent);
                 batch.Begin(samplerState: SamplerState.PointClamp);
 
                 OgmoLayerBlock data = layer as OgmoLayerBlock;
@@ -226,7 +226,7 @@ public class TileMap : IDisposable
                     && lst[x + width, y].Size.Y == hit1.Size.Y)
                 {
                     lst[x + width, y] = null;
-                    width++;
+                    ++width;
                 }
 
                 bool Cond(in Hitbox.Rectangle[,] h)
@@ -260,23 +260,34 @@ public class TileMap : IDisposable
                 hit.Active = true;
                 hit.PositionOffset.X += x * _file.layers[0].gridCellWidth + this.Position.X;
                 hit.PositionOffset.Y += y * _file.layers[0].gridCellHeight + this.Position.Y;
-                int a = 0;
-                int b = 0;
-                if (hit._tag == "red" || hit._tag == "green")
-                {
-                    if (width >= height)
-                    {
-                        a = -6;
-                    }
-                    else
-                    {
-                        b = -6;
-                    }
-                }
                 hit.LockSize(
-                    hit1.Size.X * width + a,
-                    hit1.Size.Y * height + b);
+                    hit1.Size.X * width,
+                    hit1.Size.Y * height);
                 hit.IsStatic = true;
+
+                if (height > width)
+                {
+                    if (x == 0)
+                        hit.IsInfinitOn = Bounds.Left;
+                    else if (x + width >= xCount)
+                        hit.IsInfinitOn = Bounds.Right;
+                }
+                if (width > height)
+                {
+                    if (y == 0)
+                        hit.IsInfinitOn = Bounds.Top;
+                    else if (y + height >= yCount)
+                        hit.IsInfinitOn = Bounds.Bottom;
+                }
+                if (x == 0 && y == 0)
+                    hit.IsInfinitOn = Bounds.TopLeft;
+                if (x + width >= xCount && y == 0)
+                    hit.IsInfinitOn = Bounds.TopRight;
+                if (x == 0 && y + height >= yCount)
+                    hit.IsInfinitOn = Bounds.BottomLeft;
+                if (x + width >= xCount && y + height >= yCount)
+                    hit.IsInfinitOn = Bounds.BottomRight;
+
 
                 result.Add(hit);
 
@@ -300,7 +311,7 @@ public class TileMap : IDisposable
 
     public void Draw(byte i)
     {
-        GameManager.Instance.SpriteBatch.Draw
+        GameManager.Draw.Batch.Draw
             (
                 _targets[i],
                 new Rectangle

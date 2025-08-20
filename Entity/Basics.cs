@@ -223,7 +223,8 @@ public class Renderer : ICopy<Renderer>, ILayer
 
     public static void SetDefaultTexture(Texture2D t)
     {
-        _defaultTexture.Dispose();
+        if (_defaultTexture is not null)
+            _defaultTexture.Dispose();
         _defaultTexture = t;
     }
 
@@ -262,7 +263,7 @@ public class Renderer : ICopy<Renderer>, ILayer
 
     public static Texture2D CreateCircleTexture(int width)
     {
-        Texture2D tex = new Texture2D(GameManager.Instance.GraphicsDevice, width, width);
+        Texture2D tex = new Texture2D(GameManager.Draw.Device, width, width);
         Color[] data = new Color[width * width];
         for (int i = 0; i < width; i += 1)
         {
@@ -284,7 +285,7 @@ public class Renderer : ICopy<Renderer>, ILayer
 
     public static Texture2D CreateCircleTexture(int width, int holeSize)
     {
-        Texture2D tex = new Texture2D(GameManager.Instance.GraphicsDevice, width, width);
+        Texture2D tex = new Texture2D(GameManager.Draw.Device, width, width);
         Color[] data = new Color[width * width];
         for (int i = 0; i < width; i += 1)
         {
@@ -308,7 +309,7 @@ public class Renderer : ICopy<Renderer>, ILayer
 
     public static Texture2D CreateFrameTexture(int width, int height, ushort borderSize)
     {
-        Texture2D tex = new Texture2D(GameManager.Instance.GraphicsDevice, width, height);
+        Texture2D tex = new Texture2D(GameManager.Draw.Device, width, height);
         Color[] data = new Color[width * height];
         for (int i = 0; i < width; i += 1)
         {
@@ -337,7 +338,7 @@ public class Renderer : ICopy<Renderer>, ILayer
 
     public static RenderTarget2D CreateRenderTarget(int width, int height)
     {
-        return new RenderTarget2D(GameManager.Instance.GraphicsDevice, width, height);
+        return new RenderTarget2D(GameManager.Draw.Device, width, height);
     }
 
     public Renderer Copy()

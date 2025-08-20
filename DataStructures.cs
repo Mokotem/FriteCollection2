@@ -46,12 +46,12 @@ public class Environment : IDraw
 
     public void Draw()
     {
-        GameManager.Instance.SpriteBatch.Draw(Target, Rect, Color.White);
+        GameManager.Draw.Batch.Draw(Target, Rect, Color.White);
     }
 
     public void Draw(float depth)
     {
-        GameManager.Instance.SpriteBatch.Draw(Target, Rect, null, Color.White, 0, Vector2.Zero, SpriteEffects.None, depth);
+        GameManager.Draw.Batch.Draw(Target, Rect, null, Color.White, 0, Vector2.Zero, SpriteEffects.None, depth);
     }
 }
 
@@ -126,7 +126,7 @@ public static class Input
 public static class Time
 {
     private static float _sp = 1f;
-    private static float _frameTime = 1f / GameManager.Fps;
+    internal static float _frameTime = 1f / GameManager.Fps;
 
     /// <summary>
     /// 'vitesse' du temps. 0f arrêt, 1f normal, 2f rapide
@@ -164,7 +164,7 @@ public static class Time
         }
     }
 
-    internal static void UpdateGameTime(in GameTime gt)
+    public static void UpdateGameTime(in GameTime gt)
     {
         timer += _frameTime * _sp;
         dtf = (float)gt.ElapsedGameTime.TotalMilliseconds / 1000f;
@@ -218,7 +218,7 @@ public abstract class Executable : IDisposable
 
     public virtual void DrawBackground() { }
     public virtual void BeforeDraw() { }
-    public virtual void DrawShader(in SpriteBatch batch) { }
+    public virtual void DrawShader(SpriteBatch batch) { }
     public virtual void AfterDraw() { }
 
     public virtual void WhenPaused() { }
@@ -290,7 +290,6 @@ public abstract class Script : Executable
     {
         _attributedScenes = (int)scene;
         _active = active;
-        GameManager.Instance.Window.ClientSizeChanged += (object sender, EventArgs args) => { OnWindowResize(); };
     }
 
     /// <summary>
