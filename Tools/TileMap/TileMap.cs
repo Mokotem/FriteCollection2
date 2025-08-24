@@ -4,9 +4,12 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace FriteCollection2.Tools.TileMap;
 
@@ -61,7 +64,7 @@ public class TileMap : IDisposable
 
     private readonly float[] _targetLayers;
 
-    public TileMap(OgmoFile file, Settings settings, int seed)
+    public TileMap(IOgmoFileWithLayer file, Settings settings, int seed)
     {
         Random rand = new Random(seed);
 
@@ -94,7 +97,7 @@ public class TileMap : IDisposable
                     }
                 }
             }
-            else if (layer is not OgmoLayerEntity)
+            else if (layer is OgmoLayerBlock)
             {
                 int layer_id;
                 if (layer is OgmoLayerBackground)
@@ -301,7 +304,7 @@ public class TileMap : IDisposable
     }
 
     private readonly TileSet _sheet;
-    private readonly OgmoFile _file;
+    private readonly IOgmoFileWithLayer _file;
 
     private readonly RenderTarget2D[] _targets;
 
@@ -354,212 +357,141 @@ public class TileMap : IDisposable
     }
 }
 
-    public class OgmoFile
-    {
-        public static T Open<T>(string path) where T : OgmoFile
-        {
-            string file;
-            using (StreamReader sr = new StreamReader(System.Environment.CurrentDirectory + "/" + path))
-                file = sr.ReadToEnd();
-            return JsonSerializer.Deserialize<T>(file);
-        }
-
-        public string ogmoVersion { get; init; }
-        public short width { get; set; }
-        public short height { get; set; }
-        public short offsetX { get; init; }
-        public short offsetY { get; init; }
-        public OgmoLayer[] layers { get; init; }
-    }
-
-    [JsonPolymorphic(TypeDiscriminatorPropertyName = "name")]
-    [JsonDerivedType(typeof(OgmoLayerGrid), typeDiscriminator: "hitboxs")]
-    [JsonDerivedType(typeof(OgmoLayerForeground), typeDiscriminator: "foreground")]
-    [JsonDerivedType(typeof(OgmoLayerGround), typeDiscriminator: "ground")]
-    [JsonDerivedType(typeof(OgmoLayerGeneral), typeDiscriminator: "general")]
-    [JsonDerivedType(typeof(OgmoLayerBackground), typeDiscriminator: "background")]
-    [JsonDerivedType(typeof(OgmoLayerEntity), typeDiscriminator: "entities")]
-    public abstract class OgmoLayer
-    {
-        public string name { get; init; }
-        public string _eid { get; init; }
-        public int offsetX { get; init; }
-        public int offsetY { get; init; }
-        public int gridCellWidth { get; set; }
-        public int gridCellHeight { get; set; }
-        public int gridCellsX { get; init; }
-        public int gridCellsY { get; init; }
-        public string tileset { get; init; }
-        public int exportMode { get; init; }
-        public int arrayMode { get; init; }
-    }
-
-    public class MoonValues
-    {
-        public string Name { get; init; }
-    }
-
-    public class MoonOgmoFile : OgmoFile
-    {
-        public MoonValues values { get; init; }
-    }
-
-    public class OgmoLayerBlock : OgmoLayer
-    {
-        public int[] data { get; init; }
-    }
-
-    public class OgmoLayerGround : OgmoLayerBlock { }
-    public class OgmoLayerGeneral : OgmoLayerBlock { }
-    public class OgmoLayerForeground : OgmoLayerBlock { }
-    public class OgmoLayerBackground : OgmoLayerBlock { }
-
-    public class OgmoLayerGrid : OgmoLayer
-    {
-        public char[] grid { get; init; }
-    }
-
-    public class OgmoLayerEntity : OgmoLayer
-    {
-        public Ent[] entities { get; init; }
-    }
-
-[JsonPolymorphic(TypeDiscriminatorPropertyName = "name")]
-[JsonDerivedType(typeof(Ent.StartPos), typeDiscriminator: "spawn")]
-[JsonDerivedType(typeof(Ent.Cleaner), typeDiscriminator: "cleaner")]
-[JsonDerivedType(typeof(Ent.Door), typeDiscriminator: "door")]
-[JsonDerivedType(typeof(Ent.DoorOpener), typeDiscriminator: "door opener")]
-public abstract class Ent
+public interface IOgmoFileWithLayer
 {
-    public string name { get; init; }
-    public ushort id { get; init; }
-    public short x { get; init; }
-    public short y { get; init; }
-
-    public enum DoorTypes
-    {
-        gold, key, mana, health
-    }
-
-    public class ValueType
-    {
-        public string valuetype { get; init; }
-        public DoorTypes DoorType { get; set; }
-    }
-
-    public class ValueTypeOpener : ValueType
-    {
-        public ushort doorID { get; init; }
-        public ushort amount { get; init; }
-    }
-
-    public class Door : Ent
-    {
-        public byte height { get; init; }
-        public ValueType values { get; init; }
-    }
-
-    public class DoorOpener : Ent
-    {
-        public ValueTypeOpener values { get; init; }
-    }
-
-    public class StartPos : Ent { }
-    public class Cleaner : Ent { }
+    public string ogmoVersion { get; init; }
+    public short width { get; set; }
+    public short height { get; set; }
+    public short offsetX { get; init; }
+    public short offsetY { get; init; }
+    public ImmutableArray<OgmoLayer> layers { get; set; }
 }
 
-public static class MetroidMaker
+public class LayerTypeDiscriminator : DefaultJsonTypeInfoResolver
 {
-    public const short RoomWidth = 30, RoomHeight = 20;
-    public const short TRoomWidth = RoomWidth * TileSize, TRoomHeight = RoomHeight * TileSize;
-    public const short TileSize = 8;
+    private readonly JsonDerivedType entities;
+    private readonly Type baseValueType;
+    private readonly bool makeEntities;
 
-    public class Room
+    public LayerTypeDiscriminator(JsonDerivedType entities)
     {
-        public readonly short ID;
-        public readonly short width, height;
-        public readonly string name;
-        public readonly byte[] data;
-
-        public Room(MoonOgmoFile room, short id)
-        {
-            this.ID = id;
-            this.width = (short)float.Round(room.width / TRoomWidth);
-            this.height = (short)float.Round(room.height / TRoomHeight);
-            this.name = room.values.Name;
-            OgmoLayerGrid layer = room.layers[0] as OgmoLayerGrid;
-            OgmoLayerBackground bg = room.layers[5] as OgmoLayerBackground;
-            this.data = new byte[layer.grid.Length];
-            for (int i = 0; i < layer.grid.Length; ++i)
-            {
-                this.data[i] = 0;
-                if (!layer.grid[i].Equals('0'))
-                    this.data[i] = 1;
-                else if (bg.data[i] >= 0)
-                    this.data[i] = 2;
-            }
-        }
+        this.makeEntities = true;
+        this.entities = entities;
+        baseValueType = typeof(OgmoLayer);
     }
 
-    public struct P
+    public LayerTypeDiscriminator()
     {
-        public short X { get; set; }
-        public short Y { get; set; }
-
-        public P(short x, short y)
-        {
-            this.X = x;
-            this.Y = y;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (obj is P)
-            {
-                P a = (P)obj;
-                return X == a.X && Y == a.Y;
-            }
-            return false;
-        }
+        this.makeEntities = false;
+        baseValueType = typeof(OgmoLayer);
     }
 
-    public class Map
+    public override JsonTypeInfo GetTypeInfo(Type type, JsonSerializerOptions options)
     {
-        public bool IsSaved { get; set; }
+        JsonTypeInfo jsonTypeInfo = base.GetTypeInfo(type, options);
 
-        public bool IsNew { get; set; }
-
-        public short Width { get; set; }
-        public short Height { get; set; }
-        public short TotalWidth => (short)(Width * RoomWidth);
-        public short TotalHeight => (short)(Height * RoomHeight);
-
-        public Map()
+        if (jsonTypeInfo.Type == baseValueType)
         {
-
+            if (makeEntities)
+            {
+                jsonTypeInfo.PolymorphismOptions = new()
+                {
+                    IgnoreUnrecognizedTypeDiscriminators = true,
+                    UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToBaseType,
+                    TypeDiscriminatorPropertyName = "name",
+                    DerivedTypes =
+                {
+                    entities
+                }
+                };
+            }
+            else
+            {
+                jsonTypeInfo.PolymorphismOptions = new()
+                {
+                    IgnoreUnrecognizedTypeDiscriminators = true,
+                    UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToBaseType,
+                    TypeDiscriminatorPropertyName = "name",
+                    DerivedTypes =
+                {
+                    new JsonDerivedType(typeof(OgmoLayerGrid), "hitboxs"),
+                    new JsonDerivedType(typeof(OgmoLayerGround), "ground"),
+                    new JsonDerivedType(typeof(OgmoLayerGeneral), "general"),
+                    new JsonDerivedType(typeof(OgmoLayerBackground), "background"),
+                    new JsonDerivedType(typeof(OgmoLayerForeground), "foreground")
+                }
+                };
+            }
         }
 
-        public List<P> Data { get; set; }
-        public short[][] Position { get; set; }
-
-        public List<P[]> PosLinks { get; set; }
-        public List<short[]> IdLinks { get; set; }
-
-        public void Start(int numberRooms)
-        {
-            Data = new List<P>();
-            for (int i = 0; i < numberRooms; ++i)
-            {
-                Data.Add(new P(-1, -1));
-            }
-            PosLinks = new List<P[]>();
-            Position = new short[Width][];
-            for (short i = 0; i < Width; ++i)
-            {
-                Position[i] = new short[Height];
-                Array.Fill<short>(Position[i], -1);
-            }
-            IdLinks = new List<short[]>();
-        }
+        return jsonTypeInfo;
     }
+}
+
+public class OgmoFile<LevelValues> : IOgmoFileWithLayer
+{
+    public static OgmoFile<LevelValues> Open(string path)
+    {
+        string file;
+        using (StreamReader sr = new StreamReader(System.Environment.CurrentDirectory + "/" + path))
+            file = sr.ReadToEnd();
+
+        JsonSerializerOptions options = new()
+        {
+            TypeInfoResolver = new LayerTypeDiscriminator()
+        };
+        return JsonSerializer.Deserialize<OgmoFile<LevelValues>>(file, options);
+    }
+
+    public static ImmutableArray<OgmoLayer> Open(string path, JsonDerivedType entities)
+    {
+        string file;
+        using (StreamReader sr = new StreamReader(System.Environment.CurrentDirectory + "/" + path))
+            file = sr.ReadToEnd();
+
+        JsonSerializerOptions options = new()
+        {
+            TypeInfoResolver = new LayerTypeDiscriminator(entities)
+        };
+        return JsonSerializer.Deserialize<OgmoFile<LevelValues>>(file, options).layers;
+    }
+
+    public string ogmoVersion { get; init; }
+    public short width { get; set; }
+    public short height { get; set; }
+    public short offsetX { get; init; }
+    public short offsetY { get; init; }
+
+    public ImmutableArray<OgmoLayer> layers { get; set; }
+    public LevelValues values { get; init; }
+}
+
+public class OgmoLayer
+{
+    public string name { get; init; }
+    public string _eid { get; init; }
+    public int offsetX { get; init; }
+    public int offsetY { get; init; }
+    public int gridCellWidth { get; set; }
+    public int gridCellHeight { get; set; }
+    public int gridCellsX { get; init; }
+    public int gridCellsY { get; init; }
+    public string tileset { get; init; }
+    public int exportMode { get; init; }
+    public int arrayMode { get; init; }
+}
+
+public class OgmoLayerBlock : OgmoLayer
+{
+    public int[] data { get; init; }
+}
+
+public class OgmoLayerGround : OgmoLayerBlock { }
+public class OgmoLayerGeneral : OgmoLayerBlock { }
+public class OgmoLayerForeground : OgmoLayerBlock { }
+public class OgmoLayerBackground : OgmoLayerBlock { }
+
+public class OgmoLayerGrid : OgmoLayer
+{
+    public char[] grid { get; init; }
 }

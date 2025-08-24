@@ -73,10 +73,13 @@ public abstract class MonoGame : Game, IHaveDrawingTools
         base.Initialize();
 
         GameManager.Fps = GameManager.Settings.FPS;
+        GameManager.SetGameInstance(this);
+        Renderer.SetDefaultTexture(GameManager.CreateTexture(1, 1, Color.White));
 
         UpdateEnvironments();
         lastGametime = new GameTime(new TimeSpan(0, 0, 0), new TimeSpan(0, 0, 0));
         UpdateScriptToScene();
+
         Loading = false;
     }
 
@@ -84,7 +87,6 @@ public abstract class MonoGame : Game, IHaveDrawingTools
     {
         Loading = true;
         LoadingText = "Changing scene ...";
-        GameManager.SetGameInstance(this);
 
         changingScene = true;
         FriteCollection2.Entity.Hitboxs.Hitbox.ClearAllLayers();

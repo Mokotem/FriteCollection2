@@ -346,8 +346,6 @@ public abstract class Script : Executable
 /// </summary>
 public abstract class Clone : Executable
 {
-    private static uint _count = 0;
-    private readonly uint _id;
     private bool isdestroyed = false;
 
     /// <summary>
@@ -393,26 +391,11 @@ public abstract class Clone : Executable
     /// </summary>
     public bool IsDestroyed => isdestroyed;
 
-    /// <summary>
-    /// identifiant du Clone.
-    /// </summary>
-    public uint ID => _id;
 
     public Clone()
     {
         _active = true;
-        ++_count;
-        _id = _count;
         GameManager.Instance.CurrentExecutables.Add(this);
-    }
-
-    public override bool Equals(object obj)
-    {
-        if (obj is Clone)
-        {
-            return _id == ((Clone)obj)._id;
-        }
-        return false;
     }
 
     /// <summary>

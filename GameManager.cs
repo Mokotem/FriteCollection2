@@ -20,6 +20,7 @@ public enum Align
 
 public interface IHaveDrawingTools
 {
+    public event EventHandler<ExitingEventArgs> Exiting;
     public SpriteBatch Batch { get; }
     public GraphicsDeviceManager Graphics { get; }
     public GraphicsDevice Device { get; }
@@ -57,10 +58,10 @@ public static class GameManager
         }
     }
 
-    private static FriteModel.MonoGameDefault _nstnc;
+    private static FriteModel.MonoGame _nstnc;
     private static IHaveDrawingTools _mg;
 
-    internal static FriteModel.MonoGameDefault Instance => _nstnc;
+    internal static FriteModel.MonoGame Instance => _nstnc;
 
     public static void TogglePause(bool value)
     {
@@ -71,7 +72,7 @@ public static class GameManager
     /// Donner la référence de l'instance MonoGame.
     /// </summary>
     /// <param name="_instance"></param>
-    public static void SetGameInstance(in FriteModel.MonoGameDefault _instance)
+    public static void SetGameInstance(in FriteModel.MonoGame _instance)
     {
         _nstnc = _instance;
         _mg = _nstnc;

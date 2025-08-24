@@ -54,8 +54,8 @@ public class StateMachine : IDraw
     public void ForceState(in State state)
     {
         dt = 0f;
-        state.Start();
         current = state;
+        state.Start();
     }
 
     public void Draw()

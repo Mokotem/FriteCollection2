@@ -182,7 +182,7 @@ public class Text : IDraw
             GameManager.Draw.Batch.DrawString(
                 GameManager.Font,
                 txt,
-                new Vector2(Position.X + 1 - Camera.Position.X, Position.Y - Camera.Position.Y),
+                new Vector2(Position.X + 1 - Camera.Position.X, Position.Y + 1 - Camera.Position.Y),
                 Renderer.Color,
                 0f,
                 Vector2.Zero,

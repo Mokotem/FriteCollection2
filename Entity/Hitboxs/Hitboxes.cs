@@ -3,7 +3,6 @@ using MonoGame.Extended;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using static FriteCollection2.Tools.TileMap.MetroidMaker;
 
 namespace FriteCollection2.Entity.Hitboxs;
 
