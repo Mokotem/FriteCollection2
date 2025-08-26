@@ -243,7 +243,7 @@ public static class GameManager
         set
         {
             _currentScene = value;
-            _nstnc.UpdateScriptToScene();
+            _nstnc.UpdateScriptToScene(Array.Empty<Executable>());
         }
     }
 
@@ -297,7 +297,7 @@ public static class Screen
     /// <summary>
     /// Couleur d'arrière plan.
     /// </summary>
-    public static Color backGround = new(0.1f, 0.2f, 0.3f);
+    public static Color backGround;
 
     internal static int rww, rwh;
     public static int WindowWidth => rww;

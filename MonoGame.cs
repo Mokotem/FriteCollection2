@@ -1,11 +1,13 @@
 ﻿using FriteCollection2;
 using FriteCollection2.Entity;
+using FriteCollection2.Entity.Hitboxs;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace FriteModel;
 
@@ -21,7 +23,7 @@ public abstract class MonoGame : Game, IHaveDrawingTools
     internal List<FriteCollection2.UI.ButtonCore> _buttons = new List<FriteCollection2.UI.ButtonCore>();
     public virtual event ScreenUpdate OnScreenUpdate;
     protected bool changingScene = false;
-    private protected readonly Type[] _childTypes;
+    protected Type[] _childTypes;
     protected Settings S => GameManager.Settings;
 
     public delegate void ScreenUpdate(bool full);
@@ -39,12 +41,11 @@ public abstract class MonoGame : Game, IHaveDrawingTools
 
     }
 
-    public MonoGame(Type[] childTypes)
+    public MonoGame()
     {
-        _childTypes = childTypes;
         IsMouseVisible = true;
         graphics = new GraphicsDeviceManager(this);
-        Window.AllowUserResizing = S.AllowUserResizeing;
+        Window.AllowUserResizing = false;
         GameManager.SetGameInstance(this);
     }
 
@@ -54,6 +55,7 @@ public abstract class MonoGame : Game, IHaveDrawingTools
 
     protected override void Initialize()
     {
+        base.Initialize();
         Loading = true;
         LoadingText = "Loading game ...";
         SpriteBatch = new SpriteBatch(GraphicsDevice);
@@ -70,29 +72,26 @@ public abstract class MonoGame : Game, IHaveDrawingTools
         Renderer._notFoundTexture = new Texture2D(GraphicsDevice, 2, 2);
         Renderer._notFoundTexture.SetData<Color>(data);
 
-        base.Initialize();
-
         GameManager.Fps = GameManager.Settings.FPS;
         GameManager.SetGameInstance(this);
         Renderer.SetDefaultTexture(GameManager.CreateTexture(1, 1, Color.White));
 
         UpdateEnvironments();
         lastGametime = new GameTime(new TimeSpan(0, 0, 0), new TimeSpan(0, 0, 0));
-        UpdateScriptToScene();
+        UpdateScriptToScene(Array.Empty<Executable>());
 
         Loading = false;
     }
 
-    public virtual void UpdateScriptToScene()
+    public virtual void UpdateScriptToScene(Executable[] adds)
     {
         Loading = true;
         LoadingText = "Changing scene ...";
 
         changingScene = true;
-        FriteCollection2.Entity.Hitboxs.Hitbox.ClearAllLayers();
         MediaPlayer.Stop();
         _buttons.Clear();
-
+        Hitbox.ClearAllLayers();
         LoadingText = "Unloading ...";
         foreach (Executable exe in CurrentExecutables.ToArray())
         {
@@ -105,8 +104,6 @@ public abstract class MonoGame : Game, IHaveDrawingTools
         CurrentExecutables.Clear();
 
         LoadingText = "Loading scripts ...";
-        Camera.Position = Point.Zero;
-        Screen.backGround = new Color(0.1f, 0.2f, 0.3f);
 
         foreach (Type type in _childTypes)
         {
@@ -117,6 +114,8 @@ public abstract class MonoGame : Game, IHaveDrawingTools
             }
             else instance = null;
         }
+
+        CurrentExecutables.AddRange(adds);
 
         Time.Reset(lastGametime);
         Time.SpaceTime = 1f;
@@ -220,7 +219,7 @@ public abstract class MonoGame : Game, IHaveDrawingTools
 
 public class MonoGameDefault : MonoGame
 {
-    public MonoGameDefault(Type[] types) : base(types)
+    public MonoGameDefault() : base()
     {
 
     }
@@ -330,7 +329,7 @@ public class MonoGameDefault : MonoGame
 
 public class MonoGameDefaultPixel : FriteModel.MonoGame
 {
-    public MonoGameDefaultPixel(System.Type[] types) : base(types)
+    public MonoGameDefaultPixel() : base()
     {
 
     }

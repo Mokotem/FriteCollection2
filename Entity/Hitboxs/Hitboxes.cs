@@ -105,7 +105,7 @@ public abstract class Hitbox
     /// Ne bouge plus même si son 'Space' référant le fait.
     /// Utile pour les platformes solides par exemple. Grain de performance.
     /// </summary>
-    public bool IsStatic
+    public virtual bool IsStatic
     {
         get => isStatic;
         set
@@ -577,93 +577,53 @@ public abstract class Hitbox
     {
         public bool ApplyColision(Collision<Rectangle> col, Vector2 vitesse, Action OnUp, Action OnDown, Action OnLeft, Action OnRight)
         {
-            if (col.collider.positionLocked)
+            switch (col.side)
             {
-                switch (col.side)
-                {
-                    case Sides.Down:
-                        if (vitesse.Y >= 0)
-                        {
-                            SpaceRef.Y = col.collider._point.Y + col.collider.PositionOffset.Y - SpaceRef.Scale.Y
-                                + (SpaceRef.Scale.Y - Size.Y - PositionOffset.Y);
-                            OnDown();
-                            return true;
-                        }
-                        else return false;
-                    case Sides.Up:
-                        if (vitesse.Y <= 0)
-                        {
-                            SpaceRef.Y = col.collider._point.Y + col.collider.PositionOffset.Y + col.collider.Size.Y
-                                 - (SpaceRef.Scale.Y - Size.Y - PositionOffset.Y);
-                            OnUp();
-                            return true;
-                        }
-                        else return false;
-                    case Sides.Left:
-                        if (vitesse.X <= 0)
-                        {
-                            SpaceRef.X = col.collider._point.X + col.collider.PositionOffset.X + col.collider.Size.X
-                                 - (SpaceRef.Scale.X - Size.X - PositionOffset.X);
-                            OnLeft();
-                            return true;
-                        }
-                        else return false;
-                    case Sides.Right:
-                        if (vitesse.X >= 0)
-                        {
-                            SpaceRef.X = col.collider._point.X + col.collider.PositionOffset.X - SpaceRef.Scale.X
-                                + (SpaceRef.Scale.X - Size.X - PositionOffset.X);
-                            OnRight();
-                            return true;
-                        }
-                        else return false;
-                    default:
-                        return false;
-                }
-            }
-            else
-            {
-                switch (col.side)
-                {
-                    case Sides.Down:
-                        if (vitesse.Y >= 0)
-                        {
-                            SpaceRef.Y = col.collider.SpaceRef.Y + col.collider.PositionOffset.Y - SpaceRef.Scale.Y
-                                + (SpaceRef.Scale.Y - Size.Y - PositionOffset.Y);
-                            OnDown();
-                            return true;
-                        }
-                        else return false;
-                    case Sides.Up:
-                        if (vitesse.Y <= 0)
-                        {
-                            SpaceRef.Y = col.collider.SpaceRef.Y + col.collider.PositionOffset.Y + col.collider.Size.Y
-                                 - (SpaceRef.Scale.Y - Size.Y - PositionOffset.Y);
-                            OnUp();
-                            return true;
-                        }
-                        else return false;
-                    case Sides.Left:
-                        if (vitesse.X <= 0)
-                        {
-                            SpaceRef.X = col.collider.SpaceRef.X + col.collider.PositionOffset.X + col.collider.Size.X
-                                 - (SpaceRef.Scale.X - Size.X - PositionOffset.X);
-                            OnLeft();
-                            return true;
-                        }
-                        else return false;
-                    case Sides.Right:
-                        if (vitesse.X >= 0)
-                        {
-                            SpaceRef.X = col.collider.SpaceRef.X + col.collider.PositionOffset.X - SpaceRef.Scale.X
-                                + (SpaceRef.Scale.X - Size.X - PositionOffset.X);
-                            OnRight();
-                            return true;
-                        }
-                        else return false;
-                    default:
-                        return false;
-                }
+                case Sides.Down:
+                    if (vitesse.Y >= 0)
+                    {
+                        SpaceRef.Y = col.collider.SpaceRef.Y
+                            + col.collider.PositionOffset.Y - SpaceRef.Scale.Y
+                            + (SpaceRef.Scale.Y - Size.Y - PositionOffset.Y);
+                        OnDown();
+                        return true;
+                    }
+                    else return false;
+                case Sides.Up:
+                    if (vitesse.Y <= 0)
+                    {
+                        SpaceRef.Y = col.collider.SpaceRef.Y
+                            + col.collider.PositionOffset.Y
+                            + col.collider.Size.Y
+                             - (SpaceRef.Scale.Y - Size.Y - PositionOffset.Y);
+                        OnUp();
+                        return true;
+                    }
+                    else return false;
+                case Sides.Left:
+                    if (vitesse.X <= 0)
+                    {
+                        SpaceRef.X = col.collider.SpaceRef.X
+                            + col.collider.PositionOffset.X
+                            + col.collider.Size.X
+                             - (SpaceRef.Scale.X - Size.X - PositionOffset.X);
+                        OnLeft();
+                        return true;
+                    }
+                    else return false;
+                case Sides.Right:
+                    if (vitesse.X >= 0)
+                    {
+                        SpaceRef.X = col.collider.SpaceRef.X
+                            + col.collider.PositionOffset.X
+                            - SpaceRef.Scale.X
+                            + (SpaceRef.Scale.X - Size.X - PositionOffset.X);
+                        OnRight();
+                        return true;
+                    }
+                    else return false;
+                default:
+                    return false;
             }
         }
 
@@ -758,13 +718,9 @@ public abstract class Hitbox
                     _point = SpaceRef.Position;
 
                 if (sizeLocked)
-                {
                     p2 = new Vector2(_point.X + lockSize.X, _point.Y + lockSize.Y);
-                }
                 else
-                {
                     p2 = new Vector2(_point.X + SpaceRef.Scale.X, _point.Y + SpaceRef.Scale.Y);
-                }
 
                 _point.X += PositionOffset.X;
                 _point.Y += PositionOffset.Y;
@@ -773,7 +729,6 @@ public abstract class Hitbox
                 _centerPoint = new Vector2((_point.X + p2.X) / 2f, (_point.Y + p2.Y) / 2f);
             }
         }
-
 
         public Rectangle Copy()
         {
