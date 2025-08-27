@@ -36,11 +36,6 @@ public abstract class MonoGame : Game, IHaveDrawingTools
         get;
     }
 
-    protected internal virtual void TogglePause(bool value)
-    {
-
-    }
-
     public MonoGame()
     {
         IsMouseVisible = true;
