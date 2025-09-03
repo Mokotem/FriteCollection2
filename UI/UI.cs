@@ -1,4 +1,5 @@
-﻿using FriteCollection2.Tools.TileMap;
+﻿using FriteCollection2.Entity;
+using FriteCollection2.Tools.TileMap;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
@@ -28,7 +29,7 @@ public interface IEdit<T>
     }
 }
 
-public abstract class UI : IDisposable, IHaveRectangle
+public abstract class UI : IDisposable, IHaveRectangle, IDraw
 {
     internal float depth = 0.5f;
     public float Depth => depth;
@@ -328,7 +329,7 @@ public abstract class UI : IDisposable, IHaveRectangle
     public virtual void Draw() { }
 }
 
-public class Image : UI, IEdit<Texture2D>, IDisposable
+public class Image : UI, IEdit<Texture2D>, IDisposable, IDraw
 {
     private Texture2D image;
 
@@ -356,19 +357,52 @@ public class Image : UI, IEdit<Texture2D>, IDisposable
         this.depth = parent.Depth - 0.05f;
     }
 
+    public bool outline = false;
+    public Color outlineColor;
+
     public override void Draw()
     {
         if (_active)
         {
-            GameManager.Draw.Batch.Draw(
+            if (outline)
+            {
+                foreach (Point r in new Point[8]
+                {
+                    new(-1, 1),
+                    new(0, 1),
+                    new(1, 1),
+
+                    new(-1, 0),
+                    new(1, 0),
+
+                    new(-1, -1),
+                    new(0, -1),
+                    new(1, -1)
+                    })
+                {
+                    GameManager.Draw.Batch.Draw
+            (
                 image,
-                rect,
+                new Microsoft.Xna.Framework.Rectangle(rect.Location + r, rect.Size),
                 null,
-                this.Color,
-                0, Vector2.Zero, SpriteEffects.None,
-                this.depth);
-            foreach (UI element in childs)
-                element.Draw();
+                outlineColor,
+                0,
+                Vector2.Zero,
+                SpriteEffects.None,
+                this.depth + 0.0001f
+            );
+                }
+            }
+
+                GameManager.Draw.Batch.Draw(
+            image,
+            rect,
+            null,
+            this.Color,
+            0, Vector2.Zero, SpriteEffects.None,
+            this.depth);
+                foreach (UI element in childs)
+                    element.Draw();
         }
     }
 
@@ -382,7 +416,7 @@ public class Image : UI, IEdit<Texture2D>, IDisposable
     }
 }
 
-public class Text : UI, IEdit<string>
+public class Text : UI, IEdit<string>, IDraw
 {
     private Microsoft.Xna.Framework.Rectangle par;
     private string text;
@@ -419,7 +453,7 @@ public class Text : UI, IEdit<string>
             {
                 this.text = value;
                 this.ApplyText(value);
-                this.ApplyPosition(par);
+                this.ApplyPosition(papa is null ? space.environment.Rect : papa.mRect);
             }
         }
     }
@@ -596,7 +630,7 @@ public class Text : UI, IEdit<string>
         switch (TextAlign)
         {
             case Align.Center:
-                posX = (rect.Width - _textWidth) / 2;
+                posX = (rect.Width - _textWidth) / 2 + (FontAspect.X / 2);
                 return;
             case Align.Right:
                 posX = rect.Width - _textWidth;

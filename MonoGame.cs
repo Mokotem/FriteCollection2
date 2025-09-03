@@ -329,6 +329,11 @@ public class MonoGameDefaultPixel : FriteModel.MonoGame
 
     }
 
+    public void SetChilds(System.Type[] c)
+    {
+        base._childTypes = c;
+    }
+
     public override event ScreenUpdate OnScreenUpdate;
 
     private static FriteCollection2.Environment game;

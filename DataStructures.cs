@@ -27,7 +27,7 @@ public interface IDraw
 /// </summary>
 public class Environment : IDraw
 {
-    public Rectangle Rect { get; private set; }
+    public Rectangle Rect { get; set; }
     public RenderTarget2D Target { get; private set; }
     public Vector2[] Bounds { get; private set; }
     public Environment(Rectangle t, RenderTarget2D r)

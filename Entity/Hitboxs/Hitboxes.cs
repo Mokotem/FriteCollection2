@@ -1319,24 +1319,28 @@ public abstract class Hitbox
             }
 
             byte n = _CountBools(global);
-            if (n == 2)
+            if (n == 2 && cols.Count > 1)
             {
                 switch (global[0], global[1], global[2], global[3])
                 {
                     case (true, true, false, false):
-                        side = Sides.Up;
+                        if (float.Abs(cols[0].collider.p2.Y - cols[1].collider.p2.Y) < 2)
+                            side = Sides.Up;
                         break;
 
                     case (false, false, true, true):
-                        side = Sides.Down;
+                        if (float.Abs(cols[0].collider._point.Y - cols[1].collider._point.Y) < 2)
+                            side = Sides.Down;
                         break;
 
                     case (true, false, true, false):
-                        side = Sides.Left;
+                        if (float.Abs(cols[0].collider.p2.X - cols[1].collider.p2.X) < 2)
+                            side = Sides.Left;
                         break;
 
                     case (false, true, false, true):
-                        side = Sides.Right;
+                        if (float.Abs(cols[0].collider._point.X - cols[1].collider._point.X) < 2)
+                            side = Sides.Right;
                         break;
                 }
             }

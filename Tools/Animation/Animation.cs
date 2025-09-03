@@ -7,7 +7,8 @@ public class Animation
     public delegate void KeyFrame(float dt);
 
     private readonly KeyFrame[] frames;
-    private readonly float[] durations;
+    private delegate float DurationFunc();
+    private readonly DurationFunc delay;
     private float start;
 
     public Animation(KeyFrame[] frames, float[] durations, float startTime = 0f)
@@ -16,11 +17,24 @@ public class Animation
             throw new System.Exception("Frame count should be the same as durations");
 
         this.frames = frames;
-        this.durations = durations;
         this.start = startTime;
         currentKey = -1;
         b = 0f;
         a = 0f;
+        delay = () => durations[currentKey];
+    }
+
+    public Animation(KeyFrame[] frames, float delay, float startTime = 0f)
+    {
+        if (frames.Length < 1)
+            throw new System.Exception("Frame count should be the same as durations");
+
+        this.frames = frames;
+        this.start = startTime;
+        currentKey = -1;
+        b = 0f;
+        a = 0f;
+        this.delay = () => delay;
     }
 
     private int currentKey;
@@ -48,19 +62,19 @@ public class Animation
             currentKey += 1;
             if (!Done)
             {
-                if (durations[currentKey] <= 0)
+                if (delay() <= 0)
                 {
                     frames[currentKey](0);
                 }
                 else
                 {
-                    b += durations[currentKey];
+                    b += delay();
                 }
             }
         }
         if (!Done && currentKey >= 0)
         {
-            frames[currentKey]((timer - a - start) / durations[currentKey]);
+            frames[currentKey]((timer - a - start) / delay());
         }
 
         if (Loop && Done)

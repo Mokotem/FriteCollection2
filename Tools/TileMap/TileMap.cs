@@ -442,6 +442,37 @@ public class OgmoFile<LevelValues> : IOgmoFileWithLayer
         return JsonSerializer.Deserialize<OgmoFile<LevelValues>>(file, options);
     }
 
+    public static OgmoFile<LevelValues> OpenPath(string path)
+    {
+        string file;
+        using (StreamReader sr = new StreamReader(path))
+            file = sr.ReadToEnd();
+
+        JsonSerializerOptions options = new()
+        {
+            TypeInfoResolver = new LayerTypeDiscriminator()
+        };
+        return JsonSerializer.Deserialize<OgmoFile<LevelValues>>(file, options);
+    }
+
+    public static OgmoFile<LevelValues> Deserialize(string file)
+    {
+        JsonSerializerOptions options = new()
+        {
+            TypeInfoResolver = new LayerTypeDiscriminator()
+        };
+        return JsonSerializer.Deserialize<OgmoFile<LevelValues>>(file, options);
+    }
+
+    public static ImmutableArray<OgmoLayer> Deserialize(string file, JsonDerivedType entities)
+    {
+        JsonSerializerOptions options = new()
+        {
+            TypeInfoResolver = new LayerTypeDiscriminator(entities)
+        };
+        return JsonSerializer.Deserialize<OgmoFile<LevelValues>>(file, options).layers;
+    }
+
     public static ImmutableArray<OgmoLayer> Open(string path, JsonDerivedType entities)
     {
         string file;
