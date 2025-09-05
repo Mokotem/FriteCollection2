@@ -8,6 +8,10 @@ public class SpriteSheet : IDisposable
 {
     private readonly Texture2D[,] textures;
 
+    public int Width => textures.GetLength(0);
+    public int Height => textures.GetLength(1);
+    public int Count => textures.GetLength(0) * textures.GetLength(1);
+
     public SpriteSheet(Texture2D texture, int width, int height)
     {
         int wCount = texture.Width / width;
@@ -32,21 +36,10 @@ public class SpriteSheet : IDisposable
         }
     }
 
-    public virtual Texture2D this[int x, int y]
-    {
-        get
-        {
-            return textures[x, y];
-        }
-    }
-
-    public virtual Texture2D this[Point p]
-    {
-        get
-        {
-            return textures[p.X, p.Y];
-        }
-    }
+    public virtual Texture2D this[int x, int y] => textures[x, y];
+    public virtual Texture2D this[int i] => textures[i % Width, i / Width];
+    public virtual Texture2D this[short i] => textures[i % Width, i / Width];
+    public virtual Texture2D this[Point p] => textures[p.X, p.Y];
 
     public virtual void Dispose()
     {

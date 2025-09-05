@@ -453,7 +453,7 @@ public class Text : UI, IEdit<string>, IDraw
             {
                 this.text = value;
                 this.ApplyText(value);
-                this.ApplyPosition(papa is null ? space.environment.Rect : papa.mRect);
+                this.ApplyPosition(papa is null ? space.environment.mRect : papa.mRect);
             }
         }
     }
@@ -491,6 +491,9 @@ public class Text : UI, IEdit<string>, IDraw
         }
         return n;
     }
+
+    private byte lineNumber;
+    public byte LineCount => lineNumber;
 
     public static string FormatText(string input, bool sl, char[] exepts,
         Microsoft.Xna.Framework.Rectangle rect, ushort maxLine,
@@ -534,7 +537,7 @@ public class Text : UI, IEdit<string>, IDraw
                         if (lineNumber > maxLine)
                         {
                             exedent = (ushort)(w - maxX);
-                            return string.Empty;
+                            throw new System.Exception("boite trop petite");
                         }
                         w = GetWordLength(words[i], exepts);
                         text = text.Remove(text.Length - 1);
@@ -593,7 +596,7 @@ public class Text : UI, IEdit<string>, IDraw
 
     private void ApplyText(string input)
     {
-        this.resultString = FormatText(input, SingleLine, Array.Empty<char>(), this.rect, ushort.MaxValue, out _, out _,
+        this.resultString = FormatText(input, SingleLine, Array.Empty<char>(), this.rect, ushort.MaxValue, out lineNumber, out _,
             out _textWidth);
     }
 

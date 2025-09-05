@@ -1,4 +1,4 @@
-﻿using FriteCollection2;
+﻿namespace FriteCollection2.Tools.Animation;
 
 public class State
 {

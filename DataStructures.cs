@@ -1,4 +1,5 @@
 ﻿using FriteCollection2.Entity;
+using FriteCollection2.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -25,11 +26,15 @@ public interface IDraw
 /// <summary>
 /// Représente un endroit pour dessiner.
 /// </summary>
-public class Environment : IDraw
+public class Environment : IDraw, IHaveRectangle
 {
     public Rectangle Rect { get; set; }
     public RenderTarget2D Target { get; private set; }
     public Vector2[] Bounds { get; private set; }
+
+    public Rectangle mRect => new Rectangle(0, 0, Target.Width, Target.Height);
+    public float Depth => 0.5f;
+
     public Environment(Rectangle t, RenderTarget2D r)
     {
         Rect = t;
@@ -170,7 +175,7 @@ public static class Time
         dtf = (float)gt.ElapsedGameTime.TotalMilliseconds / 1000f;
     }
 
-    internal static void Reset(in GameTime gt)
+    public static void Reset()
     {
         timer = 0f;
     }

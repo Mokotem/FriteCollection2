@@ -582,9 +582,7 @@ public abstract class Hitbox
                 case Sides.Down:
                     if (vitesse.Y >= 0)
                     {
-                        SpaceRef.Y = col.collider.SpaceRef.Y
-                            + col.collider.PositionOffset.Y - SpaceRef.Scale.Y
-                            + (SpaceRef.Scale.Y - Size.Y - PositionOffset.Y);
+                        SpaceRef.Y = col.collider.Top - Size.Y - PositionOffset.Y;
                         OnDown();
                         return true;
                     }
@@ -592,10 +590,7 @@ public abstract class Hitbox
                 case Sides.Up:
                     if (vitesse.Y <= 0)
                     {
-                        SpaceRef.Y = col.collider.SpaceRef.Y
-                            + col.collider.PositionOffset.Y
-                            + col.collider.Size.Y
-                             - (SpaceRef.Scale.Y - Size.Y - PositionOffset.Y);
+                        SpaceRef.Y = col.collider.Bottom - PositionOffset.Y;
                         OnUp();
                         return true;
                     }
@@ -603,10 +598,7 @@ public abstract class Hitbox
                 case Sides.Left:
                     if (vitesse.X <= 0)
                     {
-                        SpaceRef.X = col.collider.SpaceRef.X
-                            + col.collider.PositionOffset.X
-                            + col.collider.Size.X
-                             - (SpaceRef.Scale.X - Size.X - PositionOffset.X);
+                        SpaceRef.X = col.collider.Right - PositionOffset.X;
                         OnLeft();
                         return true;
                     }
@@ -614,10 +606,49 @@ public abstract class Hitbox
                 case Sides.Right:
                     if (vitesse.X >= 0)
                     {
-                        SpaceRef.X = col.collider.SpaceRef.X
-                            + col.collider.PositionOffset.X
-                            - SpaceRef.Scale.X
-                            + (SpaceRef.Scale.X - Size.X - PositionOffset.X);
+                        SpaceRef.X = col.collider.Left - Size.X - PositionOffset.X;
+                        OnRight();
+                        return true;
+                    }
+                    else return false;
+                default:
+                    return false;
+            }
+        }
+
+        public bool ApplyColision(Collision<Rectangle> col, Vector2 vitesse, Action OnUp, Action OnDown, Action OnLeft, Action OnRight,
+            ref Vector2 position)
+        {
+            switch (col.side)
+            {
+                case Sides.Down:
+                    if (vitesse.Y >= 0)
+                    {
+                        position.Y = col.collider.Top - Size.Y - PositionOffset.Y;
+                        OnDown();
+                        return true;
+                    }
+                    else return false;
+                case Sides.Up:
+                    if (vitesse.Y <= 0)
+                    {
+                        position.Y = col.collider.Bottom - PositionOffset.Y;
+                        OnUp();
+                        return true;
+                    }
+                    else return false;
+                case Sides.Left:
+                    if (vitesse.X <= 0)
+                    {
+                        position.X = col.collider.Right - PositionOffset.X;
+                        OnLeft();
+                        return true;
+                    }
+                    else return false;
+                case Sides.Right:
+                    if (vitesse.X >= 0)
+                    {
+                        position.X = col.collider.Left - Size.X - PositionOffset.X;
                         OnRight();
                         return true;
                     }
@@ -682,6 +713,11 @@ public abstract class Hitbox
         public Bounds IsInfinitOn = Bounds.Center;
 
         private Vector2 p2;
+
+        public float Left => _point.X;
+        public float Right => p2.X;
+        public float Top => _point.Y;
+        public float Bottom => p2.Y;
 
         private bool sizeLocked = false;
         private Point lockSize;

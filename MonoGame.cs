@@ -112,7 +112,7 @@ public abstract class MonoGame : Game, IHaveDrawingTools
 
         CurrentExecutables.AddRange(adds);
 
-        Time.Reset(lastGametime);
+        Time.Reset();
         Time.SpaceTime = 1f;
 
         foreach (Executable script in CurrentExecutables.ToArray())
