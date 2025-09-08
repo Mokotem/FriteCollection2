@@ -70,7 +70,7 @@ public class StateMachine : IDraw
     {
         if (active)
         {
-            current.Draw();
+            current.DrawAdditive();
         }
     }
 }

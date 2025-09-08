@@ -50,6 +50,23 @@ public static class Interpolation
             (int)float.Round(a.Y * (1 - k) + (b.Y * k)));
     }
 
+    public static float CubeIn(float a, float b, float t, byte exp = 4)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float k = float.Pow(t, exp);
+        return (a * (1 - k)) + (b * k);
+    }
+
+
+    public static float CubeOut(float a, float b, float t, byte exp = 4)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float k = 1 - float.Pow(t - 1, exp);
+        return (a * (1 - k)) + (b * k);
+    }
+
     public static float BackIn(float a, float b, float t, float k = 4)
     {
         if (t <= 0) return a;
@@ -227,6 +244,23 @@ public static class Interpolation
         if (t >= 1) return b;
         float s = float.Sin((float.Pi * t) / 2f);
         float k = s * s;
+        return (a * (1 - k)) + (b * k);
+    }
+
+    public static Vector2 CubeIn(Vector2 a, Vector2 b, float t, byte exp = 4)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float k = float.Pow(t, exp);
+        return (a * (1 - k)) + (b * k);
+    }
+
+
+    public static Vector2 CubeOut(Vector2 a, Vector2 b, float t, byte exp = 4)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float k = 1 - float.Pow(t - 1, exp);
         return (a * (1 - k)) + (b * k);
     }
 

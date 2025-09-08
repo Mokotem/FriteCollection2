@@ -267,28 +267,14 @@ public class TileMap : IDisposable
                     hit1.Size.Y * height);
                 hit.IsStatic = true;
 
-                if (height > width)
-                {
-                    if (x == 0)
-                        hit.IsInfinitOn = Bounds.Left;
-                    else if (x + width >= xCount)
-                        hit.IsInfinitOn = Bounds.Right;
-                }
-                if (width > height)
-                {
-                    if (y == 0)
-                        hit.IsInfinitOn = Bounds.Top;
-                    else if (y + height >= yCount)
-                        hit.IsInfinitOn = Bounds.Bottom;
-                }
-                if (x == 0 && y == 0)
-                    hit.IsInfinitOn = Bounds.TopLeft;
-                if (x + width >= xCount && y == 0)
-                    hit.IsInfinitOn = Bounds.TopRight;
-                if (x == 0 && y + height >= yCount)
-                    hit.IsInfinitOn = Bounds.BottomLeft;
-                if (x + width >= xCount && y + height >= yCount)
-                    hit.IsInfinitOn = Bounds.BottomRight;
+                if (x == 0)
+                    hit.IsInfinitOnX = Align.Left;
+                else if (x + width >= xCount)
+                    hit.IsInfinitOnX = Align.Right;
+                if (y == 0)
+                    hit.IsInfinitOnY = Align.Left;
+                else if (y + height >= yCount)
+                    hit.IsInfinitOnY = Align.Right;
 
 
                 result.Add(hit);

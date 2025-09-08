@@ -29,10 +29,16 @@ public interface IEdit<T>
     }
 }
 
-public abstract class UI : IDisposable, IHaveRectangle, IDraw
+public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
 {
     internal float depth = 0.5f;
     public float Depth => depth;
+
+    public short Layer
+    {
+        get => FriteCollection2.Entity.Renderer.FromLayer(depth);
+        set => depth = FriteCollection2.Entity.Renderer.ToLayer(value);
+    }
 
     public virtual void Dispose() { }
 
@@ -357,6 +363,24 @@ public class Image : UI, IEdit<Texture2D>, IDisposable, IDraw
         this.depth = parent.Depth - 0.05f;
     }
 
+    public Image(Rectangle space)
+    {
+        this.image = Renderer.DefaultTexture;
+        this.space = space;
+        base.ApplyScale(space.EnviRect);
+        base.ApplyPosition(space.EnviRect);
+    }
+
+    public Image(Rectangle space, IHaveRectangle parent)
+    {
+        this.image = Renderer.DefaultTexture;
+        this.space = space;
+        this.papa = parent;
+        base.ApplyScale(parent.mRect);
+        base.ApplyPosition(parent.mRect);
+        this.depth = parent.Depth - 0.05f;
+    }
+
     public bool outline = false;
     public Color outlineColor;
 
@@ -590,7 +614,7 @@ public class Text : UI, IEdit<string>, IDraw
     private int _textWidth;
     private int posX;
 
-    public bool SingleLine = true;
+    public readonly bool SingleLine;
 
     public int TextWidth => _textWidth;
 
@@ -600,8 +624,9 @@ public class Text : UI, IEdit<string>, IDraw
             out _textWidth);
     }
 
-    public Text(string txt, Rectangle space, Align textAlign = Align.Left)
+    public Text(string txt, Rectangle space, Align textAlign = Align.Left, bool singleLine = true)
     {
+        this.SingleLine = singleLine;
         this.TextAlign = textAlign;
         space.Scale.X += 1;
         this.Size = 1f;
@@ -613,8 +638,9 @@ public class Text : UI, IEdit<string>, IDraw
         Outline = true;
     }
 
-    public Text(string txt, Rectangle space, IHaveRectangle parent, Align textAlign = Align.Left) : base()
+    public Text(string txt, Rectangle space, IHaveRectangle parent, Align textAlign = Align.Left, bool singleLine = true) : base()
     {
+        this.SingleLine = singleLine;
         this.TextAlign = textAlign;
         this.papa = parent;
         this.Size = 1f;

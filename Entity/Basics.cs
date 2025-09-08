@@ -246,6 +246,11 @@ public class Renderer : ICopy<Renderer>, ILayer
         return (value + 1000f) / 2000f;
     }
 
+    public static short FromLayer(float value)
+    {
+        return (short)float.Round((value * 2000) - 1000);
+    }
+
     public short Layer
     {
         get

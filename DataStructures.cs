@@ -232,6 +232,7 @@ public abstract class Executable : IDisposable
     /// Méthode supplémentaire pour dessiner, utilisé de base pour l'interface.
     /// </summary>
     public virtual void DrawUI() { }
+    public virtual void DrawMain() { }
 
     /// <summary>
     /// Ici, disposer toutes les ressources.
