@@ -381,6 +381,8 @@ public class Image : UI, IEdit<Texture2D>, IDisposable, IDraw
         this.depth = parent.Depth - 0.05f;
     }
 
+    public SpriteEffects effect = SpriteEffects.None;
+
     public bool outline = false;
     public Color outlineColor;
 
@@ -412,7 +414,7 @@ public class Image : UI, IEdit<Texture2D>, IDisposable, IDraw
                 outlineColor,
                 0,
                 Vector2.Zero,
-                SpriteEffects.None,
+                effect,
                 this.depth + 0.0001f
             );
                 }
@@ -423,7 +425,7 @@ public class Image : UI, IEdit<Texture2D>, IDisposable, IDraw
             rect,
             null,
             this.Color,
-            0, Vector2.Zero, SpriteEffects.None,
+            0, Vector2.Zero, effect,
             this.depth);
                 foreach (UI element in childs)
                     element.Draw();
@@ -495,6 +497,8 @@ public class Text : UI, IEdit<string>, IDraw
             ApplyPosition(par);
         }
     }
+
+    public int ScreenPositionX => rect.X + posX;
 
     private protected override void ApplySpace(Microsoft.Xna.Framework.Rectangle parent)
     {
@@ -659,7 +663,7 @@ public class Text : UI, IEdit<string>, IDraw
         switch (TextAlign)
         {
             case Align.Center:
-                posX = (rect.Width - _textWidth) / 2 + (FontAspect.X / 2);
+                posX = (rect.Width - _textWidth) / 2 - 1;
                 return;
             case Align.Right:
                 posX = rect.Width - _textWidth;
@@ -678,16 +682,16 @@ public class Text : UI, IEdit<string>, IDraw
             {
                 foreach (Vector2 r in new Vector2[8]
                 {
-                new(-1, 1),
-                new(0, 1),
-                new(1, 1),
+                    new(-1, 1),
+                    new(0, 1),
+                    new(1, 1),
 
-                new(-1, 0),
-                new(1, 0),
+                    new(-1, 0),
+                    new(1, 0),
 
-                new(-1, -1),
-                new(0, -1),
-                new(1, -1)
+                    new(-1, -1),
+                    new(0, -1),
+                    new(1, -1)
                 })
                 {
                     GameManager.Draw.Batch.DrawString
@@ -752,7 +756,7 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
             if (x == 0 || x == 2)
                 width = sx;
             else
-                width = size.X - (sx * GameManager.Settings.UICoef);
+                width = size.X - sx;
 
             int posX;
             if (x == 0)
@@ -769,7 +773,7 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
                 if (y == 0 || y == 2)
                     height = sy;
                 else
-                    height = size.Y - (sy * GameManager.Settings.UICoef);
+                    height = size.Y - sy;
 
                 int posY;
                 if (y == 0)
@@ -782,7 +786,7 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
                 sb.Draw(set.Texture,
                     new Microsoft.Xna.Framework.Rectangle(posX, posY, width, height),
                     set.GetRectangle(x + (y * 3)),
-                    Microsoft.Xna.Framework.Color.White);
+                    Color.White);
             }
         }
 

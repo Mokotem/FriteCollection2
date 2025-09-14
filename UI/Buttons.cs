@@ -26,14 +26,7 @@ public abstract class ButtonCore : Panel
 
     private FriteModel.MonoGame I => GameManager.Instance;
 
-    private bool clic =>
-        enabled
-     && GameManager.Instance.IsActive
-     && _active
-     && Input.Mouse.State.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed
-     && IsInRange(Input.Mouse.GetPointPosition(in this.Space.environment, I.MouseClickedPosition))
-     && IsInRange(Input.Mouse.GetPointPosition(in this.Space.environment))
-     && Time.Timer >= 0.2f;
+    private bool clic;
 
     private bool IsInRange(Point pos) =>
         GameManager.Instance.IsActive
@@ -66,14 +59,29 @@ public abstract class ButtonCore : Panel
             titleText.Color = new Color(0.7f, 0.7f, 0.7f);
     }
 
-    internal virtual void Update()
+    public static Point GetPointPosition(in Environment envi, Point mouse)
     {
-        b = clic;
+        Point offset = new Point(-envi.Rect.X, -envi.Rect.Y);
+        offset += mouse;
+        return new Point(offset.X / (envi.Rect.Width / envi.Target.Width),
+            offset.Y / (envi.Rect.Height / envi.Target.Height));
+    }
+
+    internal virtual void Update(Point mousePos, bool mousePressed)
+    {
+        clic =
+        enabled
+     && GameManager.Instance.IsActive
+     && _active
+     && mousePressed
+     && IsInRange(GetPointPosition(in this.Space.environment, I.MouseClickedPosition))
+     && IsInRange(GetPointPosition(in this.Space.environment, mousePos))
+     && Time.Timer >= 0.2f;
         if (_active)
         {
             if (enabled)
             {
-                selected = IsInRange(Input.Mouse.GetPointPosition(in this.Space.environment));
+                selected = IsInRange(GetPointPosition(in Space.environment, mousePos));
 
                 if (b)
                 {
@@ -179,7 +187,7 @@ public abstract class ButtonCore : Panel
 
     public override void Draw()
     {
-        if (selected && enabled && Input.Mouse.State.LeftButton == Microsoft.Xna.Framework.Input.ButtonState.Released)
+        if (selected && enabled)
         {
             I.Batch.Draw(Entity.Renderer.DefaultTexture,
                 new Microsoft.Xna.Framework.Rectangle(
@@ -250,9 +258,9 @@ public class Toggle : ButtonCore
         }
     }
 
-    internal override void Update()
+    internal override void Update(Point mousePos, bool mousepressed)
     {
-        base.Update();
+        base.Update(mousePos, mousepressed);
         if (!b)
         {
             this.Color = _on ? OnColor : OffColor;

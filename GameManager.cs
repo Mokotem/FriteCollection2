@@ -1,5 +1,4 @@
-﻿using FriteCollection2.Entity;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 
@@ -33,15 +32,11 @@ public class Settings
     public int WindowHeight = 600;
     public int GameFixeWidth = 800;
     public int GameFixeHeight = 600;
-    public int ReferenceWidth = 800;
-    public int ReferenceHeight = 600;
     public bool FullScreen = false;
     public bool PixelArtDrawing = false;
     public string WindowName = "";
-    public byte UICoef = 1;
     public byte StartScene = 0;
     public byte FPS = 60;
-    public bool AllowUserResizeing = false;
 }
 
 public static class GameManager
@@ -158,14 +153,6 @@ public static class GameManager
     /// Instance MonoGame.
     /// </summary>
     public static IHaveDrawingTools Draw => _mg;
-
-    /// <summary>
-    /// Mets à jour les environements, lors de changement de la taille d'écran.
-    /// </summary>
-    public static void UpdateEnvironments()
-    {
-        _nstnc.UpdateEnvironments();
-    }
     
     private static Settings _settings;
     

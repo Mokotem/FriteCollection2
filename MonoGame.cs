@@ -46,11 +46,9 @@ public abstract class MonoGame : Game, IHaveDrawingTools
 
     protected List<Executable> _currentExecutables = new List<Executable>();
     internal List<Executable> CurrentExecutables => _currentExecutables;
-    private GameTime lastGametime;
 
     protected override void Initialize()
     {
-        base.Initialize();
         Loading = true;
         LoadingText = "Loading game ...";
         SpriteBatch = new SpriteBatch(GraphicsDevice);
@@ -71,9 +69,7 @@ public abstract class MonoGame : Game, IHaveDrawingTools
         GameManager.SetGameInstance(this);
         Renderer.SetDefaultTexture(GameManager.CreateTexture(1, 1, Color.White));
 
-        UpdateEnvironments();
-        lastGametime = new GameTime(new TimeSpan(0, 0, 0), new TimeSpan(0, 0, 0));
-        UpdateScriptToScene(Array.Empty<Executable>());
+        base.Initialize();
 
         Loading = false;
     }
@@ -88,12 +84,9 @@ public abstract class MonoGame : Game, IHaveDrawingTools
         _buttons.Clear();
         Hitbox.ClearAllLayers();
         LoadingText = "Unloading ...";
-        foreach (Executable exe in CurrentExecutables.ToArray())
+        foreach (Script exe in CurrentExecutables.ToArray())
         {
-            if (exe is Clone)
-                (exe as Clone).Destroy();
-            else
-                exe.Dispose();
+            exe.Dispose();
         }
 
         CurrentExecutables.Clear();
@@ -131,9 +124,6 @@ public abstract class MonoGame : Game, IHaveDrawingTools
         {
             script.AfterStart();
         }
-
-        LoadingText = "Grabage collector ...";
-        GC.Collect();
 
         LoadingText = "Done!";
         Loading = false;
@@ -179,7 +169,6 @@ public abstract class MonoGame : Game, IHaveDrawingTools
     protected override void Update(GameTime gameTime)
     {
         Time.UpdateGameTime(in gameTime);
-        lastGametime = gameTime;
 
         if (this.IsActive)
         {
@@ -190,10 +179,9 @@ public abstract class MonoGame : Game, IHaveDrawingTools
             }
         }
 
-        Input.SetStates(Keyboard.GetState(), mstate);
         foreach (FriteCollection2.UI.ButtonCore but in _buttons)
         {
-            but.Update();
+            but.Update(mstate.Position, mstate.LeftButton == ButtonState.Pressed);
         }
         this.OnUpdate(gameTime);
         base.Update(gameTime);

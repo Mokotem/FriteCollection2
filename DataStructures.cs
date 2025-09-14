@@ -58,70 +58,21 @@ public class Environment : IDraw, IHaveRectangle
     {
         GameManager.Draw.Batch.Draw(Target, Rect, null, Color.White, 0, Vector2.Zero, SpriteEffects.None, depth);
     }
-}
 
-public static class Input
-{
-    private static KeyboardState _kbstate, _prekbstate;
-    private static MouseState _mouseState, _pMouseState;
-
-    public static KeyboardState KB => _kbstate;
-    public static KeyboardState KBP => _prekbstate;
-
-    public static class Mouse
+    public void Draw(int amount)
     {
-        public static MouseState State => _mouseState;
-        public static MouseState StateP => _pMouseState;
-
-        private static Bounds _origin = Bounds.TopLeft;
-        public static Bounds GridOrigin
-        {
-            get => _origin;
-            set
-            {
-                _origin = value;
-            }
-        }
-
-        public static Vector2 GetVectorPosition(in Environment envi)
-        {
-            Vector2 offset = new Vector2(-envi.Rect.X, -envi.Rect.Y);
-            offset += new Vector2(State.Position.X, State.Position.Y);
-            return new Vector2(offset.X / (envi.Rect.Width / envi.Target.Width),
-                offset.Y / (envi.Rect.Height / envi.Target.Height)) + envi.Bounds[(int)_origin];
-        }
-        public static Vector2 GetVectorPosition(in Environment envi, Vector2 mouse)
-        {
-            Vector2 offset = new Vector2(-envi.Rect.X, -envi.Rect.Y);
-            offset += mouse;
-            return new Vector2(offset.X / (envi.Rect.Width / envi.Target.Width),
-                offset.Y / (envi.Rect.Height / envi.Target.Height));
-        }
-
-        public static Point GetPointPosition(in Environment envi)
-        {
-            Point offset = new Point(-envi.Rect.X, -envi.Rect.Y);
-            offset += new Point(State.Position.X, State.Position.Y);
-            return new Point(offset.X / (envi.Rect.Width / envi.Target.Width),
-                offset.Y / (envi.Rect.Height / envi.Target.Height));
-        }
-
-
-        public static Point GetPointPosition(in Environment envi, Point mouse)
-        {
-            Point offset = new Point(-envi.Rect.X, -envi.Rect.Y);
-            offset += mouse;
-            return new Point(offset.X / (envi.Rect.Width / envi.Target.Width),
-                offset.Y / (envi.Rect.Height / envi.Target.Height));
-        }
+        GameManager.Draw.Batch.Draw(Target,
+            new Rectangle(Rect.X, Rect.Y, Rect.Width, amount),
+            new Rectangle(0, 0, Target.Width, amount),
+            Color.White);
     }
 
-    public static void SetStates(KeyboardState kbs, MouseState mss)
+    public void Draw(int amount, float depth)
     {
-        _prekbstate = _kbstate;
-        _pMouseState = _mouseState;
-        _kbstate = kbs;
-        _mouseState = mss;
+        GameManager.Draw.Batch.Draw(Target,
+             new Rectangle(Rect.X, Rect.Y, Rect.Width, amount),
+             new Rectangle(0, 0, Target.Width, amount), Color.White, 0, Vector2.Zero, SpriteEffects.None,
+             depth);
     }
 }
 
