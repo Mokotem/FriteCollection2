@@ -560,7 +560,7 @@ public partial class Hitbox
             return false;
         }
 
-        public bool Check(GameManager.Discriminent<Hitbox> discr)
+        public bool Check(Hitbox.Discriminent<Hitbox> discr)
         {
             this.UpdatePos();
             foreach (Hitbox col in _hitBoxesList[_layer])
@@ -650,7 +650,7 @@ public partial class Hitbox
             return c;
         }
 
-        public bool Check(out Hitbox.Rectangle collider, GameManager.Discriminent<Hitbox> discr)
+        public bool Check(out Hitbox.Rectangle collider, Discriminent<Hitbox> discr)
         {
             this.UpdatePos();
             foreach (Hitbox col in _hitBoxesList[_layer])
@@ -672,7 +672,7 @@ public partial class Hitbox
             return false;
         }
 
-        public bool Check(byte layer, GameManager.Discriminent<Hitbox> discr, string tag = null)
+        public bool Check(byte layer, Discriminent<Hitbox> discr, string tag = null)
         {
             this.UpdatePos();
             foreach (Hitbox col in _hitBoxesList[layer])
@@ -694,7 +694,7 @@ public partial class Hitbox
             return false;
         }
 
-        public bool Check(byte layer, GameManager.Discriminent<Hitbox> discr, out Hitbox.Rectangle colider)
+        public bool Check(byte layer, Discriminent<Hitbox> discr, out Hitbox.Rectangle colider)
         {
             this.UpdatePos();
             foreach (Hitbox col in _hitBoxesList[layer])
@@ -802,13 +802,13 @@ public partial class Hitbox
         }
 
         public Collision<Rectangle>[] AdvancedCheck(
-            out Sides side, GameManager.Discriminent<Hitbox> discr)
+            out Sides side, Discriminent<Hitbox> discr)
         {
             return _advancedCheck(out side, discr);
         }
 
         private Collision<Rectangle>[] _advancedCheck(
-            out Sides side, GameManager.Discriminent<Hitbox> discr)
+            out Sides side, Discriminent<Hitbox> discr)
         {
             this.UpdatePos();
             List<Collision<Rectangle>> cols = new List<Collision<Rectangle>>();
@@ -954,7 +954,7 @@ public partial class Hitbox
             if (Active)
             {
                 UpdatePos();
-                GameManager.Draw.Batch.DrawRectangle
+                GraphicDistributor.Batch.DrawRectangle
                 (
                     new Microsoft.Xna.Framework.Rectangle
                     (
@@ -970,7 +970,7 @@ public partial class Hitbox
 
                 if (IsInfinitOnX == Align.Left)
                 {
-                    GameManager.Draw.Batch.DrawLine(
+                    GraphicDistributor.Batch.DrawLine(
                         (int)(float.Round(p2.X - 2) - Camera.Position.X),
                         (int)(float.Round(_point.Y + 2) - Camera.Position.Y),
                         (int)(float.Round(p2.X - 2) - Camera.Position.X),
@@ -980,7 +980,7 @@ public partial class Hitbox
                 }
                 else if (IsInfinitOnX == Align.Right)
                 {
-                    GameManager.Draw.Batch.DrawLine(
+                    GraphicDistributor.Batch.DrawLine(
                         (int)(float.Round(_point.X + 3) - Camera.Position.X),
                         (int)(float.Round(_point.Y + 2) - Camera.Position.Y),
                         (int)(float.Round(_point.X + 3) - Camera.Position.X),
@@ -991,7 +991,7 @@ public partial class Hitbox
 
                 if (IsInfinitOnY == Align.Left)
                 {
-                    GameManager.Draw.Batch.DrawLine(
+                    GraphicDistributor.Batch.DrawLine(
                         (int)(float.Round(_point.X + 2) - Camera.Position.X),
                         (int)(float.Round(p2.Y - 2) - Camera.Position.Y),
                         (int)(float.Round(p2.X - 2) - Camera.Position.X),
@@ -1001,7 +1001,7 @@ public partial class Hitbox
                 }
                 else if (IsInfinitOnY == Align.Right)
                 {
-                    GameManager.Draw.Batch.DrawLine(
+                    GraphicDistributor.Batch.DrawLine(
                         (int)(float.Round(_point.X + 2) - Camera.Position.X),
                         (int)(float.Round(_point.Y + 3) - Camera.Position.Y),
                         (int)(float.Round(p2.X - 2) - Camera.Position.X),

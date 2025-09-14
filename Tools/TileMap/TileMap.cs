@@ -73,7 +73,7 @@ public class TileMap : IDisposable
         this._targetLayers = settings.layers;
         _file = file;
 
-        SpriteBatch batch = GameManager.Draw.Batch;
+        SpriteBatch batch = GraphicDistributor.Batch;
 
         _targets = new RenderTarget2D[4];
 
@@ -110,15 +110,15 @@ public class TileMap : IDisposable
 
                 _targets[layer_id] = new RenderTarget2D
                 (
-                    GameManager.Draw.Device,
+                    GraphicDistributor.Device,
                     file.width,
                     file.height
                 );
 
                 TileSet _refTileSet = settings.TileSets[layer.tileset];
 
-                GameManager.Draw.Device.SetRenderTarget(_targets[layer_id]);
-                GameManager.Draw.Device.Clear(Color.Transparent);
+                GraphicDistributor.Device.SetRenderTarget(_targets[layer_id]);
+                GraphicDistributor.Device.Clear(Color.Transparent);
                 batch.Begin(samplerState: SamplerState.PointClamp);
 
                 OgmoLayerBlock data = layer as OgmoLayerBlock;
@@ -299,7 +299,7 @@ public class TileMap : IDisposable
 
     public void Draw(byte i)
     {
-        GameManager.Draw.Batch.Draw
+        GraphicDistributor.Batch.Draw
             (
                 _targets[i],
                 new Rectangle

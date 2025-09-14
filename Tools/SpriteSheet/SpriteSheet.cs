@@ -1,4 +1,5 @@
 ﻿using System;
+using FriteCollection2.Entity;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -23,7 +24,7 @@ public class SpriteSheet : IDisposable
         {
             for (int y = 0; y < hCount; y++)
             {
-                Texture2D tex = new Texture2D(GameManager.Draw.Device,
+                Texture2D tex = new Texture2D(GraphicDistributor.Device,
                     width, height);
                 Color[] data = new Color[width * height];
 
@@ -55,7 +56,7 @@ public class NotFoundSpriteSheet : SpriteSheet
     public NotFoundSpriteSheet(int width, int height)
         : base(Entity.Renderer.DefaultTexture, 2, 2)
     {
-        _tex = GameManager.CreateNotFoundTexture(width, height);
+        _tex = Renderer.CreateNotFoundTexture(GraphicDistributor.Device, width, height);
     }
 
     public override Texture2D this[int x, int y] => _tex;

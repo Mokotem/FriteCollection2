@@ -6,6 +6,7 @@ using MonoGame.Extended;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace FriteCollection2.UI;
 
@@ -91,7 +92,7 @@ public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
         {
             this.Origin = origin;
             this.Extend = extend;
-            this.environment = GameManager.Environments[env];
+            this.environment = _defaultEnvironment;
         }
 
         public Rectangle(byte env, Bounds origin, Extend extend, Point scale)
@@ -99,7 +100,7 @@ public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
             this.Origin = origin;
             this.Extend = extend;
             this.Scale = scale;
-            this.environment = GameManager.Environments[env];
+            this.environment = _defaultEnvironment;
         }
 
         public Rectangle(byte env, Bounds origin, Extend extend, Point scale, Point position)
@@ -108,7 +109,7 @@ public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
             this.Extend = extend;
             this.Scale = scale;
             this.Position = position;
-            this.environment = GameManager.Environments[env];
+            this.environment = _defaultEnvironment;
         }
 
         public Rectangle(in Environment env, Bounds origin, Extend extend)
@@ -222,7 +223,7 @@ public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
                     cursor.X = spacing.X;
                     if (u is Text && (u as Text).Edit is not null)
                     {
-                        cursor.Y += (int)GameManager.Font.MeasureString((u as Text).Edit).Y + spacing.Y;
+                        cursor.Y += (int)FriteCollection2.UI.Text.Font.MeasureString((u as Text).Edit).Y + spacing.Y;
                     }
                     else
                     {
@@ -406,9 +407,9 @@ public class Image : UI, IEdit<Texture2D>, IDisposable, IDraw
                     new(1, -1)
                     })
                 {
-                    GameManager.Draw.Batch.Draw
+                    GraphicDistributor.Batch.Draw
             (
-                image,
+                FriteCollection2.Entity.Renderer.DefaultTexture,
                 new Microsoft.Xna.Framework.Rectangle(rect.Location + r, rect.Size),
                 null,
                 outlineColor,
@@ -420,7 +421,7 @@ public class Image : UI, IEdit<Texture2D>, IDisposable, IDraw
                 }
             }
 
-                GameManager.Draw.Batch.Draw(
+                GraphicDistributor.Batch.Draw(
             image,
             rect,
             null,
@@ -447,6 +448,22 @@ public class Text : UI, IEdit<string>, IDraw
     private Microsoft.Xna.Framework.Rectangle par;
     private string text;
     public bool Outline;
+
+    private static SpriteFont _font;
+
+    /// <summary>
+    /// Police principale du projet.
+    /// </summary>
+    public static SpriteFont Font => _font;
+
+    /// <summary>
+    /// Mettre la police principale du projet.
+    /// </summary>
+    /// <param name="font"></param>
+    public static void SetFont(SpriteFont font)
+    {
+        _font = font;
+    }
 
     public static Color DefaultOutlineColor = Color.Black;
 
@@ -555,17 +572,18 @@ public class Text : UI, IEdit<string>, IDraw
                         return string.Empty;
                     }
 
-                    if (w > textWidth)
-                        textWidth = w;
+                    if (w * FontAspect.X > textWidth)
+                        textWidth = w * FontAspect.X;
                     w += l + 1;
 
                     if (w > maxX)
                     {
                         ++lineNumber;
-                        if (lineNumber > maxLine)
+                        if (maxLine > 0 && lineNumber > maxLine)
                         {
                             exedent = (ushort)(w - maxX);
-                            throw new System.Exception("boite trop petite");
+                            throw new System.Exception("la longueur du texte est trop grande (+" + exedent
++ "). Il faut faire une nouvelle page dans la boite.");
                         }
                         w = GetWordLength(words[i], exepts);
                         text = text.Remove(text.Length - 1);
@@ -585,7 +603,7 @@ public class Text : UI, IEdit<string>, IDraw
                 while (i < words.Length)
                 {
                     string test = text + words[i];
-                    if (GameManager.Font.MeasureString(test).X > rect.Width)
+                    if (Font.MeasureString(test).X > rect.Width)
                     {
                         ++lineNumber;
                         if (lineNumber > maxLine)
@@ -593,7 +611,7 @@ public class Text : UI, IEdit<string>, IDraw
                             exedent = 1;
                             return string.Empty;
                         }
-                        w = GameManager.Font.MeasureString(words[i]).X;
+                        w = Font.MeasureString(words[i]).X;
                         if (w > textWidth)
                             textWidth = (int)float.Round(w);
                         text = text.Remove(text.Length - 1);
@@ -694,14 +712,14 @@ public class Text : UI, IEdit<string>, IDraw
                     new(1, -1)
                 })
                 {
-                    GameManager.Draw.Batch.DrawString
-                    (GameManager.Font, resultString, new Vector2(rect.X + r.X + posX, rect.Y + r.Y),
+                    GraphicDistributor.Batch.DrawString
+                    (Font, resultString, new Vector2(rect.X + r.X + posX, rect.Y + r.Y),
                     OutlineColor, 0, Vector2.Zero, Size,
                     SpriteEffects.None, this.depth + 0.0001f);
                 }
             }
-            GameManager.Draw.Batch.DrawString
-                        (GameManager.Font, resultString, new Vector2(rect.X + posX, rect.Y),
+            GraphicDistributor.Batch.DrawString
+                        (Font, resultString, new Vector2(rect.X + posX, rect.Y),
                         this.Color, 0, Vector2.Zero, Size,
                         SpriteEffects.None, this.depth);
         }
@@ -709,7 +727,7 @@ public class Text : UI, IEdit<string>, IDraw
 
     public void Debug()
     {
-        GameManager.Draw.Batch.DrawRectangle(
+        GraphicDistributor.Batch.DrawRectangle(
             rect.ToRectangleF(), Entity.Hitboxs.Hitbox.DebugColor,
             1, this.depth + 0.0001f);
     }
@@ -742,8 +760,8 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
             sy = size.Y / 2;
         }
 
-        GraphicsDevice gd = GameManager.Draw.Device;
-        SpriteBatch sb = GameManager.Draw.Batch;
+        GraphicsDevice gd = GraphicDistributor.Device;
+        SpriteBatch sb = GraphicDistributor.Batch;
         RenderTarget2D rt = new RenderTarget2D(gd, size.X, size.Y);
 
         gd.SetRenderTarget(rt);
@@ -854,7 +872,7 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
         if (_active)
         {
             if (texture != null)
-                GameManager.Draw.Batch.Draw
+                GraphicDistributor.Batch.Draw
                  (texture, rect, null, Color,
                  0, Vector2.Zero, SpriteEffects.None, this.depth);
             foreach (UI element in childs.ToArray())

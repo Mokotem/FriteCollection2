@@ -1,4 +1,5 @@
 ﻿using FriteCollection2.Entity;
+using FriteCollection2.Entity.Hitboxs;
 using FriteCollection2.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -51,17 +52,17 @@ public class Environment : IDraw, IHaveRectangle
 
     public void Draw()
     {
-        GameManager.Draw.Batch.Draw(Target, Rect, Color.White);
+        GraphicDistributor.Batch.Draw(Target, Rect, Color.White);
     }
 
     public void Draw(float depth)
     {
-        GameManager.Draw.Batch.Draw(Target, Rect, null, Color.White, 0, Vector2.Zero, SpriteEffects.None, depth);
+        GraphicDistributor.Batch.Draw(Target, Rect, null, Color.White, 0, Vector2.Zero, SpriteEffects.None, depth);
     }
 
     public void Draw(int amount)
     {
-        GameManager.Draw.Batch.Draw(Target,
+        GraphicDistributor.Batch.Draw(Target,
             new Rectangle(Rect.X, Rect.Y, Rect.Width, amount),
             new Rectangle(0, 0, Target.Width, amount),
             Color.White);
@@ -69,7 +70,7 @@ public class Environment : IDraw, IHaveRectangle
 
     public void Draw(int amount, float depth)
     {
-        GameManager.Draw.Batch.Draw(Target,
+        GraphicDistributor.Batch.Draw(Target,
              new Rectangle(Rect.X, Rect.Y, Rect.Width, amount),
              new Rectangle(0, 0, Target.Width, amount), Color.White, 0, Vector2.Zero, SpriteEffects.None,
              depth);
@@ -82,7 +83,12 @@ public class Environment : IDraw, IHaveRectangle
 public static class Time
 {
     private static float _sp = 1f;
-    internal static float _frameTime = 1f / GameManager.Fps;
+    internal static float _frameTime;
+
+    public static void SetFrameTime(float value)
+    {
+        _frameTime = value;
+    }
 
     /// <summary>
     /// 'vitesse' du temps. 0f arrêt, 1f normal, 2f rapide
@@ -204,9 +210,9 @@ public abstract class Executable : IDisposable
     {
         set
         {
-            if (GameManager.Instance.CurrentExecutables.Contains(this) == true)
+            if (GraphicDistributor.Executables.Contains(this) == true)
             {
-                List<Executable> _currentScripts = GameManager.Instance.CurrentExecutables;
+                List<Executable> _currentScripts = GraphicDistributor.Executables;
                 _currentScripts.Remove(this);
 
                 layer = value;
@@ -245,7 +251,7 @@ public abstract class Script : Executable
     /// <param name="active">si 'false' le script ne sera pas appelé.</param>
     public Script(object scene, bool active = true)
     {
-        _attributedScenes = (int)scene;
+        _attributedScenes = scene;
         _active = active;
     }
 
@@ -257,7 +263,7 @@ public abstract class Script : Executable
     /// <exception cref="Exception">le scripte n'existe pas dans la scène.</exception>
     public static T GetScript<T>() where T : Script
     {
-        foreach (Executable s in GameManager.Instance.CurrentExecutables)
+        foreach (Executable s in GraphicDistributor.Executables)
         {
             if (s.GetType().Name == typeof(T).Name)
                 return s as T;
@@ -267,7 +273,7 @@ public abstract class Script : Executable
 
     private bool _active;
     public override bool Active => _active;
-    private int _attributedScenes;
+    private object _attributedScenes;
 
     /// <summary>
     /// Active ou désactive le script.
@@ -283,13 +289,13 @@ public abstract class Script : Executable
     public void Destroy()
     {
         this.Dispose();
-        GameManager.Instance.CurrentExecutables.Remove(this);
+        GraphicDistributor.Executables.Remove(this);
     }
 
     /// <summary>
     /// La scène à laquelle appartient le script.
     /// </summary>
-    internal int AttributedScenes
+    internal object AttributedScenes
     {
         get
         {
@@ -311,7 +317,7 @@ public abstract class Clone : Executable
     /// <param name="exepts">sauf les clones de ce type.</param>
     public static void DestroyAll(params Type[] exepts)
     {
-        foreach (Executable exe in GameManager.Instance.CurrentExecutables.ToArray())
+        foreach (Executable exe in GraphicDistributor.Executables.ToArray())
         {
             if (exe is Clone && !(exepts.Contains(exe.GetType().BaseType) || exepts.Contains(exe.GetType())))
             {
@@ -320,9 +326,9 @@ public abstract class Clone : Executable
         }
     }
 
-    public static void DestroyAll(GameManager.Discriminent<Clone> discr)
+    public static void DestroyAll(Hitbox.Discriminent<Clone> discr)
     {
-        foreach (Executable exe in GameManager.Instance.CurrentExecutables.ToArray())
+        foreach (Executable exe in GraphicDistributor.Executables.ToArray())
         {
             if (exe is Clone && discr(exe as Clone))
             {
@@ -352,7 +358,7 @@ public abstract class Clone : Executable
     public Clone()
     {
         _active = true;
-        GameManager.Instance.CurrentExecutables.Add(this);
+        GraphicDistributor.Executables.Add(this);
     }
 
     /// <summary>
@@ -363,7 +369,7 @@ public abstract class Clone : Executable
         this._active = false;
         this.OnDestroy();
         this.Dispose();
-        GameManager.Instance.CurrentExecutables.Remove(this);
+        GraphicDistributor.Executables.Remove(this);
         isdestroyed = true;
     }
 }

@@ -24,13 +24,15 @@ public abstract class ButtonCore : Panel
         }
     }
 
-    private FriteModel.MonoGame I => GameManager.Instance;
+    private static FriteModel.MonoGame I;
 
-    private bool clic;
+    public static void SetInstance(in FriteModel.MonoGame instance)
+    {
+        I = instance;
+    }
 
     private bool IsInRange(Point pos) =>
-        GameManager.Instance.IsActive
-     && pos.X >= this.mRect.X && pos.X < this.mRect.X + this.mRect.Width
+        pos.X >= this.mRect.X && pos.X < this.mRect.X + this.mRect.Width
      && pos.Y >= this.mRect.Y && pos.Y < this.mRect.Y + this.mRect.Height;
 
     protected bool b;
@@ -69,14 +71,6 @@ public abstract class ButtonCore : Panel
 
     internal virtual void Update(Point mousePos, bool mousePressed)
     {
-        clic =
-        enabled
-     && GameManager.Instance.IsActive
-     && _active
-     && mousePressed
-     && IsInRange(GetPointPosition(in this.Space.environment, I.MouseClickedPosition))
-     && IsInRange(GetPointPosition(in this.Space.environment, mousePos))
-     && Time.Timer >= 0.2f;
         if (_active)
         {
             if (enabled)

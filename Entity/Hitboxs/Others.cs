@@ -8,6 +8,7 @@ namespace FriteCollection2.Entity.Hitboxs;
 
 public abstract partial class Hitbox
 {
+    public delegate bool Discriminent<T>(T truc);
     private const int _numberOfLayers = 3;
     private const float Pis2 = float.Pi / 2f;
 
@@ -68,7 +69,7 @@ public abstract partial class Hitbox
     /// <param name="id">numéro de la couche</param>
     /// <param name="discr">fonction</param>
     /// <example>ClearLayer(0, (Hitbox hit) => hit is Hitbox.Rectangle && hit.PositionOffset.X > 30)</example>
-    public static void ClearLayer(byte id, GameManager.Discriminent<Hitbox> discr)
+    public static void ClearLayer(byte id, Discriminent<Hitbox> discr)
     {
         ushort i = 0;
         while (i < _hitBoxesList[id].Count)
@@ -388,10 +389,10 @@ public abstract partial class Hitbox
                 this.UpdatePos();
                 if (float.Abs(float.Sin(_dir)) < 0.001f)
                 {
-                    GameManager.Draw.Batch.DrawLine
+                    GraphicDistributor.Batch.DrawLine
                     (
                         _point.X, 0,
-                        _point.X, Screen.height,
+                        _point.X, GraphicDistributor.Height,
                         _color[_layer] * (thickness == 0 ? 1 : 0.2f),
                         thickness: thickness + 1
                     );
@@ -403,15 +404,15 @@ public abstract partial class Hitbox
                     if (float.Abs(norme.Y) > float.Abs(norme.X))
                     {
                         p1 = new Vector2(0, f(0));
-                        p2 = new Vector2(Screen.widht, f(Screen.widht));
+                        p2 = new Vector2(GraphicDistributor.Width, f(GraphicDistributor.Width));
                     }
                     else
                     {
                         p1 = new Vector2(g(0), 0);
-                        p2 = new Vector2(g(Screen.height), Screen.height);
+                        p2 = new Vector2(g(GraphicDistributor.Height), GraphicDistributor.Height);
                     }
 
-                    GameManager.Draw.Batch.DrawLine
+                    GraphicDistributor.Batch.DrawLine
                     (
                         p1.X, p1.Y,
                         p2.X, p2.Y,
@@ -563,7 +564,7 @@ public abstract partial class Hitbox
             if (this.Active)
             {
                 this.UpdatePos();
-                GameManager.Draw.Batch.DrawCircle
+                GraphicDistributor.Batch.DrawCircle
                 (
                     new CircleF(_point, _radius),
                     (int)(float.Sqrt(_radius + 10) * 2),

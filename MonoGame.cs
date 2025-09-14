@@ -14,7 +14,10 @@ namespace FriteModel;
 public abstract class MonoGame : Game, IHaveDrawingTools
 {
     protected GraphicsDeviceManager graphics;
-    private protected SpriteBatch SpriteBatch;
+    protected SpriteBatch SpriteBatch;
+
+    protected object scene;
+    public Color background;
 
     public SpriteBatch Batch => SpriteBatch;
     public GraphicsDeviceManager Graphics => graphics;
@@ -24,11 +27,10 @@ public abstract class MonoGame : Game, IHaveDrawingTools
     public virtual event ScreenUpdate OnScreenUpdate;
     protected bool changingScene = false;
     protected Type[] _childTypes;
-    protected Settings S => GameManager.Settings;
 
     public delegate void ScreenUpdate(bool full);
     
-    protected bool Loading { get; private set; }
+    protected bool Loading { get; set; }
     protected string LoadingText { get; private set; }
 
     public virtual FriteCollection2.Environment[] Environments
@@ -41,7 +43,6 @@ public abstract class MonoGame : Game, IHaveDrawingTools
         IsMouseVisible = true;
         graphics = new GraphicsDeviceManager(this);
         Window.AllowUserResizing = false;
-        GameManager.SetGameInstance(this);
     }
 
     protected List<Executable> _currentExecutables = new List<Executable>();
@@ -52,11 +53,12 @@ public abstract class MonoGame : Game, IHaveDrawingTools
         Loading = true;
         LoadingText = "Loading game ...";
         SpriteBatch = new SpriteBatch(GraphicsDevice);
-        Window.Title = GameManager.Settings.WindowName;
+    }
 
-        graphics.PreferredBackBufferWidth = GameManager.Settings.WindowWidth;
-        graphics.PreferredBackBufferHeight = GameManager.Settings.WindowHeight;
-        FullScreen = GameManager.Settings.FullScreen;
+    protected void Apply(int rw, int rh)
+    {
+        graphics.PreferredBackBufferWidth = rw;
+        graphics.PreferredBackBufferHeight = rh;
 
         Color[] data = new Color[4]
         {
@@ -65,13 +67,11 @@ public abstract class MonoGame : Game, IHaveDrawingTools
         Renderer._notFoundTexture = new Texture2D(GraphicsDevice, 2, 2);
         Renderer._notFoundTexture.SetData<Color>(data);
 
-        GameManager.Fps = GameManager.Settings.FPS;
-        GameManager.SetGameInstance(this);
-        Renderer.SetDefaultTexture(GameManager.CreateTexture(1, 1, Color.White));
+        Renderer.SetDefaultTexture(Renderer.CreateTexture(GraphicsDevice, 1, 1, Color.White));
+
+        graphics.ApplyChanges();
 
         base.Initialize();
-
-        Loading = false;
     }
 
     public virtual void UpdateScriptToScene(Executable[] adds)
@@ -96,7 +96,7 @@ public abstract class MonoGame : Game, IHaveDrawingTools
         foreach (Type type in _childTypes)
         {
             Script instance = (Script)Activator.CreateInstance(type);
-            if (instance.AttributedScenes == GameManager.CurrentScene && instance.Active)
+            if (instance.AttributedScenes.Equals(scene) && instance.Active)
             {
                 CurrentExecutables.Add(instance);
             }
@@ -221,16 +221,16 @@ public class MonoGameDefault : MonoGame
                 GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width,
                 GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height);
         else
-            user = new Point(S.WindowWidth, S.WindowHeight);
+            user = new Point(GraphicDistributor.Width, GraphicDistributor.Height);
 
-        float ratio = float.Min(user.X / (float)S.GameFixeWidth, user.Y / (float)S.GameFixeHeight);
-        Vector2 scale = new Vector2(S.GameFixeWidth * ratio, S.GameFixeHeight * ratio);
+        float ratio = float.Min(user.X / (float)GraphicDistributor.Width, user.Y / (float)GraphicDistributor.Height);
+        Vector2 scale = new Vector2(GraphicDistributor.Width * ratio, GraphicDistributor.Height * ratio);
         Rectangle rect = new Rectangle(
         (int)((user.X - scale.X) / 2f), (int)((user.Y - scale.Y) / 2f),
             (int)scale.X, (int)scale.Y);
 
         game = new FriteCollection2.Environment(rect,
-            new RenderTarget2D(base.GraphicsDevice, S.GameFixeWidth, S.GameFixeHeight));
+            new RenderTarget2D(base.GraphicsDevice, GraphicDistributor.Width, GraphicDistributor.Height));
         ui = new FriteCollection2.Environment(rect,
             new RenderTarget2D(base.GraphicsDevice, rect.Width, rect.Height));
 
@@ -278,7 +278,7 @@ public class MonoGameDefault : MonoGame
     protected override void OnDraw(GameTime gameTime)
     {
         GraphicsDevice.SetRenderTarget(game.Target);
-        GraphicsDevice.Clear(Screen.backGround);
+        GraphicsDevice.Clear(background);
 
         SpriteBatch.Begin(sortMode: SpriteSortMode.BackToFront,
             blendState: BlendState.AlphaBlend);
@@ -337,9 +337,9 @@ public class MonoGameDefaultPixel : FriteModel.MonoGame
                 GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width,
                 GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height);
         else
-            user = new Point(S.WindowWidth, S.WindowHeight);
+            user = new Point(GraphicDistributor.Width, GraphicDistributor.Height);
 
-        Point target = new Point(S.GameFixeWidth, S.GameFixeHeight);
+        Point target = new Point(GraphicDistributor.Width, GraphicDistributor.Height);
         int n = 2;
         while (target.X * n <= user.X && target.Y * n <= user.Y)
             n += 1;
@@ -348,7 +348,7 @@ public class MonoGameDefaultPixel : FriteModel.MonoGame
         game = new FriteCollection2.Environment(new Rectangle(
         (user.X - scale.X) / 2, (user.Y - scale.Y) / 2,
             scale.X, scale.Y),
-            new RenderTarget2D(base.GraphicsDevice, S.GameFixeWidth, S.GameFixeHeight));
+            new RenderTarget2D(base.GraphicsDevice, GraphicDistributor.Width, GraphicDistributor.Height));
     }
 
     public override bool FullScreen
@@ -388,7 +388,7 @@ public class MonoGameDefaultPixel : FriteModel.MonoGame
     protected override void OnDraw(GameTime gameTime)
     {
         GraphicsDevice.SetRenderTarget(game.Target);
-        GraphicsDevice.Clear(Screen.backGround);
+        GraphicsDevice.Clear(background);
 
         SpriteBatch.Begin(sortMode: SpriteSortMode.BackToFront,
                         samplerState: SamplerState.PointClamp,
