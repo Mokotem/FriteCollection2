@@ -12,6 +12,7 @@ public abstract class ButtonCore : Panel
         defaultColor = value;
     }
 
+
     private static Color defaultColor = new Color(0.8f, 0.8f, 0.8f);
     protected Text titleText;
     private bool enabled = true;
@@ -34,8 +35,6 @@ public abstract class ButtonCore : Panel
     private bool IsInRange(Point pos) =>
         pos.X >= this.mRect.X && pos.X < this.mRect.X + this.mRect.Width
      && pos.Y >= this.mRect.Y && pos.Y < this.mRect.Y + this.mRect.Height;
-
-    protected bool b;
 
     private protected bool selected = false;
     private bool previousClic = false;
@@ -77,7 +76,7 @@ public abstract class ButtonCore : Panel
             {
                 selected = IsInRange(GetPointPosition(in Space.environment, mousePos));
 
-                if (b)
+                if (mousePressed)
                 {
                     SetGreyColor();
                 }
@@ -87,10 +86,9 @@ public abstract class ButtonCore : Panel
                     if (titleText is not null)
                         titleText.Color = Color.White;
 
-                    if (previousClic == true && _fonction is not null && selected)
+                    if (previousClic && _fonction is not null && selected)
                     {
                         _fonction();
-                        previousClic = false;
                         if (!enabled) SetGreyColor();
                         selected = false;
                     }
@@ -99,7 +97,7 @@ public abstract class ButtonCore : Panel
             else SetGreyColor();
         }
 
-        previousClic = b;
+        previousClic = mousePressed;
     }
 
     public string EditText
@@ -255,7 +253,7 @@ public class Toggle : ButtonCore
     internal override void Update(Point mousePos, bool mousepressed)
     {
         base.Update(mousePos, mousepressed);
-        if (!b)
+        if (!mousepressed)
         {
             this.Color = _on ? OnColor : OffColor;
         }

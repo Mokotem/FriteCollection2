@@ -7,7 +7,6 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 
 namespace FriteModel;
 
@@ -24,7 +23,6 @@ public abstract class MonoGame : Game, IHaveDrawingTools
     public GraphicsDevice Device => GraphicsDevice;
 
     internal List<FriteCollection2.UI.ButtonCore> _buttons = new List<FriteCollection2.UI.ButtonCore>();
-    public virtual event ScreenUpdate OnScreenUpdate;
     protected bool changingScene = false;
     protected Type[] _childTypes;
 
@@ -53,10 +51,14 @@ public abstract class MonoGame : Game, IHaveDrawingTools
         Loading = true;
         LoadingText = "Loading game ...";
         SpriteBatch = new SpriteBatch(GraphicsDevice);
+        base.Initialize();
     }
 
     protected void Apply(int rw, int rh)
     {
+        if (scene is null)
+            throw new System.NullReferenceException();
+
         graphics.PreferredBackBufferWidth = rw;
         graphics.PreferredBackBufferHeight = rh;
 
@@ -70,8 +72,6 @@ public abstract class MonoGame : Game, IHaveDrawingTools
         Renderer.SetDefaultTexture(Renderer.CreateTexture(GraphicsDevice, 1, 1, Color.White));
 
         graphics.ApplyChanges();
-
-        base.Initialize();
     }
 
     public virtual void UpdateScriptToScene(Executable[] adds)
@@ -170,18 +170,21 @@ public abstract class MonoGame : Game, IHaveDrawingTools
     {
         Time.UpdateGameTime(in gameTime);
 
-        if (this.IsActive)
+        if (_buttons.Count > 0)
         {
-            mstate = Mouse.GetState();
-            if (mstate.LeftButton == ButtonState.Pressed)
+            if (this.IsActive)
             {
-                mcp = new Point(mstate.Position.X, mstate.Position.Y);
+                mstate = Mouse.GetState();
+                if (mstate.LeftButton == ButtonState.Pressed)
+                {
+                    mcp = new Point(mstate.Position.X, mstate.Position.Y);
+                }
             }
-        }
 
-        foreach (FriteCollection2.UI.ButtonCore but in _buttons)
-        {
-            but.Update(mstate.Position, mstate.LeftButton == ButtonState.Pressed);
+            foreach (FriteCollection2.UI.ButtonCore but in _buttons)
+            {
+                but.Update(mstate.Position, mstate.LeftButton == ButtonState.Pressed);
+            }
         }
         this.OnUpdate(gameTime);
         base.Update(gameTime);
@@ -197,222 +200,5 @@ public abstract class MonoGame : Game, IHaveDrawingTools
         this.OnDraw(gameTime);
         changingScene = false;
         base.Draw(gameTime);
-    }
-}
-
-public class MonoGameDefault : MonoGame
-{
-    public MonoGameDefault() : base()
-    {
-
-    }
-
-    private static FriteCollection2.Environment game, ui;
-    internal float aspectRatio;
-    public override event ScreenUpdate OnScreenUpdate;
-
-    public override FriteCollection2.Environment[] Environments => new FriteCollection2.Environment[2] { game, ui };
-
-    public override void UpdateEnvironments()
-    {
-        Point user;
-        if (this._fullScreen)
-            user = new Point(
-                GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width,
-                GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height);
-        else
-            user = new Point(GraphicDistributor.Width, GraphicDistributor.Height);
-
-        float ratio = float.Min(user.X / (float)GraphicDistributor.Width, user.Y / (float)GraphicDistributor.Height);
-        Vector2 scale = new Vector2(GraphicDistributor.Width * ratio, GraphicDistributor.Height * ratio);
-        Rectangle rect = new Rectangle(
-        (int)((user.X - scale.X) / 2f), (int)((user.Y - scale.Y) / 2f),
-            (int)scale.X, (int)scale.Y);
-
-        game = new FriteCollection2.Environment(rect,
-            new RenderTarget2D(base.GraphicsDevice, GraphicDistributor.Width, GraphicDistributor.Height));
-        ui = new FriteCollection2.Environment(rect,
-            new RenderTarget2D(base.GraphicsDevice, rect.Width, rect.Height));
-
-        if (OnScreenUpdate is not null)
-            OnScreenUpdate(_fullScreen);
-    }
-
-    public override bool FullScreen
-    {
-        get => this._fullScreen;
-
-        set
-        {
-            this._fullScreen = value;
-            UpdateEnvironments();
-            Space.SetDefaultEnvironment(in game);
-            FriteCollection2.UI.UI.Rectangle.SetDefaultEnvironment(in ui);
-
-            base.FullScreen = value;
-        }
-    }
-
-    protected override void OnUpdate(GameTime gameTime)
-    {
-        if (!changingScene)
-        {
-            foreach (Executable script in base._currentExecutables.ToArray())
-            {
-                if (script.Active)
-                    script.BeforeUpdate();
-            }
-            foreach (Executable script in base._currentExecutables.ToArray())
-            {
-                if (script.Active)
-                    script.Update();
-            }
-            foreach (Executable script in base._currentExecutables.ToArray())
-            {
-                if (script.Active)
-                    script.AfterUpdate();
-            }
-        }
-    }
-
-    protected override void OnDraw(GameTime gameTime)
-    {
-        GraphicsDevice.SetRenderTarget(game.Target);
-        GraphicsDevice.Clear(background);
-
-        SpriteBatch.Begin(sortMode: SpriteSortMode.BackToFront,
-            blendState: BlendState.AlphaBlend);
-
-        foreach (Executable exe in _currentExecutables)
-        {
-            exe.BeforeDraw();
-        }
-
-        SpriteBatch.End();
-
-        GraphicsDevice.SetRenderTarget(ui.Target);
-        GraphicsDevice.Clear(Color.Transparent);
-
-        SpriteBatch.Begin(sortMode: SpriteSortMode.BackToFront);
-
-        foreach (Executable exe in _currentExecutables)
-        {
-            exe.DrawUI();
-        }
-
-        SpriteBatch.End();
-
-        GraphicsDevice.SetRenderTarget(null);
-        SpriteBatch.Begin();
-        game.Draw();
-        ui.Draw();
-        SpriteBatch.End();
-    }
-}
-
-public class MonoGameDefaultPixel : FriteModel.MonoGame
-{
-    public MonoGameDefaultPixel() : base()
-    {
-
-    }
-
-    public void SetChilds(System.Type[] c)
-    {
-        base._childTypes = c;
-    }
-
-    public override event ScreenUpdate OnScreenUpdate;
-
-    private static FriteCollection2.Environment game;
-    internal float aspectRatio;
-
-    public override FriteCollection2.Environment[] Environments => new FriteCollection2.Environment[1] { game };
-
-    public override void UpdateEnvironments()
-    {
-        Point user;
-        if (this._fullScreen)
-            user = new Point(
-                GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width,
-                GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height);
-        else
-            user = new Point(GraphicDistributor.Width, GraphicDistributor.Height);
-
-        Point target = new Point(GraphicDistributor.Width, GraphicDistributor.Height);
-        int n = 2;
-        while (target.X * n <= user.X && target.Y * n <= user.Y)
-            n += 1;
-        n += -1;
-        Point scale = new Point(target.X * n, target.Y * n);
-        game = new FriteCollection2.Environment(new Rectangle(
-        (user.X - scale.X) / 2, (user.Y - scale.Y) / 2,
-            scale.X, scale.Y),
-            new RenderTarget2D(base.GraphicsDevice, GraphicDistributor.Width, GraphicDistributor.Height));
-    }
-
-    public override bool FullScreen
-    {
-        get => this._fullScreen;
-
-        set
-        {
-            this._fullScreen = value;
-            UpdateEnvironments();
-            Space.SetDefaultEnvironment(in game);
-            FriteCollection2.UI.UI.Rectangle.SetDefaultEnvironment(in game);
-
-            base.FullScreen = value;
-        }
-    }
-
-    protected override void OnUpdate(GameTime gameTime)
-    {
-        if (!changingScene)
-        {
-            foreach (Executable script in base._currentExecutables.ToArray())
-            {
-                script.BeforeUpdate();
-            }
-            foreach (Executable script in base._currentExecutables.ToArray())
-            {
-                script.Update();
-            }
-            foreach (Executable script in base._currentExecutables.ToArray())
-            {
-                script.AfterUpdate();
-            }
-        }
-    }
-
-    protected override void OnDraw(GameTime gameTime)
-    {
-        GraphicsDevice.SetRenderTarget(game.Target);
-        GraphicsDevice.Clear(background);
-
-        SpriteBatch.Begin(sortMode: SpriteSortMode.BackToFront,
-                        samplerState: SamplerState.PointClamp,
-            blendState: BlendState.AlphaBlend);
-
-        foreach (Executable exe in _currentExecutables)
-        {
-            exe.BeforeDraw();
-        }
-
-        SpriteBatch.End();
-
-        SpriteBatch.Begin(sortMode: SpriteSortMode.BackToFront, samplerState: SamplerState.PointClamp);
-
-        foreach (Executable exe in _currentExecutables)
-        {
-            exe.DrawUI();
-        }
-
-        SpriteBatch.End();
-
-        GraphicsDevice.SetRenderTarget(null);
-        SpriteBatch.Begin(samplerState: SamplerState.PointClamp);
-        game.Draw();
-        SpriteBatch.End();
     }
 }
