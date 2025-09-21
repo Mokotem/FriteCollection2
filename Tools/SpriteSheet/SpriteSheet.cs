@@ -9,20 +9,20 @@ public class SpriteSheet : IDisposable
 {
     private readonly Texture2D[,] textures;
 
-    public int Width => textures.GetLength(0);
-    public int Height => textures.GetLength(1);
-    public int Count => textures.GetLength(0) * textures.GetLength(1);
+    public readonly int Width;
+    public readonly int Height;
+    public int Count => Width * Height;
 
     public SpriteSheet(Texture2D texture, int width, int height)
     {
-        int wCount = texture.Width / width;
-        int hCount = texture.Height / height;
+        this.Width = texture.Width / width;
+        this.Height = texture.Height / height;
 
-        textures = new Texture2D[wCount, hCount];
+        textures = new Texture2D[this.Width, this.Height];
 
-        for (int x = 0; x < wCount; x++)
+        for (int x = 0; x < this.Width; x++)
         {
-            for (int y = 0; y < hCount; y++)
+            for (int y = 0; y < this.Height; y++)
             {
                 Texture2D tex = new Texture2D(GraphicDistributor.Device,
                     width, height);
