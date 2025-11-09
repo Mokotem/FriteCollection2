@@ -25,12 +25,8 @@ public abstract class ButtonCore : Panel
         }
     }
 
-    private static FriteModel.MonoGame I;
-
-    public static void SetInstance(in FriteModel.MonoGame instance)
-    {
-        I = instance;
-    }
+    private static List<ButtonCore> _list = new List<ButtonCore>();
+    public static ButtonCore[] ToArray() => _list.ToArray();
 
     private bool IsInRange(Point pos) =>
         pos.X >= this.mRect.X && pos.X < this.mRect.X + this.mRect.Width
@@ -43,7 +39,7 @@ public abstract class ButtonCore : Panel
 
     public override void Dispose()
     {
-        I._buttons.Remove(this);
+        _list.Remove(this);
         _fonction = null;
         if (titleText is not null)
         {
@@ -68,7 +64,7 @@ public abstract class ButtonCore : Panel
             offset.Y / (envi.Rect.Height / envi.Target.Height));
     }
 
-    internal virtual void Update(Point mousePos, bool mousePressed)
+    public virtual void Update(Point mousePos, bool mousePressed)
     {
         if (_active)
         {
@@ -115,27 +111,27 @@ public abstract class ButtonCore : Panel
 
     public ButtonCore(TileSet tileset, Rectangle space, UI parent) : base(tileset, space, parent)
     {
-        I._buttons.Add(this);
+        _list.Add(this);
         RestColor = defaultColor;
     }
 
 
     public ButtonCore(TileSet tileset, Rectangle space) : base(tileset, space)
     {
-        I._buttons.Add(this);
+        _list.Add(this);
         RestColor = defaultColor;
     }
 
     public ButtonCore(Texture2D image, Rectangle space, UI parent) : base(image, space, parent)
     {
-        I._buttons.Add(this);
+         _list.Add(this);
         RestColor = defaultColor;
     }
 
 
     public ButtonCore(Texture2D image, Rectangle space) : base(image, space)
     {
-        I._buttons.Add(this);
+        _list.Add(this);
         RestColor = defaultColor;
     }
 
@@ -146,7 +142,7 @@ public abstract class ButtonCore : Panel
         titleText = new Text(title, new Rectangle(in space.environment, Bounds.TopLeft, Extend.Full, Point.Zero, offs), this);
         titleText.Outline = true;
         this.Add(titleText);
-        I._buttons.Add(this);
+        _list.Add(this);
         RestColor = defaultColor;
     }
 
@@ -155,7 +151,7 @@ public abstract class ButtonCore : Panel
         titleText = new Text(title, new Rectangle(in space.environment, Bounds.TopLeft, Extend.Full, Point.Zero, offs), this);
         titleText.Outline = true;
         this.Add(titleText);
-        I._buttons.Add(this);
+        _list.Add(this);
         RestColor = defaultColor;
     }
 
@@ -164,7 +160,7 @@ public abstract class ButtonCore : Panel
         titleText = new Text(title, new Rectangle(in space.environment, Bounds.TopLeft, Extend.Full, Point.Zero, offs), this);
         titleText.Outline = true;
         this.Add(titleText);
-        I._buttons.Add(this);
+        _list.Add(this);
         RestColor = defaultColor;
     }
 
@@ -173,7 +169,7 @@ public abstract class ButtonCore : Panel
         titleText = new Text(title, new Rectangle(in space.environment, Bounds.TopLeft, Extend.Full, Point.Zero, offs), this);
         titleText.Outline = true;
         this.Add(titleText);
-        I._buttons.Add(this);
+        _list.Add(this);
         RestColor = defaultColor;
     }
 
@@ -181,7 +177,7 @@ public abstract class ButtonCore : Panel
     {
         if (selected && enabled)
         {
-            I.Batch.Draw(Entity.Renderer.DefaultTexture,
+            GraphicDistributor.Batch.Draw(Entity.Renderer.DefaultTexture,
                 new Microsoft.Xna.Framework.Rectangle(
                     this.rect.X - 1,
                     this.rect.Y - 1,
@@ -231,6 +227,7 @@ public class Toggle : ButtonCore
     public Toggle(Texture2D image, Rectangle space) : base(image, space) { _fonction = OnClic; }
     public Toggle(string title, TileSet tileset, Rectangle space) : base(title, tileset, space) { _fonction = OnClic; }
     public Toggle(string title, Texture2D image, Rectangle space) : base(title, image, space) { _fonction = OnClic; }
+    public Toggle(string title, Rectangle space) : base(title, Entity.Renderer._defaultTexture, space) { _fonction = OnClic; }
 
 
     private void OnClic()
@@ -250,7 +247,7 @@ public class Toggle : ButtonCore
         }
     }
 
-    internal override void Update(Point mousePos, bool mousepressed)
+    public override void Update(Point mousePos, bool mousepressed)
     {
         base.Update(mousePos, mousepressed);
         if (!mousepressed)

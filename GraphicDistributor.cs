@@ -52,6 +52,10 @@ public static class GraphicDistributor
     public static int Width => _width;
     public static int Height => _height;
 
+    private static Settings _sets;
+
+    public static byte FPS => _sets.FPS;
+
     /// <summary>
     /// Donner la référence de l'instance MonoGame.
     /// </summary>
@@ -63,6 +67,13 @@ public static class GraphicDistributor
         _executables = exes;
         _width = sets.GameFixeWidth;
         _height = sets.GameFixeHeight;
+        _sets = sets;
+    }
+
+    public static void SetInstance(in GraphicsDevice grapic, in SpriteBatch batch)
+    {
+        _device = grapic;
+        _batch = batch;
     }
 
     public static void DisposeInstance()

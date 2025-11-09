@@ -540,20 +540,23 @@ public partial class Hitbox
 
         public bool Check(string tag = null)
         {
-            this.UpdatePos();
-            foreach (Hitbox col in _hitBoxesList[_layer])
+            if (this.Active)
             {
-                if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag)) && col != this)
+                this.UpdatePos();
+                foreach (Hitbox col in _hitBoxesList[_layer])
                 {
-                    Rectangle hit = col as Rectangle;
-                    hit.UpdatePos();
+                    if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag)) && col != this)
+                    {
+                        Rectangle hit = col as Rectangle;
+                        hit.UpdatePos();
 
-                    foreach (Vector2 p in hit)
-                        if (this.PointInRange(p))
-                            return true;
-                    foreach (Vector2 p in this)
-                        if (hit.PointInRange(p))
-                            return true;
+                        foreach (Vector2 p in hit)
+                            if (this.PointInRange(p))
+                                return true;
+                        foreach (Vector2 p in this)
+                            if (hit.PointInRange(p))
+                                return true;
+                    }
                 }
             }
 
@@ -562,20 +565,23 @@ public partial class Hitbox
 
         public bool Check(Hitbox.Discriminent<Hitbox> discr)
         {
-            this.UpdatePos();
-            foreach (Hitbox col in _hitBoxesList[_layer])
+            if (this.Active)
             {
-                if (col is Rectangle && col.Active && discr(col) && col != this)
+                this.UpdatePos();
+                foreach (Hitbox col in _hitBoxesList[_layer])
                 {
-                    Rectangle hit = col as Rectangle;
-                    hit.UpdatePos();
+                    if (col is Rectangle && col.Active && discr(col) && col != this)
+                    {
+                        Rectangle hit = col as Rectangle;
+                        hit.UpdatePos();
 
-                    foreach (Vector2 p in hit)
-                        if (this.PointInRange(p))
-                            return true;
-                    foreach (Vector2 p in this)
-                        if (hit.PointInRange(p))
-                            return true;
+                        foreach (Vector2 p in hit)
+                            if (this.PointInRange(p))
+                                return true;
+                        foreach (Vector2 p in this)
+                            if (hit.PointInRange(p))
+                                return true;
+                    }
                 }
             }
 
@@ -584,20 +590,23 @@ public partial class Hitbox
 
         public bool Check(byte layer, string tag = null)
         {
-            this.UpdatePos();
-            foreach (Hitbox col in _hitBoxesList[layer])
+            if (this.Active)
             {
-                if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag)) && col != this)
+                this.UpdatePos();
+                foreach (Hitbox col in _hitBoxesList[layer])
                 {
-                    Rectangle hit = col as Rectangle;
-                    hit.UpdatePos();
+                    if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag)) && col != this)
+                    {
+                        Rectangle hit = col as Rectangle;
+                        hit.UpdatePos();
 
-                    foreach (Vector2 p in hit)
-                        if (this.PointInRange(p))
-                            return true;
-                    foreach (Vector2 p in this)
-                        if (hit.PointInRange(p))
-                            return true;
+                        foreach (Vector2 p in hit)
+                            if (this.PointInRange(p))
+                                return true;
+                        foreach (Vector2 p in this)
+                            if (hit.PointInRange(p))
+                                return true;
+                    }
                 }
             }
 
@@ -606,18 +615,21 @@ public partial class Hitbox
 
         public bool Check(byte layer, out Hitbox collider, string tag = null)
         {
-            this.UpdatePos();
-            foreach (Hitbox col in _hitBoxesList[layer])
+            if (this.Active)
             {
-                if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag)) && col != this)
+                this.UpdatePos();
+                foreach (Hitbox col in _hitBoxesList[layer])
                 {
-                    Rectangle hit = col as Rectangle;
-                    hit.UpdatePos();
-
-                    if (InRange(hit._point, hit.p2))
+                    if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag)) && col != this)
                     {
-                        collider = hit;
-                        return true;
+                        Rectangle hit = col as Rectangle;
+                        hit.UpdatePos();
+
+                        if (InRange(hit._point, hit.p2))
+                        {
+                            collider = hit;
+                            return true;
+                        }
                     }
                 }
             }
@@ -628,42 +640,51 @@ public partial class Hitbox
 
         public bool Check(byte layer, out Hitbox[] colliders, string tag = null)
         {
-            bool c = false;
-            List<Hitbox> result = new List<Hitbox>();
-            this.UpdatePos();
-            foreach (Hitbox col in _hitBoxesList[layer])
+            if (this.Active)
             {
-                if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag)) && col != this)
+                bool c = false;
+                List<Hitbox> result = new List<Hitbox>();
+                this.UpdatePos();
+                foreach (Hitbox col in _hitBoxesList[layer])
                 {
-                    Rectangle hit = col as Rectangle;
-                    hit.UpdatePos();
-
-                    if (InRange(hit._point, hit.p2))
+                    if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag)) && col != this)
                     {
-                        result.Add(hit);
-                        c = true;
+                        Rectangle hit = col as Rectangle;
+                        hit.UpdatePos();
+
+                        if (InRange(hit._point, hit.p2))
+                        {
+                            result.Add(hit);
+                            c = true;
+                        }
                     }
                 }
+
+                colliders = result.ToArray();
+                return c;
             }
 
-            colliders = result.ToArray();
-            return c;
+            colliders = null;
+            return false;
         }
 
         public bool Check(out Hitbox.Rectangle collider, Discriminent<Hitbox> discr)
         {
-            this.UpdatePos();
-            foreach (Hitbox col in _hitBoxesList[_layer])
+            if (this.Active)
             {
-                if (col is Rectangle && col.Active && discr(col) && col != this)
+                this.UpdatePos();
+                foreach (Hitbox col in _hitBoxesList[_layer])
                 {
-                    Rectangle hit = col as Rectangle;
-                    hit.UpdatePos();
-
-                    if (InRange(hit._point, hit.p2))
+                    if (col is Rectangle && col.Active && discr(col) && col != this)
                     {
-                        collider = hit;
-                        return true;
+                        Rectangle hit = col as Rectangle;
+                        hit.UpdatePos();
+
+                        if (InRange(hit._point, hit.p2))
+                        {
+                            collider = hit;
+                            return true;
+                        }
                     }
                 }
             }
@@ -674,20 +695,23 @@ public partial class Hitbox
 
         public bool Check(byte layer, Discriminent<Hitbox> discr, string tag = null)
         {
-            this.UpdatePos();
-            foreach (Hitbox col in _hitBoxesList[layer])
+            if (this.Active)
             {
-                if (col is Rectangle && col.Active && discr(col) && col != this)
+                this.UpdatePos();
+                foreach (Hitbox col in _hitBoxesList[layer])
                 {
-                    Rectangle hit = col as Rectangle;
-                    hit.UpdatePos();
+                    if (col is Rectangle && col.Active && discr(col) && col != this)
+                    {
+                        Rectangle hit = col as Rectangle;
+                        hit.UpdatePos();
 
-                    foreach (Vector2 p in hit)
-                        if (this.PointInRange(p))
-                            return true;
-                    foreach (Vector2 p in this)
-                        if (hit.PointInRange(p))
-                            return true;
+                        foreach (Vector2 p in hit)
+                            if (this.PointInRange(p))
+                                return true;
+                        foreach (Vector2 p in this)
+                            if (hit.PointInRange(p))
+                                return true;
+                    }
                 }
             }
 
@@ -696,18 +720,21 @@ public partial class Hitbox
 
         public bool Check(byte layer, Discriminent<Hitbox> discr, out Hitbox.Rectangle colider)
         {
-            this.UpdatePos();
-            foreach (Hitbox col in _hitBoxesList[layer])
+            if (this.Active)
             {
-                if (col is Rectangle && col.Active && discr(col) && col != this)
+                this.UpdatePos();
+                foreach (Hitbox col in _hitBoxesList[layer])
                 {
-                    Rectangle hit = col as Rectangle;
-                    hit.UpdatePos();
-
-                    if (InRange(hit._point, hit.p2))
+                    if (col is Rectangle && col.Active && discr(col) && col != this)
                     {
-                        colider = hit;
-                        return true;
+                        Rectangle hit = col as Rectangle;
+                        hit.UpdatePos();
+
+                        if (InRange(hit._point, hit.p2))
+                        {
+                            colider = hit;
+                            return true;
+                        }
                     }
                 }
             }
@@ -718,18 +745,21 @@ public partial class Hitbox
 
         public bool Check(out Hitbox.Rectangle rect, string tag = null)
         {
-            this.UpdatePos();
-            foreach (Hitbox col in _hitBoxesList[_layer])
+            if (this.Active)
             {
-                if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag)) && col != this)
+                this.UpdatePos();
+                foreach (Hitbox col in _hitBoxesList[_layer])
                 {
-                    Rectangle hit = col as Rectangle;
-                    hit.UpdatePos();
-
-                    if (InRange(hit._point, hit.p2))
+                    if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag)) && col != this)
                     {
-                        rect = hit;
-                        return true;
+                        Rectangle hit = col as Rectangle;
+                        hit.UpdatePos();
+
+                        if (InRange(hit._point, hit.p2))
+                        {
+                            rect = hit;
+                            return true;
+                        }
                     }
                 }
             }
@@ -740,18 +770,21 @@ public partial class Hitbox
 
         public bool Check(out Hitbox.Rectangle rect, byte layer, string tag = null)
         {
-            this.UpdatePos();
-            foreach (Hitbox col in _hitBoxesList[layer])
+            if (this.Active)
             {
-                if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag)) && col != this)
+                this.UpdatePos();
+                foreach (Hitbox col in _hitBoxesList[layer])
                 {
-                    Rectangle hit = col as Rectangle;
-                    hit.UpdatePos();
-
-                    if (InRange(hit._point, hit.p2))
+                    if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag)) && col != this)
                     {
-                        rect = hit;
-                        return true;
+                        Rectangle hit = col as Rectangle;
+                        hit.UpdatePos();
+
+                        if (InRange(hit._point, hit.p2))
+                        {
+                            rect = hit;
+                            return true;
+                        }
                     }
                 }
             }

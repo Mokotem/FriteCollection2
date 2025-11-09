@@ -489,7 +489,7 @@ public class Text : UI, IEdit<string>, IDraw
 
     public string Edit
     {
-        get => text;
+        get => resultString;
         set
         {
             if (value != text)
@@ -528,6 +528,9 @@ public class Text : UI, IEdit<string>, IDraw
 
     public static int GetWordLength(string word, char[] exepts)
     {
+        if (exepts.Length < 1)
+            return word.Length;
+
         int n = 0;
         for(ushort i = 0; i < word.Length; ++i)
         {
@@ -548,13 +551,28 @@ public class Text : UI, IEdit<string>, IDraw
     {
         textWidth = 0;
         string text = "";
-        string[] words = input.Split(" ");
+        string[] words = input.Split(' ', ',', '.', ';', '!', '/', '?');
         int i = 0;
         lineNumber = 1;
         if (sl || words.Length < 2 || rect.Width < 2)
         {
             text = input;
             textWidth = input.Length * FontAspect.X;
+            int maxX;
+            if (HasFontAspect)
+            {
+                maxX = rect.Width / _fontaspect.X;
+            }
+            else
+            {
+                maxX = (int)(rect.Width / _font.MeasureString(input).X);
+            }
+                int wl = GetWordLength(input, exepts);
+            if (wl > maxX)
+            {
+                exedent = (ushort)(wl - maxX);
+                return input;
+            }
         }
         else
         {
@@ -562,14 +580,17 @@ public class Text : UI, IEdit<string>, IDraw
             {
                 int maxX = rect.Width / _fontaspect.X;
                 int w = 0;
+                int l;
                 while (i < words.Length)
                 {
-                    int l = GetWordLength(words[i], exepts);
+                    l = GetWordLength(words[i], exepts);
 
-                    if (l > maxX)
+                    while (l > maxX)
                     {
-                        exedent = (ushort)(l - maxX);
-                        return string.Empty;
+                        text += "\n" + words[i].Remove(maxX);
+                        words[i] = words[i].Remove(0, maxX);
+                        ++lineNumber;
+                        l = GetWordLength(words[i], exepts);
                     }
 
                     if (w * FontAspect.X > textWidth)
