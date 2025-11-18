@@ -13,7 +13,7 @@ public class SpriteSheet : IDisposable
     public readonly int Height;
     public int Count => Width * Height;
 
-    public SpriteSheet(Texture2D texture, int width, int height)
+    public SpriteSheet(Texture2D texture, int width, int height, GraphicsDevice device)
     {
         this.Width = texture.Width / width;
         this.Height = texture.Height / height;
@@ -24,8 +24,7 @@ public class SpriteSheet : IDisposable
         {
             for (int y = 0; y < this.Height; y++)
             {
-                Texture2D tex = new Texture2D(GraphicDistributor.Device,
-                    width, height);
+                Texture2D tex = new Texture2D(device, width, height);
                 Color[] data = new Color[width * height];
 
                 Rectangle rect = new Rectangle(x * width, y * height, width, height);
@@ -53,10 +52,10 @@ public class NotFoundSpriteSheet : SpriteSheet
 {
     private readonly Texture2D _tex;
 
-    public NotFoundSpriteSheet(int width, int height)
-        : base(Entity.Renderer.DefaultTexture, 2, 2)
+    public NotFoundSpriteSheet(int width, int height, GraphicsDevice device)
+        : base(Entity.Renderer.DefaultTexture, 2, 2, device)
     {
-        _tex = Renderer.CreateNotFoundTexture(GraphicDistributor.Device, width, height);
+        _tex = Renderer.CreateNotFoundTexture(device, width, height);
     }
 
     public override Texture2D this[int x, int y] => _tex;

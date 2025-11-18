@@ -1,27 +1,30 @@
 ﻿using FriteCollection2.Entity;
-using FriteCollection2.Entity.Hitboxs;
 using FriteCollection2.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 /// <summary>
 /// Un module 
 /// </summary>
 namespace FriteCollection2;
 
-/// <summary>
-/// Jeu peux dessiner
-/// </summary>
+
 public interface IDraw
 {
-    /// <summary>
-    /// Dessine l'objet.
-    /// </summary>
-    public void Draw();
+    public delegate void DrawFunction(in SpriteBatch batch);
+    public void Draw(in SpriteBatch batch);
+}
+
+public interface IDrawUI
+{
+    public void Draw(in SpriteBatch batch, int width, int height);
+}
+
+public interface ICreateTextures
+{
+    public void CreateTexture(in SpriteBatch batch, GraphicsDevice graphics) { }
 }
 
 public enum Bounds
@@ -62,140 +65,102 @@ public class Environment : IDraw, IHaveRectangle
         Bounds = BoundFunc.CreateBounds(r.Width, r.Height);
     }
 
-    public void Draw()
+    public void Draw(in SpriteBatch batch)
     {
-        GraphicDistributor.Batch.Draw(Target, Rect, Color.White);
+        batch.Draw(Target, Rect, Color.White);
     }
 
-    public void Draw(float depth)
+    public void Draw(in SpriteBatch batch, float depth)
     {
-        GraphicDistributor.Batch.Draw(Target, Rect, null, Color.White, 0, Vector2.Zero, SpriteEffects.None, depth);
+        batch.Draw(Target, Rect, null, Color.White, 0, Vector2.Zero, SpriteEffects.None, depth);
     }
 
-    public void Draw(int amount)
+    public void Draw(in SpriteBatch batch, int amount)
     {
-        GraphicDistributor.Batch.Draw(Target,
+        batch.Draw(Target,
             new Rectangle(Rect.X, Rect.Y, Rect.Width, amount),
             new Rectangle(0, 0, Target.Width, amount),
             Color.White);
     }
 
-    public void Draw(int amount, float depth)
+    public void Draw(in SpriteBatch batch, int amount, float depth)
     {
-        GraphicDistributor.Batch.Draw(Target,
+        batch.Draw(Target,
              new Rectangle(Rect.X, Rect.Y, Rect.Width, amount),
              new Rectangle(0, 0, Target.Width, amount), Color.White, 0, Vector2.Zero, SpriteEffects.None,
              depth);
     }
 }
 
+public interface IExecutable : IDraw
+{
+    public void Load() { }
+    public void Start();
+    public void Update(float dt);
+}
+
 /// <summary>
 /// Représente un objet qui sera appelé dans la boucle principale.
 /// </summary>
-public interface IExecutable : IDisposable
+public interface IAdvancedExecutable : IExecutable, IDrawUI, ICreateTextures, IDisposable
 {
-    public bool Active { get; }
-    /// <summary>
-    /// Appelé au début de la scène
-    /// </summary>
-    public void Start() { }
+    public void BeforeStart() { }
     public void AfterStart() { }
 
-    /// <summary>
-    /// s'execute à chaque frame. Avant tout 'Update'.
-    /// </summary>
     public void BeforeUpdate(float dt) { }
-    /// <summary>
-    /// s'execute à chaque frame.
-    /// </summary>
-    public void Update(float dt) { }
-    /// <summary>
-    /// s'execute à chaque frame. Après tout 'Update'.
-    /// </summary>
     public void AfterUpdate(float dt) { }
-
-
-    public void DrawBackground() { }
-    public void BeforeDraw() { }
-    public void DrawShader(SpriteBatch batch) { }
-    public void AfterDraw() { }
-
     public void WhenPaused() { }
 
-    /// <summary>
-    /// Méthode supplémentaire pour dessiner, utilisé de base pour l'interface.
-    /// </summary>
-    public void DrawUI() { }
-    public void DrawMain() { }
 
-    /// <summary>
-    /// Ici, charger toutes les ressources. (est appelé avant 'Start')
-    /// </summary>
-    public void Load() { }
+    public void DrawBackground(in SpriteBatch batch) { }
+    public void BeforeDraw(in SpriteBatch batch) { }
+    public void DrawShader(in SpriteBatch batch) { }
+    public void AfterDraw(in SpriteBatch batch) { }
+    public void DrawUI(in SpriteBatch batch, int width, int height) { }
+    public void DrawMain(in SpriteBatch batch) { }
 }
 
-
-
-public abstract class Script : IExecutable
+public class Scene : IExecutable
 {
-    /// <param name="scene">Scène à laquelle appartient le script. Doit être convertible en 'int'</param>
-    /// <param name="active">si 'false' le script ne sera pas appelé.</param>
-    public Script(object scene, bool active = true)
+    private readonly IAdvancedExecutable[] exes;
+    public IAdvancedExecutable[] Scripts => exes;
+
+    public Scene(params IAdvancedExecutable[] exes)
     {
-        _attributedScenes = scene;
-        _active = active;
+        this.exes = exes;
     }
 
-    /// <summary>
-    /// Donne la référence d'un script dans la scène.
-    /// </summary>
-    /// <typeparam name="T">Le script</typeparam>
-    /// <returns></returns>
-    /// <exception cref="Exception">le scripte n'existe pas dans la scène.</exception>
-    public static T GetScript<T>() where T : Script
+    public void Load()
     {
-        foreach (IExecutable s in GraphicDistributor.Executables)
-        {
-            if (s.GetType().Name.Equals(typeof(T).Name))
-                return (T)s;
-        }
-        throw new Exception("'" + typeof(T).Name + "' scripte n'existe pas dans cette scène.");
+        for (byte i = 0; i < exes.Length; i++)
+            exes[i].Load();
     }
 
-    private bool _active;
-    public bool Active => _active;
-    private object _attributedScenes;
-
-    /// <summary>
-    /// Active ou désactive le script.
-    /// </summary>
-    public void SetActive(bool value)
+    public void Start()
     {
-        this._active = value;
+        byte i;
+        for (i = 0; i < exes.Length; i++)
+            exes[i].BeforeStart();
+        for (i = 0; i < exes.Length; i++)
+            exes[i].Start();
+        for (i = 0; i < exes.Length; i++)
+            exes[i].AfterStart();
     }
 
-    /// <summary>
-    /// Détruit le script pour toujours dans la scène.
-    /// </summary>
-    public void Destroy()
+    public void Update(float dt)
     {
-        this.Dispose();
-        GraphicDistributor.Executables.Remove(this);
+        byte i;
+        for (i = 0; i < exes.Length; i++)
+            exes[i].BeforeUpdate(dt);
+        for (i = 0; i < exes.Length; i++)
+            exes[i].Update(dt);
+        for (i = 0; i < exes.Length; i++)
+            exes[i].AfterUpdate(dt);
     }
 
-    public virtual void Dispose()
+    public void Draw(in SpriteBatch batch)
     {
-
-    }
-
-    /// <summary>
-    /// La scène à laquelle appartient le script.
-    /// </summary>
-    internal object AttributedScenes
-    {
-        get
-        {
-            return _attributedScenes;
-        }
+        for (byte i = 0; i < exes.Length; i++)
+            exes[i].Draw(in batch);
     }
 }

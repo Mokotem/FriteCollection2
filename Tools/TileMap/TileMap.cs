@@ -12,7 +12,7 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace FriteCollection2.Tools.TileMap;
 
-public class TileMap : IDisposable
+public class TileMap : IDisposable, IDraw
 {
     public class Settings
     {
@@ -63,7 +63,7 @@ public class TileMap : IDisposable
 
     private readonly float[] _targetLayers;
 
-    public TileMap(IOgmoFileWithLayer file, Settings settings, int seed)
+    public TileMap(IOgmoFileWithLayer file, Settings settings, int seed, in SpriteBatch batch, GraphicsDevice device)
     {
         Random rand = new Random(seed);
 
@@ -73,7 +73,6 @@ public class TileMap : IDisposable
         this._targetLayers = settings.layers;
         _file = file;
 
-        SpriteBatch batch = GraphicDistributor.Batch;
 
         _targets = new RenderTarget2D[4];
 
@@ -110,15 +109,15 @@ public class TileMap : IDisposable
 
                 _targets[layer_id] = new RenderTarget2D
                 (
-                    GraphicDistributor.Device,
+                    device,
                     file.width,
                     file.height
                 );
 
                 TileSet _refTileSet = settings.TileSets[layer.tileset];
 
-                GraphicDistributor.Device.SetRenderTarget(_targets[layer_id]);
-                GraphicDistributor.Device.Clear(Color.Transparent);
+                device.SetRenderTarget(_targets[layer_id]);
+                device.Clear(Color.Transparent);
                 batch.Begin(samplerState: SamplerState.PointClamp);
 
                 OgmoLayerBlock data = layer as OgmoLayerBlock;
@@ -297,32 +296,32 @@ public class TileMap : IDisposable
 
     public Color Color { get; set; }
 
-    public void Draw(byte i)
+    public void Draw(byte i, in SpriteBatch batch)
     {
-        GraphicDistributor.Batch.Draw
+        batch.Draw
+        (
+            _targets[i],
+            new Rectangle
             (
-                _targets[i],
-                new Rectangle
-                (
-                    (int)float.Round(Position.X - Camera.Position.X),
-                    (int)float.Round(Position.Y - Camera.Position.Y),
-                    _targets[i].Width,
-                    _targets[i].Height
-                ),
-                null,
-                Color,
-                0,
-                Vector2.Zero,
-                SpriteEffects.None,
-                _targetLayers[i]
-            );
+                (int)float.Round(Position.X - Space.Camera.X),
+                (int)float.Round(Position.Y - Space.Camera.Y),
+                _targets[i].Width,
+                _targets[i].Height
+            ),
+            null,
+            Color,
+            0,
+            Vector2.Zero,
+            SpriteEffects.None,
+            _targetLayers[i]
+        );
     }
 
-    public void Draw()
+    public void Draw(in SpriteBatch batch)
     {
         for (byte i = 0; i < 3; ++i)
         {
-            Draw(i);
+            Draw(i, in batch);
         }
     }
 

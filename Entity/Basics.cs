@@ -19,6 +19,8 @@ interface ICopy<T>
 /// </summary>
 public class Space : ICopy<Space>, IEnumerable
 {
+    public static Point Camera = Point.Zero;
+
     public static void SetDefaultEnvironment(in Environment env)
     {
         defaultEnvironment = env;
@@ -191,7 +193,7 @@ public static class BoundFunc
         };
     }
 
-    private static int rounds2(float value) => (int)float.round(value / 2f);
+    private static int rounds2(float value) => (int)float.Round(value / 2f);
 
     public static Vector2[] CreateBounds(float width, float height)
     {
@@ -312,12 +314,12 @@ public class Renderer : ICopy<Renderer>, ILayer
     public short Layer
     {
         get => FromLayer(layer);
-        set => ToLayer(layer);
+        set => layer = ToLayer(value);
     }
 
-    public static Texture2D CreateCircleTexture(int width)
+    public static Texture2D CreateCircleTexture(GraphicsDevice device, int width)
     {
-        Texture2D tex = new Texture2D(GraphicDistributor.Device, width, width);
+        Texture2D tex = new Texture2D(device, width, width);
         Color[] data = new Color[width * width];
         for (int i = 0; i < width; i += 1)
         {
@@ -337,9 +339,9 @@ public class Renderer : ICopy<Renderer>, ILayer
         return tex;
     }
 
-    public static Texture2D CreateCircleTexture(int width, int holeSize)
+    public static Texture2D CreateCircleTexture(GraphicsDevice device, int width, int holeSize)
     {
-        Texture2D tex = new Texture2D(GraphicDistributor.Device, width, width);
+        Texture2D tex = new Texture2D(device, width, width);
         Color[] data = new Color[width * width];
         for (int i = 0; i < width; i += 1)
         {
@@ -361,9 +363,9 @@ public class Renderer : ICopy<Renderer>, ILayer
         return tex;
     }
 
-    public static Texture2D CreateFrameTexture(int width, int height, ushort borderSize)
+    public static Texture2D CreateFrameTexture(GraphicsDevice device, int width, int height, ushort borderSize)
     {
-        Texture2D tex = new Texture2D(GraphicDistributor.Device, width, height);
+        Texture2D tex = new Texture2D(device, width, height);
         Color[] data = new Color[width * height];
         for (int i = 0; i < width; i += 1)
         {
@@ -395,11 +397,6 @@ public class Renderer : ICopy<Renderer>, ILayer
         Texture = _defaultTexture;
         this.layer = ToLayer(layer);
         outlineColor = DefaultOutline;
-    }
-
-    public static RenderTarget2D CreateRenderTarget(int width, int height)
-    {
-        return new RenderTarget2D(GraphicDistributor.Device, width, height);
     }
 
     public Renderer Copy()

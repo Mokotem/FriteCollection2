@@ -1,8 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using MonoGame.Extended;
 
 namespace FriteCollection2.Entity.Hitboxs;
 
@@ -982,17 +983,17 @@ public partial class Hitbox
             return Sides.None;
         }
 
-        public void Draw()
+        public void Draw(in SpriteBatch batch)
         {
             if (Active)
             {
                 UpdatePos();
-                GraphicDistributor.Batch.DrawRectangle
+                batch.DrawRectangle
                 (
                     new Microsoft.Xna.Framework.Rectangle
                     (
-                        (int)(float.Round(_point.X) - Camera.Position.X),
-                        (int)(float.Round(_point.Y) - Camera.Position.Y),
+                        (int)(float.Round(_point.X) - Space.Camera.X),
+                        (int)(float.Round(_point.Y) - Space.Camera.Y),
                         (int)float.Round(p2.X - _point.X),
                         (int)float.Round(p2.Y - _point.Y)
                     ),
@@ -1003,42 +1004,42 @@ public partial class Hitbox
 
                 if (IsInfinitOnX == Align.Left)
                 {
-                    GraphicDistributor.Batch.DrawLine(
-                        (int)(float.Round(p2.X - 2) - Camera.Position.X),
-                        (int)(float.Round(_point.Y + 2) - Camera.Position.Y),
-                        (int)(float.Round(p2.X - 2) - Camera.Position.X),
-                        (int)(float.Round(p2.Y - 2) - Camera.Position.Y),
+                    batch.DrawLine(
+                        (int)(float.Round(p2.X - 2) - Space.Camera.X),
+                        (int)(float.Round(_point.Y + 2) - Space.Camera.Y),
+                        (int)(float.Round(p2.X - 2) - Space.Camera.X),
+                        (int)(float.Round(p2.Y - 2) - Space.Camera.Y),
                     _color[_layer],
                         layerDepth: 0);
                 }
                 else if (IsInfinitOnX == Align.Right)
                 {
-                    GraphicDistributor.Batch.DrawLine(
-                        (int)(float.Round(_point.X + 3) - Camera.Position.X),
-                        (int)(float.Round(_point.Y + 2) - Camera.Position.Y),
-                        (int)(float.Round(_point.X + 3) - Camera.Position.X),
-                        (int)(float.Round(p2.Y - 2) - Camera.Position.Y),
+                    batch.DrawLine(
+                        (int)(float.Round(_point.X + 3) - Space.Camera.X),
+                        (int)(float.Round(_point.Y + 2) - Space.Camera.Y),
+                        (int)(float.Round(_point.X + 3) - Space.Camera.X),
+                        (int)(float.Round(p2.Y - 2) - Space.Camera.Y),
                     _color[_layer],
                         layerDepth: 0);
                 }
 
                 if (IsInfinitOnY == Align.Left)
                 {
-                    GraphicDistributor.Batch.DrawLine(
-                        (int)(float.Round(_point.X + 2) - Camera.Position.X),
-                        (int)(float.Round(p2.Y - 2) - Camera.Position.Y),
-                        (int)(float.Round(p2.X - 2) - Camera.Position.X),
-                        (int)(float.Round(p2.Y - 2) - Camera.Position.Y),
+                    batch.DrawLine(
+                        (int)(float.Round(_point.X + 2) - Space.Camera.X),
+                        (int)(float.Round(p2.Y - 2) - Space.Camera.Y),
+                        (int)(float.Round(p2.X - 2) - Space.Camera.X),
+                        (int)(float.Round(p2.Y - 2) - Space.Camera.Y),
                     _color[_layer],
                         layerDepth: 0);
                 }
                 else if (IsInfinitOnY == Align.Right)
                 {
-                    GraphicDistributor.Batch.DrawLine(
-                        (int)(float.Round(_point.X + 2) - Camera.Position.X),
-                        (int)(float.Round(_point.Y + 3) - Camera.Position.Y),
-                        (int)(float.Round(p2.X - 2) - Camera.Position.X),
-                        (int)(float.Round(_point.Y + 3) - Camera.Position.Y),
+                    batch.DrawLine(
+                        (int)(float.Round(_point.X + 2) - Space.Camera.X),
+                        (int)(float.Round(_point.Y + 3) - Space.Camera.Y),
+                        (int)(float.Round(p2.X - 2) - Space.Camera.X),
+                        (int)(float.Round(_point.Y + 3) - Space.Camera.Y),
                     _color[_layer],
                         layerDepth: 0);
                 }

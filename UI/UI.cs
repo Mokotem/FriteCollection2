@@ -6,7 +6,6 @@ using MonoGame.Extended;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace FriteCollection2.UI;
 
@@ -71,51 +70,44 @@ public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
             this.environment = _defaultEnvironment;
         }
 
-        public Rectangle(Bounds origin, Extend extend, Point scale)
+        public Rectangle(Bounds origin, Extend extend, Point scale) : this(origin, extend)
         {
-            this(origin, extend);
             this.Scale = scale;
         }
 
-        public Rectangle(Bounds origin, Extend extend, Point scale, Point position)
+        public Rectangle(Bounds origin, Extend extend, Point scale, Point position) : this(origin, extend, scale)
         {
-            this(origin, extend, scale);
             this.Position = position;
         }
 
-        public Rectangle(byte env, Bounds origin, Extend extend)
+        public Rectangle(byte env, Bounds origin, Extend extend) : this(origin, extend)
         {
-            this(origin, extend);
             this.environment = _defaultEnvironment;
         }
 
-        public Rectangle(byte env, Bounds origin, Extend extend, Point scale)
+        public Rectangle(byte env, Bounds origin, Extend extend, Point scale) : this(origin, extend, scale)
         {
-            this(origin, extend, scale);
             this.environment = _defaultEnvironment;
         }
 
         public Rectangle(byte env, Bounds origin, Extend extend, Point scale, Point position)
+            : this(origin, extend, scale, position)
         {
-            this(origin, extend, scale, position);
             this.environment = _defaultEnvironment;
         }
 
-        public Rectangle(in Environment env, Bounds origin, Extend extend)
+        public Rectangle(in Environment env, Bounds origin, Extend extend) : this(origin, extend)
         {
-            this(origin, extend);
             this.environment = env;
         }
 
-        public Rectangle(in Environment env, Bounds origin, Extend extend, Point scale)
+        public Rectangle(in Environment env, Bounds origin, Extend extend, Point scale) : this(origin, extend, scale)
         {
-            this(origin, extend, scale);
             this.environment = env;
         }
 
-        public Rectangle(in Environment env, Bounds origin, Extend extend, Point scale, Point position)
+        public Rectangle(in Environment env, Bounds origin, Extend extend, Point scale, Point position) : this(origin, extend, scale, position)
         {
-            this(origin, extend, scale, position);
             this.environment = env;
         }
     }
@@ -317,7 +309,7 @@ public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
         ApplyPosition(papa is null ? space.EnviRect : papa.mRect);
     }
 
-    public virtual void Draw() { }
+    public virtual void Draw(in SpriteBatch batch) { }
 }
 
 public class Image : UI, IEdit<Texture2D>, IDisposable, IDraw
@@ -371,7 +363,7 @@ public class Image : UI, IEdit<Texture2D>, IDisposable, IDraw
     public bool outline = false;
     public Color outlineColor;
 
-    public override void Draw()
+    public new void Draw(in SpriteBatch batch)
     {
         if (_active)
         {
@@ -379,7 +371,7 @@ public class Image : UI, IEdit<Texture2D>, IDisposable, IDraw
             {
                 foreach (Point r in Renderer.outLinePositions)
                 {
-                    GraphicDistributor.Batch.Draw
+                    batch.Draw
             (
                 FriteCollection2.Entity.Renderer.DefaultTexture,
                 new Microsoft.Xna.Framework.Rectangle(rect.Location + r, rect.Size),
@@ -393,7 +385,7 @@ public class Image : UI, IEdit<Texture2D>, IDisposable, IDraw
                 }
             }
 
-            GraphicDistributor.Batch.Draw(
+            batch.Draw(
             image,
             rect,
             null,
@@ -401,7 +393,7 @@ public class Image : UI, IEdit<Texture2D>, IDisposable, IDraw
             0, Vector2.Zero, effect,
             this.depth);
             foreach (UI element in childs)
-                element.Draw();
+                element.Draw(in batch);
         }
     }
 
@@ -685,30 +677,30 @@ public class Text : UI, IEdit<string>, IDraw
         }
     }
 
-    public override void Draw()
+    public void Draw(in SpriteBatch batch)
     {
         if (_active)
         {
             if (Outline)
             {
-                foreach (Vector2 r in Renderer.outLinePositions)
+                foreach (Point r in Renderer.outLinePositions)
                 {
-                    GraphicDistributor.Batch.DrawString
+                    batch.DrawString
                     (Font, resultString, new Vector2(rect.X + r.X + posX, rect.Y + r.Y),
                     OutlineColor, 0, Vector2.Zero, Size,
                     SpriteEffects.None, this.depth + 0.0001f);
                 }
             }
-            GraphicDistributor.Batch.DrawString
+            batch.DrawString
                         (Font, resultString, new Vector2(rect.X + posX, rect.Y),
                         this.Color, 0, Vector2.Zero, Size,
                         SpriteEffects.None, this.depth);
         }
     }
 
-    public void Debug()
+    public void Debug(in SpriteBatch batch)
     {
-        GraphicDistributor.Batch.DrawRectangle(
+        batch.DrawRectangle(
             rect.ToRectangleF(), Entity.Hitboxs.Hitbox.DebugColor,
             1, this.depth + 0.0001f);
     }
@@ -727,6 +719,8 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
     }
 
     public static Texture2D CreatePanelTexture(
+        in SpriteBatch batch,
+        GraphicsDevice device,
         TileSet set,
         Point size)
     {
@@ -741,13 +735,11 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
             sy = size.Y / 2;
         }
 
-        GraphicsDevice gd = GraphicDistributor.Device;
-        SpriteBatch sb = GraphicDistributor.Batch;
-        RenderTarget2D rt = new RenderTarget2D(gd, size.X, size.Y);
+        RenderTarget2D rt = new RenderTarget2D(device, size.X, size.Y);
 
-        gd.SetRenderTarget(rt);
-        gd.Clear(Color.Transparent);
-        sb.Begin(samplerState: SamplerState.PointClamp);
+        device.SetRenderTarget(rt);
+        device.Clear(Color.Transparent);
+        batch.Begin(samplerState: SamplerState.PointClamp);
 
         for (int x = 0; x < 3; x++)
         {
@@ -782,14 +774,14 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
                 else
                     posY = size.Y - sy;
 
-                sb.Draw(set.Texture,
+                batch.Draw(set.Texture,
                     new Microsoft.Xna.Framework.Rectangle(posX, posY, width, height),
                     set.GetRectangle(x + (y * 3)),
                     Color.White);
             }
         }
 
-        sb.End();
+        batch.End();
         return rt;
     }
 
@@ -816,19 +808,19 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
         this.depth = parent.Depth - 0.05f;
     }
 
-    public Panel(TileSet tileSet, Rectangle space)
+    public Panel(TileSet tileSet, in SpriteBatch batch, GraphicsDevice device, Rectangle space)
     {
         this.space = space;
         ApplySpace(space.EnviRect);
-        this.texture = CreatePanelTexture(tileSet, new Point(rect.Width, rect.Height));
+        this.texture = CreatePanelTexture(in batch, device, tileSet, new Point(rect.Width, rect.Height));
     }
 
-    public Panel(TileSet tileSet, Rectangle space, IHaveRectangle parent)
+    public Panel(TileSet tileSet, in SpriteBatch batch, GraphicsDevice device, Rectangle space, IHaveRectangle parent)
     {
         this.papa = parent;
         this.space = space;
         ApplySpace(parent.mRect);
-        this.texture = CreatePanelTexture(tileSet, new Point(rect.Width, rect.Height));
+        this.texture = CreatePanelTexture(in batch, device, tileSet, new Point(rect.Width, rect.Height));
         this.depth = parent.Depth - 0.05f;
     }
 
@@ -848,20 +840,20 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
         this.depth = parent.Depth - 0.05f;
     }
 
-    public override void Draw()
+    public new void Draw(in SpriteBatch batch)
     {
         if (_active)
         {
             if (texture != null)
-                GraphicDistributor.Batch.Draw
+                batch.Draw
                  (texture, rect, null, Color,
                  0, Vector2.Zero, SpriteEffects.None, this.depth);
             foreach (UI element in childs.ToArray())
-                element.Draw();
+                element.Draw(in batch);
         }
     }
 
-    public override void Dispose()
+    public new void Dispose()
     {
         if (texture is not null)
             texture.Dispose();

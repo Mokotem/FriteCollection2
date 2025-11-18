@@ -1,6 +1,8 @@
-﻿using FriteCollection2.Tools.TileMap;
+﻿using Autofac.Core;
+using FriteCollection2.Tools.TileMap;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended.Tiled;
 using System.Collections.Generic;
 
 namespace FriteCollection2.UI;
@@ -37,7 +39,7 @@ public abstract class ButtonCore : Panel
 
     private protected Procedure _fonction;
 
-    public override void Dispose()
+    public new void Dispose()
     {
         _list.Remove(this);
         _fonction = null;
@@ -109,14 +111,16 @@ public abstract class ButtonCore : Panel
         }
     }
 
-    public ButtonCore(TileSet tileset, Rectangle space, UI parent) : base(tileset, space, parent)
+    public ButtonCore(TileSet tileSet, in SpriteBatch batch, GraphicsDevice device, Rectangle space, UI parent)
+        : base(tileSet, in batch, device, space, parent)
     {
         _list.Add(this);
         RestColor = defaultColor;
     }
 
 
-    public ButtonCore(TileSet tileset, Rectangle space) : base(tileset, space)
+    public ButtonCore(TileSet tileSet, in SpriteBatch batch, GraphicsDevice device, Rectangle space)
+        : base(tileSet, in batch, device, space)
     {
         _list.Add(this);
         RestColor = defaultColor;
@@ -137,7 +141,8 @@ public abstract class ButtonCore : Panel
 
     private static readonly Point offs = new(16, 3);
 
-    public ButtonCore(string title, TileSet tileset, Rectangle space, UI parent) : base(tileset, space, parent)
+    public ButtonCore(string title, TileSet tileSet, in SpriteBatch batch, GraphicsDevice device, Rectangle space, UI parent)
+        : base(tileSet, in batch, device, space, parent)
     {
         titleText = new Text(title, new Rectangle(in space.environment, Bounds.TopLeft, Extend.Full, Point.Zero, offs), this);
         titleText.Outline = true;
@@ -146,7 +151,8 @@ public abstract class ButtonCore : Panel
         RestColor = defaultColor;
     }
 
-    public ButtonCore(string title, TileSet tileset, Rectangle space) : base(tileset, space)
+    public ButtonCore(string title, TileSet tileSet, in SpriteBatch batch, GraphicsDevice device, Rectangle space)
+        : base(tileSet, in batch, device, space)
     {
         titleText = new Text(title, new Rectangle(in space.environment, Bounds.TopLeft, Extend.Full, Point.Zero, offs), this);
         titleText.Outline = true;
@@ -173,11 +179,11 @@ public abstract class ButtonCore : Panel
         RestColor = defaultColor;
     }
 
-    public override void Draw()
+    public new void Draw(in SpriteBatch batch)
     {
         if (selected && enabled)
         {
-            GraphicDistributor.Batch.Draw(Entity.Renderer.DefaultTexture,
+            batch.Draw(Entity.Renderer.DefaultTexture,
                 new Microsoft.Xna.Framework.Rectangle(
                     this.rect.X - 1,
                     this.rect.Y - 1,
@@ -191,7 +197,7 @@ public abstract class ButtonCore : Panel
                 SpriteEffects.None,
                 this.depth + 0.001f);
         }
-        base.Draw();
+        base.Draw(in batch);
     }
 }
 
@@ -219,15 +225,24 @@ public class Toggle : ButtonCore
     public Color OnColor { get; init; }
     public Color OffColor { get; init; }
 
-    public Toggle(TileSet tileset, Rectangle space, UI parent) : base(tileset, space, parent) { _fonction = OnClic; }
-    public Toggle(Texture2D image, Rectangle space, UI parent) : base(image, space, parent) { _fonction = OnClic; }
-    public Toggle(string title, TileSet tileset, Rectangle space, UI parent) : base(title, tileset, space, parent) { _fonction = OnClic; }
-    public Toggle(string title, Texture2D image, Rectangle space, UI parent) : base(title, image, space, parent) { _fonction = OnClic; }
-    public Toggle(TileSet tileset, Rectangle space) : base(tileset, space) { _fonction = OnClic; }
-    public Toggle(Texture2D image, Rectangle space) : base(image, space) { _fonction = OnClic; }
-    public Toggle(string title, TileSet tileset, Rectangle space) : base(title, tileset, space) { _fonction = OnClic; }
-    public Toggle(string title, Texture2D image, Rectangle space) : base(title, image, space) { _fonction = OnClic; }
-    public Toggle(string title, Rectangle space) : base(title, Entity.Renderer._defaultTexture, space) { _fonction = OnClic; }
+    public Toggle(TileSet tileSet, in SpriteBatch batch, GraphicsDevice device, Rectangle space, UI parent)
+        : base(tileSet, in batch, device, space, parent) { _fonction = OnClic; }
+    public Toggle(Texture2D image, Rectangle space, UI parent)
+        : base(image, space, parent) { _fonction = OnClic; }
+    public Toggle(string title, TileSet tileSet, in SpriteBatch batch, GraphicsDevice device, Rectangle space, UI parent)
+        : base(title, tileSet, in batch, device, space, parent) { _fonction = OnClic; }
+    public Toggle(string title, Texture2D image, Rectangle space, UI parent)
+        : base(title, image, space, parent) { _fonction = OnClic; }
+    public Toggle(TileSet tileSet, in SpriteBatch batch, GraphicsDevice device, Rectangle space)
+        : base(tileSet, in batch, device, space) { _fonction = OnClic; }
+    public Toggle(Texture2D image, Rectangle space)
+        : base(image, space) { _fonction = OnClic; }
+    public Toggle(string title, TileSet tileSet, in SpriteBatch batch, GraphicsDevice device, Rectangle space)
+        : base(title, tileSet, in batch, device, space) { _fonction = OnClic; }
+    public Toggle(string title, Texture2D image, Rectangle space)
+        : base(title, image, space) { _fonction = OnClic; }
+    public Toggle(string title, Rectangle space)
+        : base(title, Entity.Renderer._defaultTexture, space) { _fonction = OnClic; }
 
 
     private void OnClic()
@@ -259,14 +274,22 @@ public class Toggle : ButtonCore
 
 public class Button : ButtonCore
 {
-    public Button(TileSet tileset, Rectangle space, UI parent) : base(tileset, space, parent) { }
-    public Button(Texture2D image, Rectangle space, UI parent) : base(image, space, parent) { }
-    public Button(TileSet tileset, Rectangle space) : base(tileset, space) { }
-    public Button(Texture2D image, Rectangle space) : base(image, space) { }
-    public Button(string title, TileSet tileset, Rectangle space, UI parent) : base(title, tileset, space, parent) { }
-    public Button(string title, Texture2D image, Rectangle space, UI parent) : base(title, image, space, parent) { }
-    public Button(string title, TileSet tileset, Rectangle space) : base(title, tileset, space) { }
-    public Button(string title, Texture2D image, Rectangle space) : base(title, image, space) { }
+    public Button(TileSet tileSet, in SpriteBatch batch, GraphicsDevice device, Rectangle space, UI parent)
+        : base(tileSet, in batch, device, space, parent) { }
+    public Button(Texture2D image, Rectangle space, UI parent)
+        : base(image, space, parent) { }
+    public Button(TileSet tileSet, in SpriteBatch batch, GraphicsDevice device, Rectangle space)
+        : base(tileSet, in batch, device, space) { }
+    public Button(Texture2D image, Rectangle space)
+        : base(image, space) { }
+    public Button(string title, TileSet tileSet, in SpriteBatch batch, GraphicsDevice device, Rectangle space, UI parent)
+        : base(title, tileSet, in batch, device, space, parent) { }
+    public Button(string title, Texture2D image, Rectangle space, UI parent)
+        : base(title, image, space, parent) { }
+    public Button(string title, TileSet tileSet, in SpriteBatch batch, GraphicsDevice device, Rectangle space)
+        : base(title, tileSet, in batch, device, space) { }
+    public Button(string title, Texture2D image, Rectangle space)
+        : base(title, image, space) { }
 
     public Procedure Fonction
     {

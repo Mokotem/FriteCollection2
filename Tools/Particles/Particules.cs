@@ -1,4 +1,4 @@
-﻿
+﻿using Microsoft.Xna.Framework.Graphics;
 using System;
 
 namespace FriteCollection2.Tools.Particles;
@@ -73,12 +73,12 @@ public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle
         }
     }
 
-    public void Draw()
+    public void Draw(in SpriteBatch batch)
     {
         for (ushort i = 0; i < _data.Length; ++i)
         {
             if (_data[i].Alive)
-                _data[i].Draw();
+                _data[i].Draw(in batch);
         }
     }
 

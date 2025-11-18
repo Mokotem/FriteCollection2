@@ -1,12 +1,13 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended;
 
 namespace FriteCollection2.Entity;
 
 /// <summary>
 /// Object.
 /// </summary>
-public class Object : Entity, ICopy<Object>, IDraw
+public class Object : ICopy<Object>, IDraw
 {
     public Space Space = new Space();
     public Renderer Renderer = new Renderer();
@@ -20,66 +21,60 @@ public class Object : Entity, ICopy<Object>, IDraw
         };
     }
 
-    public void DrawOutline()
+    public void DrawOutline(in SpriteBatch batch)
     {
-        if (!Renderer.hide)
+        if (Renderer.outline)
         {
-            Point pos = new Point((int)(float.Round(Space.Position.X) - Camera.Position.X),
-        (int)(float.Round(Space.Position.Y) - Camera.Position.Y));
+            Point pos = new Point((int)(float.Round(Space.Position.X) - Space.Camera.X),
+                    (int)(float.Round(Space.Position.Y) - Space.Camera.Y));
 
             Point scale = new Point((int)float.Round(Space.Scale.X),
                     (int)float.Round(Space.Scale.Y));
 
-            if (Renderer.outline)
+            foreach (Point r in Renderer.outLinePositions)
             {
-                foreach (Point r in Renderer.outLinePositions)
-                {
-                    GraphicDistributor.Batch.Draw
-                    (
-                        Renderer.Texture,
-                        new Rectangle(pos + r, scale),
-                        null,
-                        Renderer.outlineColor,
-                        0,
-                        Vector2.Zero,
-                        Renderer.effect,
-                        Renderer.outlineLayer
-                    );
-                }
+                batch.Draw
+                (
+                    Renderer.Texture,
+                    new Rectangle(pos + r, scale),
+                    null,
+                    Renderer.outlineColor,
+                    0,
+                    Vector2.Zero,
+                    Renderer.effect,
+                    Renderer.outlineLayer
+                );
             }
         }
     }
 
-    public void DrawBody()
+    public void DrawBody(in SpriteBatch batch)
     {
-        if (!Renderer.hide)
-        {
-            Point pos = new Point((int)(float.Round(Space.Position.X) - Camera.Position.X),
-                        (int)(float.Round(Space.Position.Y) - Camera.Position.Y));
+        Point pos = new Point((int)(float.Round(Space.Position.X) - Space.Camera.X),
+                    (int)(float.Round(Space.Position.Y) - Space.Camera.Y));
 
-            Point scale = new Point((int)float.Round(Space.Scale.X),
-                        (int)float.Round(Space.Scale.Y));
+        Point scale = new Point((int)float.Round(Space.Scale.X),
+                    (int)float.Round(Space.Scale.Y));
 
-            GraphicDistributor.Batch.Draw
-            (
-                Renderer.Texture,
-                new Rectangle(pos, scale),
-                null,
-                Renderer.Color,
-                0,
-                Vector2.Zero,
-                Renderer.effect,
-                Renderer.GetLayer()
-            );
-        }
+        batch.Draw
+        (
+            Renderer.Texture,
+            new Rectangle(pos, scale),
+            null,
+            Renderer.Color,
+            0,
+            Vector2.Zero,
+            Renderer.effect,
+            Renderer.GetLayer()
+        );
     }
 
-    public override void Draw()
+    public void Draw(in SpriteBatch batch)
     {
         if (!Renderer.hide)
         {
-            DrawOutline();
-            DrawBody();
+            DrawOutline(in batch);
+            DrawBody(in batch);
         }
     }
 
@@ -142,17 +137,17 @@ public class Text : IDraw
         Background = Color.Black;
     }
 
-    public void Draw()
+    public void Draw(in SpriteBatch batch)
     {
         if (!Renderer.hide)
         {
-            GraphicDistributor.Batch.Draw
+            batch.Draw
             (
                 Renderer.DefaultTexture,
                 new Rectangle
                 (
-                    Position.X - Camera.Position.X,
-                    Position.Y - Camera.Position.Y,
+                    Position.X - Space.Camera.X,
+                    Position.Y - Space.Camera.Y,
                     Scale.X,
                     Scale.Y
                 ),
@@ -164,10 +159,10 @@ public class Text : IDraw
                 Renderer.GetLayer() + 0.0001f
                 );
 
-            GraphicDistributor.Batch.DrawString(
+            batch.DrawString(
                 FriteCollection2.UI.Text.Font,
                 txt,
-                new Vector2(Position.X + 1 - Camera.Position.X, Position.Y + 1 - Camera.Position.Y),
+                new Vector2(Position.X + 1 - Space.Camera.X, Position.Y + 1 - Space.Camera.Y),
                 Renderer.Color,
                 0f,
                 Vector2.Zero,

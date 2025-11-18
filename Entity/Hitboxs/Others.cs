@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace FriteCollection2.Entity.Hitboxs;
@@ -222,11 +221,11 @@ public abstract partial class Hitbox
     /// <summary>
     /// déssine toutes les hitboxs.
     /// </summary>
-    public static void Debug()
+    public static void Debug(in SpriteBatch batch)
     {
         foreach (List<Hitbox> list in _hitBoxesList)
             foreach (IDraw hit in list)
-                hit.Draw();
+                hit.Draw(in batch);
     }
 
     public static bool Check(Vector2 pos, byte _layer, string tag = null)
@@ -288,10 +287,7 @@ public abstract partial class Hitbox
         return false;
     }
 
-    /// <summary>
-    /// Ligne infini.
-    /// </summary>
-    public class Line : Hitbox, ICollider, IDraw
+    public class Line : Hitbox, ICollider
     {
         float _dir;
         private Vector2 norme;
@@ -382,17 +378,17 @@ public abstract partial class Hitbox
         private float f(float x) => (float.Tan(_dir + Pis2) * (x - _point.X)) + _point.Y;
         private float g(float y) => (float.Tan(-_dir ) * (y - _point.Y)) + _point.X;
 
-        public void Draw()
+        public void Draw(in SpriteBatch batch, int screenWidth, int screenHeight)
         {
             if (this.Active)
             {
                 this.UpdatePos();
                 if (float.Abs(float.Sin(_dir)) < 0.001f)
                 {
-                    GraphicDistributor.Batch.DrawLine
+                    batch.DrawLine
                     (
                         _point.X, 0,
-                        _point.X, GraphicDistributor.Height,
+                        _point.X, screenHeight,
                         _color[_layer] * (thickness == 0 ? 1 : 0.2f),
                         thickness: thickness + 1
                     );
@@ -404,15 +400,15 @@ public abstract partial class Hitbox
                     if (float.Abs(norme.Y) > float.Abs(norme.X))
                     {
                         p1 = new Vector2(0, f(0));
-                        p2 = new Vector2(GraphicDistributor.Width, f(GraphicDistributor.Width));
+                        p2 = new Vector2(screenWidth, f(screenWidth));
                     }
                     else
                     {
                         p1 = new Vector2(g(0), 0);
-                        p2 = new Vector2(g(GraphicDistributor.Height), GraphicDistributor.Height);
+                        p2 = new Vector2(g(screenHeight), screenHeight);
                     }
 
-                    GraphicDistributor.Batch.DrawLine
+                    batch.DrawLine
                     (
                         p1.X, p1.Y,
                         p2.X, p2.Y,
@@ -559,12 +555,12 @@ public abstract partial class Hitbox
             _radius = value;
         }
 
-        public void Draw()
+        public void Draw(in SpriteBatch batch)
         {
             if (this.Active)
             {
                 this.UpdatePos();
-                GraphicDistributor.Batch.DrawCircle
+                batch.DrawCircle
                 (
                     new CircleF(_point, _radius),
                     (int)(float.Sqrt(_radius + 10) * 2),

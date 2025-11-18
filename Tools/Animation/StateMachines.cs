@@ -1,18 +1,20 @@
-﻿namespace FriteCollection2.Tools.Animation;
+﻿using Microsoft.Xna.Framework.Graphics;
+
+namespace FriteCollection2.Tools.Animation;
 
 public class State
 {
     public delegate State UpdateState(float timer);
     public System.Action Start { get; init; }
     public UpdateState Update { get; init; }
-    public System.Action Draw { get; init; }
-    public System.Action DrawAdditive { get; init; }
+    public IDraw.DrawFunction Draw { get; init; }
+    public IDraw.DrawFunction DrawAdditive { get; init; }
 
     public State()
     {
         Start = () => { };
-        Draw = () => { };
-        DrawAdditive = () => { };
+        Draw = (in SpriteBatch batch) => { };
+        DrawAdditive = (in SpriteBatch batch) => { };
     }
 }
 
@@ -58,19 +60,19 @@ public class StateMachine : IDraw
         state.Start();
     }
 
-    public void Draw()
+    public void Draw(in SpriteBatch batch)
     {
         if (active)
         {
-            current.Draw();
+            current.Draw(in batch);
         }
     }
 
-    public void DrawAdditive()
+    public void DrawAdditive(in SpriteBatch batch)
     {
         if (active)
         {
-            current.DrawAdditive();
+            current.DrawAdditive(in batch);
         }
     }
 }
