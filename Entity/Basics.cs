@@ -167,7 +167,7 @@ public static class BoundFunc
             Bounds.Bottom => new Vector2(width / 2f, height),
             Bounds.BottomRight => new Vector2(width, height),
 
-            _ => Vector2.Zero
+            _ => throw new System.Exception("aaaaaa")
         };
     }
 
@@ -176,20 +176,22 @@ public static class BoundFunc
         return b switch
         {
             Bounds.TopLeft => new Point(0, 0),
-            Bounds.Top => new Point((int)float.Round(width / 2f), 0),
+            Bounds.Top => new Point(rounds2(width), 0),
             Bounds.TopRight => new Point(width, 0),
 
-            Bounds.Left => new Point(0, (int)float.Round(height / 2f)),
-            Bounds.Center => new Point((int)float.Round(width / 2f), (int)float.Round(height / 2f)),
-            Bounds.Right => new Point(width, (int)float.Round(height / 2f)),
+            Bounds.Left => new Point(0, rounds2(height)),
+            Bounds.Center => new Point(rounds2(width), rounds2(height)),
+            Bounds.Right => new Point(width, rounds2(height / 2f)),
 
             Bounds.BottomLeft => new Point(0, height),
-            Bounds.Bottom => new Point((int)float.Round(width / 2f), height),
+            Bounds.Bottom => new Point(rounds2(width), height),
             Bounds.BottomRight => new Point(width, height),
 
-            _ => Point.Zero
+            _ => throw new System.Exception("aaaaaa")
         };
     }
+
+    private static int rounds2(float value) => (int)float.round(value / 2f);
 
     public static Vector2[] CreateBounds(float width, float height)
     {
@@ -270,6 +272,20 @@ public class Renderer : ICopy<Renderer>, ILayer
         _defaultTexture = t;
     }
 
+    public static readonly Point[] outLinePositions = new Point[8]
+    {
+        new(-1, 1),
+        new(0, 1),
+        new(1, 1),
+
+        new(-1, 0),
+        new(1, 0),
+
+        new(-1, -1),
+        new(0, -1),
+        new(1, -1)
+    };
+
     private float layer;
     public float GetLayer() => layer;
 
@@ -295,17 +311,8 @@ public class Renderer : ICopy<Renderer>, ILayer
 
     public short Layer
     {
-        get
-        {
-            return (short)((layer * 2000) - 1000);
-        }
-
-        set
-        {
-            if (value > 1000) throw new ArgumentOutOfRangeException("value cannot be greater than 1000");
-            if (value < -1000) throw new ArgumentOutOfRangeException("value cannot be less than -1000");
-            layer = ToLayer(value);
-        }
+        get => FromLayer(layer);
+        set => ToLayer(layer);
     }
 
     public static Texture2D CreateCircleTexture(int width)
@@ -378,8 +385,15 @@ public class Renderer : ICopy<Renderer>, ILayer
 
     public Renderer()
     {
-        _texture = _defaultTexture;
+        Texture = _defaultTexture;
         layer = 0.5f;
+        outlineColor = DefaultOutline;
+    }
+
+    public Renderer(short layer)
+    {
+        Texture = _defaultTexture;
+        this.layer = ToLayer(layer);
         outlineColor = DefaultOutline;
     }
 
@@ -392,29 +406,14 @@ public class Renderer : ICopy<Renderer>, ILayer
     {
         Renderer r = new()
         {
-            _texture = _defaultTexture,
+            Texture = _defaultTexture,
             Color = this.Color,
             hide = hide
         };
         return r;
     }
 
-    private Texture2D _texture;
-
-    /// <summary>
-    /// Texture.
-    /// </summary>
-    public Texture2D Texture
-    {
-        get
-        {
-            return _texture;
-        }
-        set
-        {
-            _texture = value;
-        }
-    }
+    public Texture2D Texture { get; set; }
 
     public Color Color = DefaultColor;
 
@@ -430,7 +429,7 @@ public class Renderer : ICopy<Renderer>, ILayer
         if (obj is Renderer)
         {
             Renderer re = obj as Renderer;
-            return _texture.Equals(re._texture) && Color == re.Color
+            return Texture.Equals(re.Texture) && Color == re.Color
                 && hide == re.hide;
         }
         return false;

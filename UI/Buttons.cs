@@ -124,7 +124,7 @@ public abstract class ButtonCore : Panel
 
     public ButtonCore(Texture2D image, Rectangle space, UI parent) : base(image, space, parent)
     {
-         _list.Add(this);
+        _list.Add(this);
         RestColor = defaultColor;
     }
 
