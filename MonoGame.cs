@@ -43,8 +43,8 @@ public abstract class MonoGame : Game, IHaveDrawingTools
         Window.AllowUserResizing = false;
     }
 
-    protected List<Executable> _currentExecutables = new List<Executable>();
-    internal List<Executable> CurrentExecutables => _currentExecutables;
+    protected List<IExecutable> _currentExecutables = new List<IExecutable>();
+    internal List<IExecutable> CurrentExecutables => _currentExecutables;
 
     protected override void Initialize()
     {
@@ -74,7 +74,7 @@ public abstract class MonoGame : Game, IHaveDrawingTools
         graphics.ApplyChanges();
     }
 
-    public virtual void UpdateScriptToScene(Executable[] adds)
+    public virtual void UpdateScriptToScene(IExecutable[] adds)
     {
         Loading = true;
         LoadingText = "Changing scene ...";
@@ -105,10 +105,8 @@ public abstract class MonoGame : Game, IHaveDrawingTools
 
         CurrentExecutables.AddRange(adds);
 
-        Time.Reset();
-        Time.SpaceTime = 1f;
 
-        foreach (Executable script in CurrentExecutables.ToArray())
+        foreach (IExecutable script in CurrentExecutables.ToArray())
         {
             LoadingText = "Loading " + script.GetType().Name + " ...";
             script.Load();
@@ -116,11 +114,11 @@ public abstract class MonoGame : Game, IHaveDrawingTools
 
         LoadingText = "Finishing ...";
 
-        foreach (Executable script in CurrentExecutables.ToArray())
+        foreach (IExecutable script in CurrentExecutables.ToArray())
         {
             script.Start();
         }
-        foreach (Executable script in CurrentExecutables.ToArray())
+        foreach (IExecutable script in CurrentExecutables.ToArray())
         {
             script.AfterStart();
         }
@@ -168,8 +166,6 @@ public abstract class MonoGame : Game, IHaveDrawingTools
     internal Point MouseClickedPosition => mcp;
     protected override void Update(GameTime gameTime)
     {
-        Time.UpdateGameTime(in gameTime);
-
         if (_buttons.Count > 0)
         {
             if (this.IsActive)

@@ -18,7 +18,7 @@ public class State
 
 public class StateMachine : IDraw
 {
-    private float dt;
+    private float timer;
     private State current;
     public bool active;
     private readonly State start;
@@ -35,12 +35,12 @@ public class StateMachine : IDraw
         ForceState(start);
     }
 
-    public void Update()
+    public void Update(float dt)
     {
         if (active)
         {
-            State newState = current.Update(dt);
-            dt += Time.FrameTime;
+            State newState = current.Update(this.timer);
+            timer += dt;
             if (newState is not null)
                 ForceState(newState);
         }
@@ -48,12 +48,12 @@ public class StateMachine : IDraw
 
     public void ResetTimer()
     {
-        dt = 0f;
+        timer = 0f;
     }
 
     public void ForceState(in State state)
     {
-        dt = 0f;
+        timer = 0f;
         current = state;
         state.Start();
     }

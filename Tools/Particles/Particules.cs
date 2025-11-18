@@ -24,7 +24,9 @@ public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle
     private bool _isEmpty;
     public bool IsEmpty => _isEmpty;
 
-    public ParticleGenerator(ushort capacity, ushort pps)
+    private Sets settings;
+
+    public ParticleGenerator(ushort capacity, ushort pps, in Sets settings)
     {
         this.delay = 60f / pps;
         _data = new P[capacity];
@@ -33,19 +35,20 @@ public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle
         index = 0;
         timer = delay;
         _isEmpty = true;
+        this.settings = settings;
     }
 
-    public void Charboner(in Sets settings)
+    public void Charboner(float dt)
     {
-        timer += Time.FrameTime;
+        timer += dt;
         while (timer > delay)
         {
             timer -= delay;
-            Create(in settings);
+            Create();
         }
     }
 
-    public void Create(in Sets settings)
+    public void Create()
     {
         if (!_data[index].Alive)
         {

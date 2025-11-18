@@ -24,6 +24,18 @@ public interface IDraw
     public void Draw();
 }
 
+public enum Bounds
+{
+    TopLeft, Top, TopRight,
+    Left, Center, Right,
+    BottomLeft, Bottom, BottomRight,
+}
+
+public enum Align
+{
+    Left, Center, Right
+}
+
 /// <summary>
 /// Représente un endroit pour dessiner.
 /// </summary>
@@ -78,175 +90,54 @@ public class Environment : IDraw, IHaveRectangle
 }
 
 /// <summary>
-/// Données temporels.
-/// </summary>
-public static class Time
-{
-    private static float _sp = 1f;
-    internal static float _frameTime;
-
-    public static void SetFrameTime(float value)
-    {
-        _frameTime = value;
-    }
-
-    /// <summary>
-    /// 'vitesse' du temps. 0f arrêt, 1f normal, 2f rapide
-    /// </summary>
-    public static float SpaceTime
-    {
-        get => _sp;
-        set
-        {
-            _sp = value;
-        }
-    }
-
-    /// <summary>
-    /// Temps théorique d'une frame. Est toujours constant, et est dépendant de 'SpaceTime'.
-    /// </summary>
-    /// <example>~ 0.01f</example>
-    public static float FrameTime
-    {
-        get
-        {
-            return _frameTime * _sp;
-        }
-    }
-
-    /// <summary>
-    /// Temps théorique d'une frame. Est toujours constant, et indépendant 'SpaceTime'.
-    /// </summary>
-    /// <example>~ 0.01f</example>
-    public static float FixedFrameTime
-    {
-        get
-        {
-            return _frameTime;
-        }
-    }
-
-    public static void UpdateGameTime(in GameTime gt)
-    {
-        timer += _frameTime * _sp;
-        dtf = (float)gt.ElapsedGameTime.TotalMilliseconds / 1000f;
-    }
-
-    public static void Reset()
-    {
-        timer = 0f;
-    }
-
-    private static float timer;
-    private static float dtf;
-
-    /// <summary>
-    /// Temps écoulé depuis le début de la scène.
-    /// </summary>
-    public static float Timer => timer;
-
-    /// <summary>
-    /// Temps écoulé entre les deux dernières frames.
-    /// </summary>
-    /// <example>~ 0.01f</example>
-    public static float Delta => dtf * _sp;
-}
-
-/// <summary>
 /// Représente un objet qui sera appelé dans la boucle principale.
 /// </summary>
-public abstract class Executable : IDisposable
+public interface IExecutable : IDisposable
 {
-    public virtual bool Active { get; }
+    public bool Active { get; }
     /// <summary>
     /// Appelé au début de la scène
     /// </summary>
-    public virtual void Start() { }
-    public virtual void AfterStart() { }
+    public void Start() { }
+    public void AfterStart() { }
 
     /// <summary>
     /// s'execute à chaque frame. Avant tout 'Update'.
     /// </summary>
-    public virtual void BeforeUpdate() { }
+    public void BeforeUpdate(float dt) { }
     /// <summary>
     /// s'execute à chaque frame.
     /// </summary>
-    public virtual void Update() { }
+    public void Update(float dt) { }
     /// <summary>
     /// s'execute à chaque frame. Après tout 'Update'.
     /// </summary>
-    public virtual void AfterUpdate() { }
+    public void AfterUpdate(float dt) { }
 
 
-    public virtual void DrawBackground() { }
-    public virtual void BeforeDraw() { }
-    public virtual void DrawShader(SpriteBatch batch) { }
-    public virtual void AfterDraw() { }
+    public void DrawBackground() { }
+    public void BeforeDraw() { }
+    public void DrawShader(SpriteBatch batch) { }
+    public void AfterDraw() { }
 
-    public virtual void WhenPaused() { }
+    public void WhenPaused() { }
 
     /// <summary>
     /// Méthode supplémentaire pour dessiner, utilisé de base pour l'interface.
     /// </summary>
-    public virtual void DrawUI() { }
-    public virtual void DrawMain() { }
+    public void DrawUI() { }
+    public void DrawMain() { }
 
-    /// <summary>
-    /// Ici, disposer toutes les ressources.
-    /// </summary>
-    public virtual void Dispose() { }
     /// <summary>
     /// Ici, charger toutes les ressources. (est appelé avant 'Start')
     /// </summary>
-    public virtual void Load() { }
-
-
-    private short layer = 0;
-
-    /// <summary>
-    /// Les executables sont appelés dans l'ordre croissant.
-    /// </summary>
-    public short Layer
-    {
-        set
-        {
-            if (GraphicDistributor.Executables.Contains(this) == true)
-            {
-                List<Executable> _currentScripts = GraphicDistributor.Executables;
-                _currentScripts.Remove(this);
-
-                layer = value;
-                if (_currentScripts.Count == 0)
-                    _currentScripts = new List<Executable>() { this };
-                else
-                {
-                    int i = 0;
-                    while (i < _currentScripts.Count && _currentScripts[i].layer < this.layer)
-                    {
-                        i++;
-                    }
-
-                    _currentScripts.Insert(i, this);
-                }
-            }
-        }
-
-        get
-        {
-            return layer;
-        }
-    }
+    public void Load() { }
 }
 
 
 
-public abstract class Script : Executable
+public abstract class Script : IExecutable
 {
-    /// <summary>
-    /// Est appelé quand la taille de la fenêtre change.
-    /// </summary>
-    public virtual void OnWindowResize() { }
-
     /// <param name="scene">Scène à laquelle appartient le script. Doit être convertible en 'int'</param>
     /// <param name="active">si 'false' le script ne sera pas appelé.</param>
     public Script(object scene, bool active = true)
@@ -263,16 +154,16 @@ public abstract class Script : Executable
     /// <exception cref="Exception">le scripte n'existe pas dans la scène.</exception>
     public static T GetScript<T>() where T : Script
     {
-        foreach (Executable s in GraphicDistributor.Executables)
+        foreach (IExecutable s in GraphicDistributor.Executables)
         {
-            if (s.GetType().Name == typeof(T).Name)
-                return s as T;
+            if (s.GetType().Name.Equals(typeof(T).Name))
+                return (T)s;
         }
         throw new Exception("'" + typeof(T).Name + "' scripte n'existe pas dans cette scène.");
     }
 
     private bool _active;
-    public override bool Active => _active;
+    public bool Active => _active;
     private object _attributedScenes;
 
     /// <summary>
@@ -292,6 +183,11 @@ public abstract class Script : Executable
         GraphicDistributor.Executables.Remove(this);
     }
 
+    public virtual void Dispose()
+    {
+
+    }
+
     /// <summary>
     /// La scène à laquelle appartient le script.
     /// </summary>
@@ -303,74 +199,3 @@ public abstract class Script : Executable
         }
     }
 }
-
-/// <summary>
-/// Un script qui peut être créé plusieurs fois dans la scène.
-/// </summary>
-public abstract class Clone : Executable
-{
-    private bool isdestroyed = false;
-
-    /// <summary>
-    /// Détruit tout les Clones dans la scène.
-    /// </summary>
-    /// <param name="exepts">sauf les clones de ce type.</param>
-    public static void DestroyAll(params Type[] exepts)
-    {
-        foreach (Executable exe in GraphicDistributor.Executables.ToArray())
-        {
-            if (exe is Clone && !(exepts.Contains(exe.GetType().BaseType) || exepts.Contains(exe.GetType())))
-            {
-                (exe as Clone).Destroy();
-            }
-        }
-    }
-
-    public static void DestroyAll(Hitbox.Discriminent<Clone> discr)
-    {
-        foreach (Executable exe in GraphicDistributor.Executables.ToArray())
-        {
-            if (exe is Clone && discr(exe as Clone))
-            {
-                (exe as Clone).Destroy();
-            }
-        }
-    }
-
-    /// <summary>
-    /// Est appelé quand le clone est retiré de la scène.
-    /// Ne pas disposer les ressources ici mais dans 'Dispose'.
-    /// </summary>
-    protected virtual void OnDestroy()
-    {
-
-    }
-
-    private bool _active;
-    public override bool Active => _active;
-
-    /// <summary>
-    /// Vérifie si le Clone a été retiré de la scène.
-    /// </summary>
-    public bool IsDestroyed => isdestroyed;
-
-
-    public Clone()
-    {
-        _active = true;
-        GraphicDistributor.Executables.Add(this);
-    }
-
-    /// <summary>
-    /// Retire le Clone de la scène.
-    /// </summary>
-    public void Destroy()
-    {
-        this._active = false;
-        this.OnDestroy();
-        this.Dispose();
-        GraphicDistributor.Executables.Remove(this);
-        isdestroyed = true;
-    }
-}
-

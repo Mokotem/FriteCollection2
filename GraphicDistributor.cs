@@ -5,18 +5,6 @@ using System;
 
 namespace FriteCollection2;
 
-public enum Bounds
-{
-    TopLeft, Top, TopRight,
-    Left, Center, Right,
-    BottomLeft, Bottom, BottomRight,
-}
-
-public enum Align
-{
-    Left, Center, Right
-}
-
 
 public interface IHaveDrawingTools
 {
@@ -42,32 +30,28 @@ public static class GraphicDistributor
 {
     private static SpriteBatch _batch;
     private static GraphicsDevice _device;
-    private static List<Executable> _executables; 
+    private static List<IExecutable> _executables;
 
     public static SpriteBatch Batch => _batch;
     public static GraphicsDevice Device => _device;
-    public static List<Executable> Executables => _executables;
+    public static List<IExecutable> Executables => _executables;
 
     private static int _width, _height;
     public static int Width => _width;
     public static int Height => _height;
 
-    private static Settings _sets;
-
-    public static byte FPS => _sets.FPS;
 
     /// <summary>
     /// Donner la référence de l'instance MonoGame.
     /// </summary>
     /// <param name="_instance"></param>
-    public static void SetInstance(in GraphicsDevice grapic, in SpriteBatch batch, in List<Executable> exes, in Settings sets)
+    public static void SetInstance(in GraphicsDevice grapic, in SpriteBatch batch, in List<IExecutable> exes, in Settings sets)
     {
         _device = grapic;
         _batch = batch;
         _executables = exes;
         _width = sets.GameFixeWidth;
         _height = sets.GameFixeHeight;
-        _sets = sets;
     }
 
     public static void SetInstance(in GraphicsDevice grapic, in SpriteBatch batch)
@@ -80,6 +64,7 @@ public static class GraphicDistributor
     {
         _device = null;
         _batch = null;
+        _executables = null;
     }
 
     /// <summary>
