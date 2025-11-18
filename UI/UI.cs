@@ -37,8 +37,8 @@ public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
 
     public short Layer
     {
-        get => FriteCollection2.Entity.Renderer.FromLayer(depth);
-        set => depth = FriteCollection2.Entity.Renderer.ToLayer(value);
+        get => Renderer.FromLayer(depth);
+        set => depth = Renderer.ToLayer(value);
     }
 
     public virtual void Dispose() { }
@@ -73,72 +73,56 @@ public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
 
         public Rectangle(Bounds origin, Extend extend, Point scale)
         {
-            this.Origin = origin;
-            this.Extend = extend;
+            this(origin, extend);
             this.Scale = scale;
-            this.environment = _defaultEnvironment;
         }
 
         public Rectangle(Bounds origin, Extend extend, Point scale, Point position)
         {
-            this.Origin = origin;
-            this.Extend = extend;
-            this.Scale = scale;
+            this(origin, extend, scale);
             this.Position = position;
-            this.environment = _defaultEnvironment;
         }
 
         public Rectangle(byte env, Bounds origin, Extend extend)
         {
-            this.Origin = origin;
-            this.Extend = extend;
+            this(origin, extend);
             this.environment = _defaultEnvironment;
         }
 
         public Rectangle(byte env, Bounds origin, Extend extend, Point scale)
         {
-            this.Origin = origin;
-            this.Extend = extend;
-            this.Scale = scale;
+            this(origin, extend, scale);
             this.environment = _defaultEnvironment;
         }
 
         public Rectangle(byte env, Bounds origin, Extend extend, Point scale, Point position)
         {
-            this.Origin = origin;
-            this.Extend = extend;
-            this.Scale = scale;
-            this.Position = position;
+            this(origin, extend, scale, position);
             this.environment = _defaultEnvironment;
         }
 
         public Rectangle(in Environment env, Bounds origin, Extend extend)
         {
-            this.Origin = origin;
-            this.Extend = extend;
+            this(origin, extend);
             this.environment = env;
         }
 
         public Rectangle(in Environment env, Bounds origin, Extend extend, Point scale)
         {
-            this.Origin = origin;
-            this.Extend = extend;
-            this.Scale = scale;
+            this(origin, extend, scale);
             this.environment = env;
         }
 
         public Rectangle(in Environment env, Bounds origin, Extend extend, Point scale, Point position)
         {
-            this.Origin = origin;
-            this.Extend = extend;
-            this.Scale = scale;
-            this.Position = position;
+            this(origin, extend, scale, position);
             this.environment = env;
         }
     }
 
     public virtual int PositionY
     {
+        get => space.Position.Y;
         set
         {
             space.Position.Y = value;
@@ -186,7 +170,7 @@ public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
         set
         {
             _active = value;
-            foreach(UI c in childs)
+            foreach (UI c in childs)
             {
                 c.Active = value;
             }
@@ -214,7 +198,7 @@ public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
     {
         Point cursor = spacing + offset;
         int maxHeight = -1;
-        foreach(UI u in childs)
+        foreach (UI u in childs)
         {
             if (u.Active)
             {
@@ -315,7 +299,7 @@ public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
         rect.X += space.Position.X;
         rect.Y += space.Position.Y;
 
-        foreach(UI e in childs)
+        foreach (UI e in childs)
         {
             e.ApplyPosition(this.rect);
         }
@@ -393,19 +377,7 @@ public class Image : UI, IEdit<Texture2D>, IDisposable, IDraw
         {
             if (outline)
             {
-                foreach (Point r in new Point[8]
-                {
-                    new(-1, 1),
-                    new(0, 1),
-                    new(1, 1),
-
-                    new(-1, 0),
-                    new(1, 0),
-
-                    new(-1, -1),
-                    new(0, -1),
-                    new(1, -1)
-                    })
+                foreach (Point r in Renderer.outLinePositions)
                 {
                     GraphicDistributor.Batch.Draw
             (
@@ -421,15 +393,15 @@ public class Image : UI, IEdit<Texture2D>, IDisposable, IDraw
                 }
             }
 
-                GraphicDistributor.Batch.Draw(
+            GraphicDistributor.Batch.Draw(
             image,
             rect,
             null,
             this.Color,
             0, Vector2.Zero, effect,
             this.depth);
-                foreach (UI element in childs)
-                    element.Draw();
+            foreach (UI element in childs)
+                element.Draw();
         }
     }
 
@@ -532,7 +504,7 @@ public class Text : UI, IEdit<string>, IDraw
             return word.Length;
 
         int n = 0;
-        for(ushort i = 0; i < word.Length; ++i)
+        for (ushort i = 0; i < word.Length; ++i)
         {
             if (!exepts.Contains(word[i]))
                 ++n;
@@ -567,7 +539,7 @@ public class Text : UI, IEdit<string>, IDraw
             {
                 maxX = (int)(rect.Width / _font.MeasureString(input).X);
             }
-                int wl = GetWordLength(input, exepts);
+            int wl = GetWordLength(input, exepts);
             if (wl > maxX)
             {
                 exedent = (ushort)(wl - maxX);
@@ -702,7 +674,7 @@ public class Text : UI, IEdit<string>, IDraw
         switch (TextAlign)
         {
             case Align.Center:
-                posX = (rect.Width - _textWidth) / 2 - 1;
+                posX = (rect.Width - _textWidth) / 2;
                 return;
             case Align.Right:
                 posX = rect.Width - _textWidth;
@@ -719,19 +691,7 @@ public class Text : UI, IEdit<string>, IDraw
         {
             if (Outline)
             {
-                foreach (Vector2 r in new Vector2[8]
-                {
-                    new(-1, 1),
-                    new(0, 1),
-                    new(1, 1),
-
-                    new(-1, 0),
-                    new(1, 0),
-
-                    new(-1, -1),
-                    new(0, -1),
-                    new(1, -1)
-                })
+                foreach (Vector2 r in Renderer.outLinePositions)
                 {
                     GraphicDistributor.Batch.DrawString
                     (Font, resultString, new Vector2(rect.X + r.X + posX, rect.Y + r.Y),
@@ -774,7 +734,7 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
         int sy = set.settings.tileSize.Y;
         if (size.X < sx * 2)
         {
-            sx = size.X/ 2;
+            sx = size.X / 2;
         }
         if (size.Y < sy * 2)
         {
@@ -835,7 +795,7 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
 
     public void Clear()
     {
-        foreach(UI c in childs)
+        foreach (UI c in childs)
         {
             c.Active = false;
         }
@@ -904,7 +864,7 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
     public override void Dispose()
     {
         if (texture is not null)
-        texture.Dispose();
+            texture.Dispose();
         if (rt is not null)
             rt.Dispose();
         rt = null;
