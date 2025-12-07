@@ -1,8 +1,6 @@
-﻿using Autofac.Core;
-using FriteCollection2.Tools.TileMap;
+﻿using FriteCollection2.Tools.TileMap;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MonoGame.Extended.Tiled;
 using System.Collections.Generic;
 
 namespace FriteCollection2.UI;
@@ -13,7 +11,6 @@ public abstract class ButtonCore : Panel
     {
         defaultColor = value;
     }
-
 
     private static Color defaultColor = new Color(0.8f, 0.8f, 0.8f);
     protected Text titleText;
@@ -58,12 +55,12 @@ public abstract class ButtonCore : Panel
             titleText.Color = new Color(0.7f, 0.7f, 0.7f);
     }
 
-    public static Point GetPointPosition(in Environment envi, Point mouse)
+    public static Point GetPointPosition(Microsoft.Xna.Framework.Rectangle envi, int factor, Point mouse)
     {
-        Point offset = new Point(-envi.Rect.X, -envi.Rect.Y);
+        Point offset = new Point(-envi.X, -envi.Y);
         offset += mouse;
-        return new Point(offset.X / (envi.Rect.Width / envi.Target.Width),
-            offset.Y / (envi.Rect.Height / envi.Target.Height));
+        return new Point(offset.X / factor,
+            offset.Y / factor);
     }
 
     public virtual void Update(Point mousePos, bool mousePressed)
@@ -72,7 +69,7 @@ public abstract class ButtonCore : Panel
         {
             if (enabled)
             {
-                selected = IsInRange(GetPointPosition(in Space.environment, mousePos));
+                selected = IsInRange(GetPointPosition(Space.Environment, 1, mousePos));
 
                 if (mousePressed)
                 {
@@ -144,7 +141,7 @@ public abstract class ButtonCore : Panel
     public ButtonCore(string title, TileSet tileSet, in SpriteBatch batch, GraphicsDevice device, Rectangle space, UI parent)
         : base(tileSet, in batch, device, space, parent)
     {
-        titleText = new Text(title, new Rectangle(in space.environment, Bounds.TopLeft, Extend.Full, Point.Zero, offs), this);
+        titleText = new Text(title, new Rectangle(space.Environment, Bounds.TopLeft, Extend.Full, Point.Zero, offs), this);
         titleText.Outline = true;
         this.Add(titleText);
         _list.Add(this);
@@ -154,7 +151,7 @@ public abstract class ButtonCore : Panel
     public ButtonCore(string title, TileSet tileSet, in SpriteBatch batch, GraphicsDevice device, Rectangle space)
         : base(tileSet, in batch, device, space)
     {
-        titleText = new Text(title, new Rectangle(in space.environment, Bounds.TopLeft, Extend.Full, Point.Zero, offs), this);
+        titleText = new Text(title, new Rectangle(space.Environment, Bounds.TopLeft, Extend.Full, Point.Zero, offs), this);
         titleText.Outline = true;
         this.Add(titleText);
         _list.Add(this);
@@ -163,7 +160,7 @@ public abstract class ButtonCore : Panel
 
     public ButtonCore(string title, Texture2D image, Rectangle space, UI parent) : base(image, space, parent)
     {
-        titleText = new Text(title, new Rectangle(in space.environment, Bounds.TopLeft, Extend.Full, Point.Zero, offs), this);
+        titleText = new Text(title, new Rectangle(space.Environment, Bounds.TopLeft, Extend.Full, Point.Zero, offs), this);
         titleText.Outline = true;
         this.Add(titleText);
         _list.Add(this);
@@ -172,7 +169,7 @@ public abstract class ButtonCore : Panel
 
     public ButtonCore(string title, Texture2D image, Rectangle space) : base(image, space)
     {
-        titleText = new Text(title, new Rectangle(in space.environment, Bounds.TopLeft, Extend.Full, Point.Zero, offs), this);
+        titleText = new Text(title, new Rectangle(space.Environment, Bounds.TopLeft, Extend.Full, Point.Zero, offs), this);
         titleText.Outline = true;
         this.Add(titleText);
         _list.Add(this);
@@ -185,10 +182,10 @@ public abstract class ButtonCore : Panel
         {
             batch.Draw(Entity.Renderer.DefaultTexture,
                 new Microsoft.Xna.Framework.Rectangle(
-                    this.rect.X - 1,
-                    this.rect.Y - 1,
-                    this.rect.Width + 2,
-                    this.rect.Height + 2
+                    this.mRect.X - 1,
+                    this.mRect.Y - 1,
+                    this.mRect.Width + 2,
+                    this.mRect.Height + 2
                     ),
                 null,
                 Color.Yellow,

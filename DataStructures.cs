@@ -19,7 +19,7 @@ public interface IDraw
 
 public interface IDrawUI
 {
-    public void Draw(in SpriteBatch batch, int width, int height);
+    public void Draw(in SpriteBatch batch, int width, int height) { }
 }
 
 public interface ICreateTextures
@@ -94,7 +94,7 @@ public class Environment : IDraw, IHaveRectangle
 
 public interface IExecutable : IDraw
 {
-    public void Load() { }
+    public void Load(GraphicsDevice device) { }
     public void Start();
     public void Update(float dt);
 }
@@ -104,7 +104,7 @@ public interface IExecutable : IDraw
 /// </summary>
 public interface IAdvancedExecutable : IExecutable, IDrawUI, ICreateTextures, IDisposable
 {
-    public void BeforeStart() { }
+    public void BeforeStart(in SpriteBatch batch, GraphicsDevice device) { }
     public void AfterStart() { }
 
     public void BeforeUpdate(float dt) { }
@@ -114,13 +114,15 @@ public interface IAdvancedExecutable : IExecutable, IDrawUI, ICreateTextures, ID
 
     public void DrawBackground(in SpriteBatch batch) { }
     public void BeforeDraw(in SpriteBatch batch) { }
-    public void DrawShader(in SpriteBatch batch) { }
+    public void DrawShader(in SpriteBatch batch, GraphicsDevice device) { }
     public void AfterDraw(in SpriteBatch batch) { }
     public void DrawUI(in SpriteBatch batch, int width, int height) { }
     public void DrawMain(in SpriteBatch batch) { }
+
+    public new void Dispose() { }
 }
 
-public class Scene : IExecutable
+public class Scene
 {
     private readonly IAdvancedExecutable[] exes;
     public IAdvancedExecutable[] Scripts => exes;
@@ -130,17 +132,17 @@ public class Scene : IExecutable
         this.exes = exes;
     }
 
-    public void Load()
+    public void Load(GraphicsDevice gd)
     {
         for (byte i = 0; i < exes.Length; i++)
-            exes[i].Load();
+            exes[i].Load(gd);
     }
 
-    public void Start()
+    public void Start(in SpriteBatch batch, GraphicsDevice device)
     {
         byte i;
         for (i = 0; i < exes.Length; i++)
-            exes[i].BeforeStart();
+            exes[i].BeforeStart(in batch, device);
         for (i = 0; i < exes.Length; i++)
             exes[i].Start();
         for (i = 0; i < exes.Length; i++)

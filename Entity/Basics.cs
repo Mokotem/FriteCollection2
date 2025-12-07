@@ -92,10 +92,39 @@ public class Space : ICopy<Space>, IEnumerable
     /// Position.
     /// </summary>
     public Vector2 Position;
+    public static int width, height;
 
     public void SetPosition(Vector2 pos, Bounds centerPoint)
     {
         Position = pos - BoundFunc.BoundToVector(centerPoint, Scale.X, Scale.Y);
+    }
+
+    public void SetPosition(Vector2 pos, Bounds centerPoint, Bounds origin)
+    {
+        Position = pos - BoundFunc.BoundToVector(centerPoint, Scale.X, Scale.Y)
+                       + BoundFunc.BoundToPoint(origin, width, height).ToVector2();
+    }
+
+    public float GetPosX(Align origin, Align centerPos)
+    {
+        return BoundFunc.AlignToFloat(origin, width) - BoundFunc.AlignToFloat(centerPos, Scale.X);
+    }
+
+    public float GetPosY(Align origin, Align centerPos)
+    {
+        return BoundFunc.AlignToFloat(origin, height) - BoundFunc.AlignToFloat(centerPos, Scale.Y);
+    }
+
+    public Vector2 GetPos(Bounds origin, Bounds centerPos)
+    {
+        return BoundFunc.BoundToPoint(origin, width, height).ToVector2()
+             - BoundFunc.BoundToVector(centerPos, Scale.X, Scale.Y);
+    }
+
+    public Vector2 GetPos(Bounds centerPos)
+    {
+        return BoundFunc.BoundToPoint(Bounds.Center, width, height).ToVector2()
+             - BoundFunc.BoundToVector(centerPos, Scale.X, Scale.Y);
     }
 
     public Vector2 CenterPoint => new Vector2(CenterPointX, CenterPointY);
@@ -130,11 +159,16 @@ public class Space : ICopy<Space>, IEnumerable
     /// <remarks>Les tailles négatives sont prises en charges.</remarks>
     public Vector2 Scale;
 
+    public override int GetHashCode()
+    {
+        return Position.GetHashCode() + (Scale.GetHashCode() * 16_777_216);
+    }
+
     public override bool Equals(object obj)
     {
         if (obj is Space)
         {
-            Space sp = obj as Space;
+            Space sp = (Space)obj;
             return Scale == sp.Scale && Position == sp.Position;
         }
         return false;
@@ -153,6 +187,17 @@ public class SpaceDirection : Space
 
 public static class BoundFunc
 {
+    public static float AlignToFloat(Align a, float width)
+    {
+        return a switch
+        {
+            Align.Left => 0,
+            Align.Center => width / 2f,
+            Align.Right => width,
+            _ => 0
+        };
+    }
+
     public static Vector2 BoundToVector(Bounds b, float width, float height)
     {
         return b switch
@@ -173,7 +218,7 @@ public static class BoundFunc
         };
     }
 
-    public static Point BoundToVector(Bounds b, int width, int height)
+    public static Point BoundToPoint(Bounds b, int width, int height)
     {
         return b switch
         {
@@ -225,6 +270,11 @@ public class Renderer : ICopy<Renderer>, ILayer
     public static Texture2D DefaultTexture => _defaultTexture;
     public static Texture2D NotFoundTexture => _notFoundTexture;
 
+    public static void SetNotFoundTexture(Texture2D tex)
+    {
+        _notFoundTexture = tex;
+    }
+
     public static Texture2D CreateTexture(GraphicsDevice device, int w, int h, Color color)
     {
         Texture2D texture = new Texture2D(device, w, h);
@@ -269,8 +319,6 @@ public class Renderer : ICopy<Renderer>, ILayer
 
     public static void SetDefaultTexture(Texture2D t)
     {
-        if (_defaultTexture is not null)
-            _defaultTexture.Dispose();
         _defaultTexture = t;
     }
 

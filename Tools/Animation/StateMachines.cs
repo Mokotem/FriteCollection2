@@ -6,7 +6,7 @@ public class State
 {
     public delegate State UpdateState(float timer);
     public System.Action Start { get; init; }
-    public UpdateState Update { get; init; }
+    public required UpdateState Update { get; init; }
     public IDraw.DrawFunction Draw { get; init; }
     public IDraw.DrawFunction DrawAdditive { get; init; }
 
@@ -20,15 +20,27 @@ public class State
 
 public class StateMachine : IDraw
 {
-    private float timer;
+    private float timer, delta;
     private State current;
     public bool active;
+    private readonly bool deltaMode;
     private readonly State start;
 
     public StateMachine(in State start)
     {
         this.start = start;
         active = false;
+        deltaMode = false;
+        delta = 0f;
+        timer = 0f;
+    }
+
+    public StateMachine(in State start, float delta)
+    {
+        this.start = start;
+        active = false;
+        this.delta = delta;
+        deltaMode = true;
     }
 
     public void Restart()
@@ -37,12 +49,33 @@ public class StateMachine : IDraw
         ForceState(start);
     }
 
-    public void Update(float dt)
+    public void Update(float t)
     {
         if (active)
         {
-            State newState = current.Update(this.timer);
-            timer += dt;
+            timer = t;
+            State newState = current.Update(t - delta);
+            if (newState is not null)
+                ForceState(newState);
+        }
+    }
+
+    public void UpdateRaw(float t)
+    {
+        if (active)
+        {
+            State newState = current.Update(t);
+            if (newState is not null)
+                ForceState(newState);
+        }
+    }
+
+    public void Update()
+    {
+        if (active)
+        {
+            timer += delta;
+            State newState = current.Update(timer);
             if (newState is not null)
                 ForceState(newState);
         }
@@ -50,12 +83,18 @@ public class StateMachine : IDraw
 
     public void ResetTimer()
     {
-        timer = 0f;
+        if (deltaMode)
+            timer = 0f;
+        else
+        {
+            delta = timer;
+        }
     }
 
     public void ForceState(in State state)
     {
-        timer = 0f;
+        if (deltaMode)
+            timer = 0f;
         current = state;
         state.Start();
     }

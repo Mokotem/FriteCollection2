@@ -12,6 +12,8 @@ public class Object : ICopy<Object>, IDraw
     public Space Space = new Space();
     public Renderer Renderer = new Renderer();
 
+    public float outLayer = Renderer.outlineLayer;
+
     public Object Copy()
     {
         return new()
@@ -42,7 +44,7 @@ public class Object : ICopy<Object>, IDraw
                     0,
                     Vector2.Zero,
                     Renderer.effect,
-                    Renderer.outlineLayer
+                    outLayer
                 );
             }
         }
@@ -120,19 +122,50 @@ public class Text : IDraw
         return new Point(result.X * fw, result.Y * fh);
     }
 
-    public readonly string txt;
-    public readonly Point Scale;
+    private string txt;
+
+    public string Edit
+    {
+        get => txt;
+        set
+        {
+            if (txt.Length != value.Length)
+                this._scale = EvaluateText(value, 4, 6);
+            txt = value;
+        }
+    }
+
+    public float factor = 1f;
+    private Point _scale;
+    public Point Scale => _scale;
     public Point Position;
+
+    public float Width => _scale.X * factor;
+    public float Height => _scale.Y * factor;
 
     public Renderer Renderer;
     public Color Background;
 
+    public void SetPosition(Point pos, Bounds b)
+    {
+        Position = pos + BoundFunc.BoundToPoint(b, Space.width, Space.height);
+        Position.X -= (int)float.Round(_scale.X * factor / 2f);
+        Position.Y -= (int)float.Round(_scale.Y * factor / 2f);
+    }
+
     public Text(string value)
     {
         this.Renderer = new Renderer();
-        this.Scale = EvaluateText(value, 4, 6);
-        Scale.X++;
-        Scale.Y++;
+        this._scale = EvaluateText(value, 4, 6);
+        this.txt = value;
+        Background = Color.Black;
+    }
+
+    public Text(string value, int factor)
+    {
+        this.factor = factor;
+        this.Renderer = new Renderer();
+        this._scale = EvaluateText(value, 4, 6);
         this.txt = value;
         Background = Color.Black;
     }
@@ -141,32 +174,31 @@ public class Text : IDraw
     {
         if (!Renderer.hide)
         {
-            batch.Draw
-            (
-                Renderer.DefaultTexture,
-                new Rectangle
-                (
-                    Position.X - Space.Camera.X,
-                    Position.Y - Space.Camera.Y,
-                    Scale.X,
-                    Scale.Y
-                ),
-                null,
-                Background,
-                0,
-                Vector2.Zero,
-                SpriteEffects.None,
-                Renderer.GetLayer() + 0.0001f
-                );
+            if (Renderer.outline)
+            {
+                foreach (Point r in Renderer.outLinePositions)
+                {
+                    batch.DrawString(
+                        UI.Text.Font,
+                        txt,
+                        new Vector2(Position.X + 3 - Space.Camera.X + r.X, Position.Y + 1 - Space.Camera.Y + r.Y),
+                        Renderer.outlineColor,
+                        0f,
+                        Vector2.Zero,
+                        factor,
+                        SpriteEffects.None,
+                        Renderer.GetLayer() + 0.01f);
+                }
+            }
 
             batch.DrawString(
                 FriteCollection2.UI.Text.Font,
                 txt,
-                new Vector2(Position.X + 1 - Space.Camera.X, Position.Y + 1 - Space.Camera.Y),
+                new Vector2(Position.X + 3 - Space.Camera.X, Position.Y + 1 - Space.Camera.Y),
                 Renderer.Color,
                 0f,
                 Vector2.Zero,
-                1f,
+                factor,
                 SpriteEffects.None,
                 Renderer.GetLayer());
         }

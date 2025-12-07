@@ -44,9 +44,8 @@ public class Animation : AnimationBase
     {
         if (frames.Length < 1 || durations.Length != frames.Length)
             throw new System.Exception("Frame count should be the same as durations");
-
         this.frames = frames;
-        Restart();
+        Restart(startTime);
         delay = () => durations[currentKey];
     }
 
@@ -56,7 +55,7 @@ public class Animation : AnimationBase
             throw new System.Exception("Frame count should be the same as durations");
 
         this.frames = frames;
-        Restart();
+        Restart(startTime);
         this.delay = () => delay;
     }
 

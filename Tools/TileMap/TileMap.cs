@@ -157,7 +157,7 @@ public class TileMap : IDisposable, IDraw
         if (mergeHitBoxes)
             savedHitboxes = MergeHitBoxes(in _hitboxData);
         else
-            savedHitboxes = PlaceHitboxes(in _hitboxData, _sheet.settings.tileSize);
+            savedHitboxes = PlaceHitboxes(in _hitboxData, this._file.layers[0].gridCellsX, _file.layers[0].gridCellsY);
     }
 
     public void GenerateHitboxs(Point size, bool mergeHitBoxes = true)
@@ -170,6 +170,11 @@ public class TileMap : IDisposable, IDraw
 
     private Hitbox.Rectangle[] PlaceHitboxes(in Hitbox.Rectangle[,] _hitboxData, Point tileSize)
     {
+        return PlaceHitboxes(in _hitboxData, tileSize.X, tileSize.Y);
+    }
+
+    private Hitbox.Rectangle[] PlaceHitboxes(in Hitbox.Rectangle[,] _hitboxData, int sx, int sy)
+    {
         List<Hitbox.Rectangle> result = new List<Hitbox.Rectangle>();
         for (int x = 0; x < xCount; ++x)
         {
@@ -179,8 +184,8 @@ public class TileMap : IDisposable, IDraw
                 {
                     Hitbox.Rectangle hit = _hitboxData[x, y].Copy();
                     hit.Active = true;
-                    hit.PositionOffset.X += x * tileSize.X;
-                    hit.PositionOffset.Y += y * tileSize.Y;
+                    hit.PositionOffset.X += x * sx;
+                    hit.PositionOffset.Y += y * sy;
                     hit.LockSize(new Point(
                         _hitboxData[x, y].Size.X,
                         _hitboxData[x, y].Size.Y)
@@ -287,7 +292,6 @@ public class TileMap : IDisposable, IDraw
         return result.ToArray();
     }
 
-    private readonly TileSet _sheet;
     private readonly IOgmoFileWithLayer _file;
 
     private readonly RenderTarget2D[] _targets;

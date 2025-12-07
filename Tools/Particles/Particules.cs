@@ -12,7 +12,7 @@ public interface IParticle<Settings> : IDisposable, IDraw
 
 public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle<Sets>, new()
 {
-    private readonly float delay;
+    private float delay;
     private P[] _data;
 
     public P this[int index] => _data[index];
@@ -28,7 +28,7 @@ public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle
 
     public ParticleGenerator(ushort capacity, ushort pps, in Sets settings)
     {
-        this.delay = 60f / pps;
+        this.delay = 1f / pps;
         _data = new P[capacity];
         for (ushort i = 0; i < capacity; ++i)
             _data[i] = new();
@@ -46,6 +46,17 @@ public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle
             timer -= delay;
             Create();
         }
+    }
+
+    public void ChangePPS(ushort pps)
+    {
+        delay = 1f / pps;
+    }
+
+
+    public void ChangePPS(int pps)
+    {
+        delay = 1f / pps;
     }
 
     public void Create()
