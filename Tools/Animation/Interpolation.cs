@@ -134,6 +134,14 @@ public static class Interpolation
         return (a * (1 - q)) + (b * q);
     }
 
+    public static Vector2 BounceOut(Vector2 a, Vector2 b, float t, bool twoBounces = false)
+    {
+        return new Vector2(
+            BounceOut(a.X, b.X, t, twoBounces),
+            BounceOut(a.Y, b.Y, t, twoBounces)
+            );
+    }
+
     private static Color Add(Color c1, Color c2)
     {
         return new Color(c1.R + c2.R, c1.G + c2.G, c1.B + c2.B);

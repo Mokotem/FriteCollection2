@@ -47,6 +47,7 @@ public class Animation : AnimationBase
         this.frames = frames;
         Restart(startTime);
         delay = () => durations[currentKey];
+        Active = true;
     }
 
     public Animation(KeyFrame[] frames, float delay, float startTime = 0f) : base(startTime)
@@ -57,37 +58,43 @@ public class Animation : AnimationBase
         this.frames = frames;
         Restart(startTime);
         this.delay = () => delay;
+        Active = true;
     }
 
-    public override bool Done => currentKey >= frames.Length;
+    public override bool Done => Active && currentKey >= frames.Length;
+
+    public bool Active;
 
     public override void Animate(float timer)
     {
-        while (currentKey < frames.Length
-            && timer >= start + b)
+        if (Active)
         {
-            a = b;
-            currentKey += 1;
-            if (!Done)
+            while (currentKey < frames.Length
+                && timer >= start + b)
             {
-                if (delay() <= 0)
+                a = b;
+                currentKey += 1;
+                if (!Done)
                 {
-                    frames[currentKey](0);
-                }
-                else
-                {
-                    b += delay();
+                    if (delay() <= 0)
+                    {
+                        frames[currentKey](0);
+                    }
+                    else
+                    {
+                        b += delay();
+                    }
                 }
             }
-        }
-        if (!Done && currentKey >= 0)
-        {
-            frames[currentKey]((timer - a - start) / delay());
-        }
+            if (!Done && currentKey >= 0)
+            {
+                frames[currentKey]((timer - a - start) / delay());
+            }
 
-        if (Loop && Done)
-        {
-            Restart(timer);
+            if (Loop && Done)
+            {
+                Restart(timer);
+            }
         }
     }
 }

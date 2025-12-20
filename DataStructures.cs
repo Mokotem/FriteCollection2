@@ -1,4 +1,5 @@
-﻿using FriteCollection2.Entity;
+﻿using Autofac.Core;
+using FriteCollection2.Entity;
 using FriteCollection2.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -20,11 +21,6 @@ public interface IDraw
 public interface IDrawUI
 {
     public void Draw(in SpriteBatch batch, int width, int height) { }
-}
-
-public interface ICreateTextures
-{
-    public void CreateTexture(in SpriteBatch batch, GraphicsDevice graphics) { }
 }
 
 public enum Bounds
@@ -94,7 +90,7 @@ public class Environment : IDraw, IHaveRectangle
 
 public interface IExecutable : IDraw
 {
-    public void Load(GraphicsDevice device) { }
+    public void Load(SpriteBatch batch, GraphicsDevice device) { }
     public void Start();
     public void Update(float dt);
 }
@@ -102,14 +98,13 @@ public interface IExecutable : IDraw
 /// <summary>
 /// Représente un objet qui sera appelé dans la boucle principale.
 /// </summary>
-public interface IAdvancedExecutable : IExecutable, IDrawUI, ICreateTextures, IDisposable
+public interface IAdvancedExecutable : IExecutable, IDrawUI, IDisposable
 {
-    public void BeforeStart(in SpriteBatch batch, GraphicsDevice device) { }
     public void AfterStart() { }
 
     public void BeforeUpdate(float dt) { }
     public void AfterUpdate(float dt) { }
-    public void WhenPaused() { }
+    public void WhenPaused(float dt) { }
 
 
     public void DrawBackground(in SpriteBatch batch) { }
@@ -122,7 +117,7 @@ public interface IAdvancedExecutable : IExecutable, IDrawUI, ICreateTextures, ID
     public new void Dispose() { }
 }
 
-public class Scene
+public class Scene : IAdvancedExecutable
 {
     private readonly IAdvancedExecutable[] exes;
     public IAdvancedExecutable[] Scripts => exes;
@@ -132,17 +127,15 @@ public class Scene
         this.exes = exes;
     }
 
-    public void Load(GraphicsDevice gd)
+    public void Load(SpriteBatch batch, GraphicsDevice gd)
     {
         for (byte i = 0; i < exes.Length; i++)
-            exes[i].Load(gd);
+            exes[i].Load(batch, gd);
     }
 
-    public void Start(in SpriteBatch batch, GraphicsDevice device)
+    public void Start()
     {
         byte i;
-        for (i = 0; i < exes.Length; i++)
-            exes[i].BeforeStart(in batch, device);
         for (i = 0; i < exes.Length; i++)
             exes[i].Start();
         for (i = 0; i < exes.Length; i++)
@@ -164,5 +157,16 @@ public class Scene
     {
         for (byte i = 0; i < exes.Length; i++)
             exes[i].Draw(in batch);
+    }
+
+    public void WhenPaused(float dt)
+    {
+        for (byte i = 0; i < exes.Length; i++)
+            exes[i].WhenPaused(dt);
+    }
+
+    public void Dispose()
+    {
+        throw new NotImplementedException();
     }
 }
