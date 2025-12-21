@@ -11,7 +11,6 @@ using System.Collections.Generic;
 /// </summary>
 namespace FriteCollection2;
 
-
 public interface IDraw
 {
     public delegate void DrawFunction(in SpriteBatch batch);
@@ -44,7 +43,7 @@ public class Environment : IDraw, IHaveRectangle
     public RenderTarget2D Target { get; private set; }
     public Vector2[] Bounds { get; private set; }
 
-    public Rectangle mRect => new Rectangle(0, 0, Target.Width, Target.Height);
+    public Rectangle mRect => new Rectangle(0, 0, Rect.Width, Rect.Height);
     public float Depth => 0.5f;
 
     public Environment(Rectangle t, RenderTarget2D r)
@@ -98,75 +97,153 @@ public interface IExecutable : IDraw
 /// <summary>
 /// Représente un objet qui sera appelé dans la boucle principale.
 /// </summary>
-public interface IAdvancedExecutable : IExecutable, IDrawUI, IDisposable
+public abstract class AdvancedExecutable : IExecutable, IDrawUI, IDisposable
 {
-    public void AfterStart() { }
+    private static ushort currentId = 0;
+    internal readonly ushort id;
 
-    public void BeforeUpdate(float dt) { }
-    public void AfterUpdate(float dt) { }
-    public void WhenPaused(float dt) { }
-
-
-    public void DrawBackground(in SpriteBatch batch) { }
-    public void BeforeDraw(in SpriteBatch batch) { }
-    public void DrawShader(in SpriteBatch batch, GraphicsDevice device) { }
-    public void AfterDraw(in SpriteBatch batch) { }
-    public void DrawUI(in SpriteBatch batch, int width, int height) { }
-    public void DrawMain(in SpriteBatch batch) { }
-
-    public new void Dispose() { }
-}
-
-public class Scene : IAdvancedExecutable
-{
-    private readonly IAdvancedExecutable[] exes;
-    public IAdvancedExecutable[] Scripts => exes;
-
-    public Scene(params IAdvancedExecutable[] exes)
+    protected AdvancedExecutable()
     {
-        this.exes = exes;
+        this.id = currentId;
+        currentId++;
     }
 
-    public void Load(SpriteBatch batch, GraphicsDevice gd)
+    protected AdvancedExecutable(ushort id)
     {
-        for (byte i = 0; i < exes.Length; i++)
+        this.id = id;
+    }
+
+    public override int GetHashCode()
+    {
+        return id;
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is AdvancedExecutable)
+        {
+            return obj.GetHashCode() == this.GetHashCode();
+        }
+        return false;
+    }
+
+    public virtual void Start() { }
+
+    public virtual void Load(in SpriteBatch batch, GraphicsDevice gd) { }
+    public virtual void AfterStart() { }
+
+    public virtual void BeforeUpdate(float dt) { }
+    public virtual void AfterUpdate(float dt) { }
+    public virtual void WhenPaused(float dt) { }
+
+
+    public virtual void DrawBackground(in SpriteBatch batch) { }
+    public virtual void DrawShader(in SpriteBatch batch, GraphicsDevice device) { }
+    public virtual void AfterDraw(in SpriteBatch batch) { }
+    public virtual void DrawUI(in SpriteBatch batch, int width, int height) { }
+    public virtual void DrawMain(in SpriteBatch batch) { }
+
+
+    public virtual void Update(float dt) { }
+
+    public virtual void Draw(in SpriteBatch batch) { }
+
+    public virtual void Dispose() { }
+}
+
+public class Scene : AdvancedExecutable
+{
+    private readonly List<AdvancedExecutable> exes;
+    public AdvancedExecutable[] Scripts => exes.ToArray();
+
+    public int Count => exes.Count;
+
+
+    public Scene(params AdvancedExecutable[] exes)
+    {
+        this.exes = new List<AdvancedExecutable>(exes);
+    }
+
+    public override void Load(in SpriteBatch batch, GraphicsDevice gd)
+    {
+        for (byte i = 0; i < exes.Count; i++)
             exes[i].Load(batch, gd);
     }
 
-    public void Start()
+    public void Add(AdvancedExecutable script)
+    {
+        exes.Add(script);
+    }
+
+    public void Clear()
+    {
+        exes.Clear();
+    }
+
+    public override void Start()
     {
         byte i;
-        for (i = 0; i < exes.Length; i++)
+        for (i = 0; i < exes.Count; i++)
             exes[i].Start();
-        for (i = 0; i < exes.Length; i++)
+        for (i = 0; i < exes.Count; i++)
             exes[i].AfterStart();
     }
 
-    public void Update(float dt)
+    public override void Update(float dt)
     {
         byte i;
-        for (i = 0; i < exes.Length; i++)
+        for (i = 0; i < exes.Count; i++)
             exes[i].BeforeUpdate(dt);
-        for (i = 0; i < exes.Length; i++)
+        for (i = 0; i < exes.Count; i++)
             exes[i].Update(dt);
-        for (i = 0; i < exes.Length; i++)
+        for (i = 0; i < exes.Count; i++)
             exes[i].AfterUpdate(dt);
     }
-
-    public void Draw(in SpriteBatch batch)
+    public override void WhenPaused(float dt)
     {
-        for (byte i = 0; i < exes.Length; i++)
-            exes[i].Draw(in batch);
-    }
-
-    public void WhenPaused(float dt)
-    {
-        for (byte i = 0; i < exes.Length; i++)
+        for (byte i = 0; i < exes.Count; i++)
             exes[i].WhenPaused(dt);
     }
 
-    public void Dispose()
+    public override void Draw(in SpriteBatch batch)
     {
-        throw new NotImplementedException();
+        for (byte i = 0; i < exes.Count; i++)
+            exes[i].Draw(in batch);
+    }
+
+    public override void DrawBackground(in SpriteBatch batch)
+    {
+        for (byte i = 0; i < exes.Count; i++)
+            exes[i].DrawBackground(in batch);
+    }
+
+    public override void DrawShader(in SpriteBatch batch, GraphicsDevice device)
+    {
+        for (byte i = 0; i < exes.Count; i++)
+            exes[i].DrawShader(in batch, device);
+    }
+
+    public override void AfterDraw(in SpriteBatch batch)
+    {
+        for (byte i = 0; i < exes.Count; i++)
+            exes[i].AfterDraw(in batch);
+    }
+
+    public override void DrawUI(in SpriteBatch batch, int width, int height)
+    {
+        for (byte i = 0; i < exes.Count; i++)
+            exes[i].DrawUI(in batch, width, height);
+    }
+
+    public override void DrawMain(in SpriteBatch batch)
+    {
+        for (byte i = 0; i < exes.Count; i++)
+            exes[i].DrawMain(in batch);
+    }
+
+    public override void Dispose()
+    {
+        for (byte i = 0; i < exes.Count; i++)
+            exes[i].Dispose();
     }
 }

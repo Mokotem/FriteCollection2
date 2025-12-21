@@ -42,10 +42,14 @@ public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
 
     public virtual void Dispose() { }
 
-    public void ChangeEnvironment(Microsoft.Xna.Framework.Rectangle r)
+    public static void SetDefaultParent(Microsoft.Xna.Framework.Rectangle env)
     {
-        space.Environment = r;
+        _default = env;
     }
+
+    private static Microsoft.Xna.Framework.Rectangle _default;
+    public static Microsoft.Xna.Framework.Rectangle Default => _default;
+
 
     public class Rectangle
     {
@@ -53,21 +57,11 @@ public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
         public Point Position = Point.Zero;
         public Point Scale = Point.Zero;
         public Bounds Origin;
-        public Microsoft.Xna.Framework.Rectangle Environment { get; set; }
-
-        public static void SetDefaultEnvironment(Microsoft.Xna.Framework.Rectangle env)
-        {
-            _default = env;
-        }
-
-        private static Microsoft.Xna.Framework.Rectangle _default;
-        public static Microsoft.Xna.Framework.Rectangle Default => _default;
 
         public Rectangle(Bounds origin, Extend extend)
         {
             this.Origin = origin;
             this.Extend = extend;
-            this.Environment = _default;
         }
 
         public Rectangle(Bounds origin, Extend extend, Point scale) : this(origin, extend)
@@ -79,21 +73,6 @@ public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
         {
             this.Position = position;
         }
-
-        public Rectangle(Microsoft.Xna.Framework.Rectangle env, Bounds origin, Extend extend) : this(origin, extend)
-        {
-            this.Environment = env;
-        }
-
-        public Rectangle(Microsoft.Xna.Framework.Rectangle env, Bounds origin, Extend extend, Point scale) : this(origin, extend, scale)
-        {
-            this.Environment = env;
-        }
-
-        public Rectangle(Microsoft.Xna.Framework.Rectangle env, Bounds origin, Extend extend, Point scale, Point position) : this(origin, extend, scale, position)
-        {
-            this.Environment = env;
-        }
     }
 
     public virtual int PositionY
@@ -102,7 +81,7 @@ public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
         set
         {
             space.Position.Y = value;
-            ApplyPosition(papa is null ? space.Environment : papa.mRect);
+            ApplyPosition(papa is null ? Default : papa.mRect);
         }
     }
 
@@ -112,7 +91,7 @@ public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
         set
         {
             space.Position.X = value;
-            ApplyPosition(papa is null ? space.Environment : papa.mRect);
+            ApplyPosition(papa is null ? Default : papa.mRect);
         }
     }
 
@@ -122,7 +101,7 @@ public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
         set
         {
             space.Position = value;
-            ApplyPosition(papa is null ? space.Environment : papa.mRect);
+            ApplyPosition(papa is null ? Default : papa.mRect);
         }
     }
 
@@ -136,7 +115,7 @@ public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
         set
         {
             space.Scale = value;
-            ApplySpace(papa is null ? space.Environment : papa.mRect);
+            ApplySpace(papa is null ? Default : papa.mRect);
         }
     }
 
@@ -289,8 +268,8 @@ public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
 
     public void ApplySpace()
     {
-        ApplyScale(papa is null ? space.Environment : papa.mRect);
-        ApplyPosition(papa is null ? space.Environment : papa.mRect);
+        ApplyScale(papa is null ? Default : papa.mRect);
+        ApplyPosition(papa is null ? Default : papa.mRect);
     }
 
     public virtual void Draw(in SpriteBatch batch) { }
@@ -310,8 +289,8 @@ public class Image : UI, IEdit<Texture2D>, IDisposable, IDraw
     {
         this.image = image;
         this.space = space;
-        base.ApplyScale(space.Environment);
-        base.ApplyPosition(space.Environment);
+        base.ApplyScale(Default);
+        base.ApplyPosition(Default);
     }
 
     public Image(Texture2D image, Rectangle space, IHaveRectangle parent)
@@ -328,8 +307,8 @@ public class Image : UI, IEdit<Texture2D>, IDisposable, IDraw
     {
         this.image = Renderer.DefaultTexture;
         this.space = space;
-        base.ApplyScale(space.Environment);
-        base.ApplyPosition(space.Environment);
+        base.ApplyScale(Default);
+        base.ApplyPosition(Default);
     }
 
     public Image(Rectangle space, IHaveRectangle parent)
@@ -444,7 +423,7 @@ public class Text : UI, IEdit<string>
             {
                 this.text = value;
                 this.ApplyText(value);
-                this.ApplyPosition(papa is null ? space.Environment : papa.mRect);
+                this.ApplyPosition(papa is null ? Default : papa.mRect);
             }
         }
     }
@@ -622,10 +601,10 @@ public class Text : UI, IEdit<string>
         space.Scale.X += 1;
         this.Size = 1f;
         this.space = space;
-        base.ApplyScale(space.Environment);
+        base.ApplyScale(Default);
         ApplyText(txt);
-        this.ApplyPosition(space.Environment);
-        par = space.Environment;
+        this.ApplyPosition(Default);
+        par = Default;
         Outline = true;
     }
 
@@ -661,7 +640,7 @@ public class Text : UI, IEdit<string>
         }
     }
 
-    public new void Draw(in SpriteBatch batch)
+    public override void Draw(in SpriteBatch batch)
     {
         if (_active)
         {
@@ -781,7 +760,7 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
     public Panel(Rectangle space)
     {
         this.space = space;
-        ApplySpace(space.Environment);
+        ApplySpace(Default);
     }
 
     public Panel(Rectangle space, IHaveRectangle parent)
@@ -795,7 +774,7 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
     public Panel(TileSet tileSet, in SpriteBatch batch, GraphicsDevice device, Rectangle space)
     {
         this.space = space;
-        ApplySpace(space.Environment);
+        ApplySpace(Default);
         this.texture = CreatePanelTexture(in batch, device, tileSet, new Point(rect.Width, rect.Height));
     }
 
@@ -811,7 +790,7 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
     public Panel(Texture2D image, Rectangle space)
     {
         this.space = space;
-        ApplySpace(space.Environment);
+        ApplySpace(Default);
         this.texture = image;
     }
 
@@ -824,7 +803,7 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
         this.depth = parent.Depth - 0.05f;
     }
 
-    public new void Draw(in SpriteBatch batch)
+    public override void Draw(in SpriteBatch batch)
     {
         if (_active)
         {
@@ -837,7 +816,7 @@ public class Panel : UI, IDisposable, IEdit<Texture2D>
         }
     }
 
-    public new void Dispose()
+    public override void Dispose()
     {
         if (texture is not null)
             texture.Dispose();
