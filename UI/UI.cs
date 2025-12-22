@@ -326,7 +326,7 @@ public class Image : UI, IEdit<Texture2D>, IDisposable, IDraw
     public bool outline = false;
     public Color outlineColor;
 
-    public new void Draw(in SpriteBatch batch)
+    public override void Draw(in SpriteBatch batch)
     {
         if (_active)
         {
@@ -335,16 +335,16 @@ public class Image : UI, IEdit<Texture2D>, IDisposable, IDraw
                 foreach (Point r in Renderer.outLinePositions)
                 {
                     batch.Draw
-            (
-                FriteCollection2.Entity.Renderer.DefaultTexture,
-                new Microsoft.Xna.Framework.Rectangle(rect.Location + r, rect.Size),
-                null,
-                outlineColor,
-                0,
-                Vector2.Zero,
-                effect,
-                this.depth + 0.0001f
-            );
+                    (
+                        FriteCollection2.Entity.Renderer.DefaultTexture,
+                        new Microsoft.Xna.Framework.Rectangle(rect.Location + r, rect.Size),
+                        null,
+                        outlineColor,
+                        0,
+                        Vector2.Zero,
+                        effect,
+                        this.depth + 0.0001f
+                    );
                 }
             }
 

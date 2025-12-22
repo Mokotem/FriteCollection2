@@ -43,6 +43,7 @@ public class Environment : IDraw, IHaveRectangle
     public RenderTarget2D Target { get; private set; }
     public Vector2[] Bounds { get; private set; }
 
+    public Rectangle TargetRect => new Rectangle(0, 0, Target.Width, Target.Height);
     public Rectangle mRect => new Rectangle(0, 0, Rect.Width, Rect.Height);
     public float Depth => 0.5f;
 

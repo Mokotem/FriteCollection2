@@ -6,7 +6,7 @@ namespace FriteCollection2.Tools.Particles;
 public interface IParticle<Settings> : IDisposable, IDraw
 {
     public void Initialize(in Settings settings);
-    public void Update();
+    public void Update(float dt);
     public bool Alive { get; }
 }
 
@@ -70,14 +70,14 @@ public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle
         }
     }
 
-    public void Update()
+    public void Update(float dt)
     {
         _isEmpty = true;
         for (ushort i = 0; i < _data.Length; ++i)
         {
             if (_data[i].Alive)
             {
-                _data[i].Update();
+                _data[i].Update(dt);
                 if (_data[i].Alive)
                     _isEmpty = false;
             }

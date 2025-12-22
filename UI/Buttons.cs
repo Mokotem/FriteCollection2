@@ -38,7 +38,7 @@ public abstract class ButtonCore : Panel
 
     private protected Procedure _fonction;
 
-    public new void Dispose()
+    public override void Dispose()
     {
         _list.Remove(this);
         _fonction = null;
@@ -196,7 +196,7 @@ public abstract class ButtonCore : Panel
         : this(title, tileSet, in batch, device, space)
     { InitEnvironment(envi); }
 
-    public new void Draw(in SpriteBatch batch)
+    public override void Draw(in SpriteBatch batch)
     {
         if (selected && enabled)
         {
