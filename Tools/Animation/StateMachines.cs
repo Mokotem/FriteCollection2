@@ -23,11 +23,12 @@ public class StateMachine : IDraw
     private float timer, delta;
     private State current;
     public bool active;
-    private readonly bool deltaMode;
+    private readonly bool deltaMode, reset;
     private readonly State start;
 
-    public StateMachine(in State start)
+    public StateMachine(in State start, bool resetOnChange = true)
     {
+        this.reset = resetOnChange;
         this.start = start;
         active = false;
         deltaMode = false;
@@ -35,8 +36,9 @@ public class StateMachine : IDraw
         timer = 0f;
     }
 
-    public StateMachine(in State start, float delta)
+    public StateMachine(in State start, float delta, bool resetOnChange = true)
     {
+        this.reset = resetOnChange;
         this.start = start;
         active = false;
         this.delta = delta;
@@ -81,6 +83,11 @@ public class StateMachine : IDraw
 
     public void Update()
     {
+        UpdateDelta(delta);
+    }
+
+    public void UpdateDelta(float dt)
+    {
 #if DEBUG
         if (!deltaMode)
             throw new System.Exception("la machine est bloqué !!!");
@@ -88,7 +95,7 @@ public class StateMachine : IDraw
 
         if (active)
         {
-            timer += delta;
+            timer += dt;
             State newState = current.Update(timer);
             if (newState is not null)
                 ForceState(newState);
@@ -105,10 +112,18 @@ public class StateMachine : IDraw
         }
     }
 
+
+    public void ResetTimer(float tim)
+    {
+        delta = tim;
+    }
+
     public void ForceState(in State state)
     {
-        if (deltaMode)
-            timer = 0f;
+        if (reset)
+        {
+            ResetTimer();
+        }
         current = state;
         state.Start();
     }
