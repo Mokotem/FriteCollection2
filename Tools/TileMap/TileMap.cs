@@ -20,6 +20,8 @@ public class TileMap : IDisposable, IDraw
         internal readonly Dictionary<char, Hitbox.Rectangle> hitboxesreplaces;
         internal readonly float[] layers;
 
+        public bool HasTileset(string value) => TileSets.ContainsKey(value) && TileSets[value] is not null; 
+
         public void LoadTileset(string key, TileSet value)
         {
             TileSets[key] = value;
@@ -29,6 +31,7 @@ public class TileMap : IDisposable, IDraw
         {
             TileSets[key].Dispose();
             TileSets[key] = null;
+            TileSets.Remove(key);
         }
 
         public Settings(short back, short ground, short general, short fore,

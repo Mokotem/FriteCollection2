@@ -83,16 +83,15 @@ public class StateMachine : IDraw
 
     public void Update()
     {
+#if DEBUG
+        if (!deltaMode)
+            throw new System.Exception("la machine est bloqué !!!");
+#endif
         UpdateDelta(delta);
     }
 
     public void UpdateDelta(float dt)
     {
-#if DEBUG
-        if (!deltaMode)
-            throw new System.Exception("la machine est bloqué !!!");
-#endif
-
         if (active)
         {
             timer += dt;
