@@ -341,7 +341,6 @@ public class Renderer : ICopy<Renderer>, ILayer
 
     public SpriteEffects effect = SpriteEffects.None;
 
-    public static float outlineLayer;
     public bool outline = true;
 
     public static Color DefaultOutline = Color.Black;

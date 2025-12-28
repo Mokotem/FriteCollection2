@@ -12,7 +12,8 @@ public class Object : ICopy<Object>, IDraw
     public Space Space = new Space();
     public Renderer Renderer = new Renderer();
 
-    public float outLayer = Renderer.outlineLayer;
+    public static float outlineLayer = 0.55f;
+    public float outLayer = Object.outlineLayer;
 
     public Object Copy()
     {

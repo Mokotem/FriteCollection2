@@ -478,7 +478,7 @@ public class Text : UI, IEdit<string>
     {
         textWidth = 0;
         string text = "";
-        string[] words = input.Split(' ', ',', '.', ';', '!', '/', '?');
+        string[] words = input.Split(' ');
         int i = 0;
         lineNumber = 1;
         if (sl || words.Length < 2 || rect.Width < 2)
