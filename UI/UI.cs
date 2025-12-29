@@ -51,12 +51,15 @@ public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
     public static Microsoft.Xna.Framework.Rectangle Default => _default;
 
 
-    public class Rectangle
+    public class Rectangle : IHaveRectangle
     {
         public Extend Extend = Extend.None;
         public Point Position = Point.Zero;
         public Point Scale = Point.Zero;
         public Bounds Origin;
+
+        public Microsoft.Xna.Framework.Rectangle mRect => new Microsoft.Xna.Framework.Rectangle(Position, Scale);
+        public float Depth => 0.5f;
 
         public Rectangle(Bounds origin, Extend extend)
         {
