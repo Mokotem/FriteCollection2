@@ -329,7 +329,8 @@ public class Image : UI, IEdit<Texture2D>, IDisposable, IDraw
     public SpriteEffects effect = SpriteEffects.None;
 
     public bool outline = false;
-    public Color outlineColor;
+    public Color outlineColor = defaultOutlineColor;
+    public static Color defaultOutlineColor = Color.White;
 
     public override void Draw(in SpriteBatch batch)
     {
@@ -590,6 +591,8 @@ public class Text : UI, IEdit<string>
     private int _textWidth;
     private int posX;
 
+    public static Point offset;
+
     public readonly bool SingleLine;
 
     public int TextWidth => _textWidth;
@@ -655,13 +658,13 @@ public class Text : UI, IEdit<string>
                 foreach (Point r in Renderer.outLinePositions)
                 {
                     batch.DrawString
-                    (Font, resultString, new Vector2(rect.X + r.X + posX, rect.Y + r.Y),
+                    (Font, resultString, new Vector2(rect.X + r.X + posX + offset.X, rect.Y + r.Y + offset.Y),
                     OutlineColor, 0, Vector2.Zero, Size,
                     SpriteEffects.None, this.depth + 0.0001f);
                 }
             }
             batch.DrawString
-                        (Font, resultString, new Vector2(rect.X + posX, rect.Y),
+                        (Font, resultString, new Vector2(rect.X + posX + offset.X, rect.Y + offset.Y),
                         this.Color, 0, Vector2.Zero, Size,
                         SpriteEffects.None, this.depth);
         }
