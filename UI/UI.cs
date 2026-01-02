@@ -183,7 +183,9 @@ public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
 
     public Microsoft.Xna.Framework.Rectangle mRect => rect;
 
-    public Color Color = Color.White;
+    public static Color DefaultColor = Color.White;
+
+    public Color Color = DefaultColor;
 
     private protected Rectangle space;
     public Rectangle Space => space;
@@ -533,8 +535,9 @@ public class Text : UI, IEdit<string>
                         if (maxLine > 0 && lineNumber > maxLine)
                         {
                             exedent = (ushort)(w - maxX);
-                            throw new System.Exception("la longueur du texte est trop grande (+" + exedent
-+ "). Il faut faire une nouvelle page dans la boite.");
+                            // throw new System.Exception("la longueur du texte est trop grande (+" + exedent
+                            // + "). Il faut faire une nouvelle page dans la boite.");
+                            return string.Empty;
                         }
                         w = GetWordLength(words[i], exepts);
                         text = text.Remove(text.Length - 1);
