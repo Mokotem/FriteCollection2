@@ -154,7 +154,7 @@ public abstract class AdvancedExecutable : IExecutable, IDrawUI, IDisposable
 
 public class Scene : AdvancedExecutable
 {
-    private readonly List<AdvancedExecutable> exes;
+    private protected readonly List<AdvancedExecutable> exes;
     public AdvancedExecutable[] Scripts => exes.ToArray();
 
     public int Count => exes.Count;
@@ -246,5 +246,97 @@ public class Scene : AdvancedExecutable
     {
         for (byte i = 0; i < exes.Count; i++)
             exes[i].Dispose();
+    }
+}
+
+public class Clone : AdvancedExecutable
+{
+    public bool IsDestroyed { get; protected set; }
+}
+
+
+public class CloneContainer : AdvancedExecutable
+{
+    private readonly List<Clone> clones;
+
+    public CloneContainer(params Clone[] clones)
+    {
+        this.clones = new List<Clone>(clones);
+    }
+
+    public void Add(Clone script)
+    {
+        clones.Add(script);
+    }
+
+    public void Clear()
+    {
+        clones.Clear();
+    }
+
+
+    public override void Load(in SpriteBatch batch, GraphicsDevice device)
+    {
+        foreach (Clone c in clones)
+        {
+            c.Load(in batch, device);
+        }
+    }
+
+    public override void Start()
+    {
+        foreach(Clone c in clones)
+        {
+            c.Start();
+        }
+    }
+
+    public override void AfterStart()
+    {
+        foreach (Clone c in clones)
+        {
+            c.AfterStart();
+        }
+    }
+
+    public override void BeforeUpdate(float dt)
+    {
+        for (int i = 0; i < clones.Count; i++)
+        {
+            if (clones[i].IsDestroyed)
+                clones.RemoveAt(i);
+            else
+                clones[i].BeforeUpdate(dt);
+        }
+    }
+
+    public override void Update(float dt)
+    {
+        for (int i = 0; i < clones.Count; i++)
+        {
+            if (clones[i].IsDestroyed)
+                clones.RemoveAt(i);
+            else
+                clones[i].Update(dt);
+        }
+    }
+
+    public override void AfterUpdate(float dt)
+    {
+        for (int i = 0; i < clones.Count; i++)
+        {
+            if (clones[i].IsDestroyed)
+                clones.RemoveAt(i);
+            else
+                clones[i].AfterUpdate(dt);
+        }
+    }
+
+    public override void Draw(in SpriteBatch batch)
+    {
+        foreach (Clone c in clones)
+        {
+            c.Draw(in batch);
+        }
     }
 }

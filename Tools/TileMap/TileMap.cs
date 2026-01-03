@@ -143,7 +143,7 @@ public class TileMap : IDisposable, IDraw
 
                             for (x = 0; x < width; x++)
                             {
-                                for (y = 0; y < width; y++)
+                                for (y = 0; y < height; y++)
                                 {
                                     batch.Draw(
                                         _refTileSet.Texture,
