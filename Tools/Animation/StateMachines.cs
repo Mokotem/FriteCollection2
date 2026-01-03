@@ -51,6 +51,12 @@ public class StateMachine : IDraw
         ForceState(start);
     }
 
+    public void Restart(in State state)
+    {
+        active = true;
+        ForceState(in state);
+    }
+
     public void Update(float t)
     {
 #if DEBUG

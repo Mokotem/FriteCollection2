@@ -342,7 +342,7 @@ public class Image : UI, IEdit<Texture2D>, IDisposable, IDraw
                 {
                     batch.Draw
                     (
-                        FriteCollection2.Entity.Renderer.DefaultTexture,
+                        image,
                         new Microsoft.Xna.Framework.Rectangle(rect.Location + r, rect.Size),
                         null,
                         outlineColor,
