@@ -70,6 +70,15 @@ public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle
         }
     }
 
+    public void Create(int amount)
+    {
+        while (amount > 0)
+        {
+            Create();
+            amount--;
+        }
+    }
+
     public void Update(float dt)
     {
         _isEmpty = true;

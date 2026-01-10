@@ -339,4 +339,20 @@ public class CloneContainer : AdvancedExecutable
             c.Draw(in batch);
         }
     }
+
+    public override void AfterDraw(in SpriteBatch batch)
+    {
+        foreach (Clone c in clones)
+        {
+            c.AfterDraw(in batch);
+        }
+    }
+
+    public override void DrawUI(in SpriteBatch batch, int w, int h)
+    {
+        foreach (Clone c in clones)
+        {
+            c.DrawUI(in batch, w, h);
+        }
+    }
 }
