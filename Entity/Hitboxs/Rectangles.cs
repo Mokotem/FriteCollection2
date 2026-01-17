@@ -746,21 +746,18 @@ public partial class Hitbox
 
         public bool Check(out Hitbox.Rectangle rect, string tag = null)
         {
-            if (this.Active)
+            this.UpdatePos();
+            foreach (Hitbox col in _hitBoxesList[_layer])
             {
-                this.UpdatePos();
-                foreach (Hitbox col in _hitBoxesList[_layer])
+                if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag)) && col != this)
                 {
-                    if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag)) && col != this)
-                    {
-                        Rectangle hit = col as Rectangle;
-                        hit.UpdatePos();
+                    Rectangle hit = col as Rectangle;
+                    hit.UpdatePos();
 
-                        if (InRange(hit._point, hit.p2))
-                        {
-                            rect = hit;
-                            return true;
-                        }
+                    if (InRange(hit._point, hit.p2))
+                    {
+                        rect = hit;
+                        return true;
                     }
                 }
             }
@@ -771,25 +768,21 @@ public partial class Hitbox
 
         public bool Check(out Hitbox.Rectangle rect, byte layer, string tag = null)
         {
-            if (this.Active)
+            this.UpdatePos();
+            foreach (Hitbox col in _hitBoxesList[layer])
             {
-                this.UpdatePos();
-                foreach (Hitbox col in _hitBoxesList[layer])
+                if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag)) && col != this)
                 {
-                    if (col is Rectangle && col.Active && (tag is null ? true : col._tag.Equals(tag)) && col != this)
-                    {
-                        Rectangle hit = col as Rectangle;
-                        hit.UpdatePos();
+                    Rectangle hit = col as Rectangle;
+                    hit.UpdatePos();
 
-                        if (InRange(hit._point, hit.p2))
-                        {
-                            rect = hit;
-                            return true;
-                        }
+                    if (InRange(hit._point, hit.p2))
+                    {
+                        rect = hit;
+                        return true;
                     }
                 }
             }
-
             rect = null;
             return false;
         }

@@ -9,20 +9,26 @@ public class SpriteSheet : IDisposable
 {
     private readonly Texture2D[,] textures;
 
+    public readonly int CountX;
+    public readonly int CountY;
+
     public readonly int Width;
     public readonly int Height;
-    public int Count => Width * Height;
+
+    public int Count => CountX * CountY;
 
     public SpriteSheet(Texture2D texture, int width, int height, GraphicsDevice device)
     {
-        this.Width = texture.Width / width;
-        this.Height = texture.Height / height;
+        this.Width = width;
+        this.Height = height;
+        this.CountX = texture.Width / width;
+        this.CountY = texture.Height / height;
 
-        textures = new Texture2D[this.Width, this.Height];
+        textures = new Texture2D[this.CountX, this.CountY];
 
-        for (int x = 0; x < this.Width; x++)
+        for (int x = 0; x < this.CountX; x++)
         {
-            for (int y = 0; y < this.Height; y++)
+            for (int y = 0; y < this.CountY; y++)
             {
                 Texture2D tex = new Texture2D(device, width, height);
                 Color[] data = new Color[width * height];
@@ -37,8 +43,8 @@ public class SpriteSheet : IDisposable
     }
 
     public virtual Texture2D this[int x, int y] => textures[x, y];
-    public virtual Texture2D this[int i] => textures[i % Width, i / Width];
-    public virtual Texture2D this[short i] => textures[i % Width, i / Width];
+    public virtual Texture2D this[int i] => textures[i % CountX, i / CountX];
+    public virtual Texture2D this[short i] => textures[i % CountX, i / CountX];
     public virtual Texture2D this[Point p] => textures[p.X, p.Y];
 
     public virtual void Dispose()

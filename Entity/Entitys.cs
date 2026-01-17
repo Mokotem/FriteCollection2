@@ -9,11 +9,22 @@ namespace FriteCollection2.Entity;
 /// </summary>
 public class Object : ICopy<Object>, IDraw
 {
-    public Space Space = new Space();
-    public Renderer Renderer = new Renderer();
+    public Space Space;
+    public Renderer Renderer;
 
     public static float outlineLayer = 0.55f;
     public float outLayer = Object.outlineLayer;
+
+    public Object()
+    {
+        Space = new Space();
+        Renderer = new Renderer();
+    }
+
+    public Object(Texture2D texture) : this()
+    {
+        Renderer.Texture = texture;
+    }
 
     public Object Copy()
     {
