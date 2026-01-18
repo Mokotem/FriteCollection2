@@ -286,7 +286,21 @@ public partial class Hitbox
 
         private static bool PointInRange(Vector2 p, Vector2 _1, Vector2 _2, bool up, bool right, out float distX, out float distY)
         {
-            if (p.X >= _1.X && p.X <= _2.X && p.Y >= _1.Y && p.Y <= _2.Y)
+            if (PointInRange(p, _1, _2))
+            {
+                distX = right ? p.X - _1.X : _2.X - p.X;
+                distY = up ? _2.Y - p.Y : p.Y - _1.Y;
+                return true;
+            }
+
+            distX = float.PositiveInfinity;
+            distY = float.PositiveInfinity;
+            return false;
+        }
+
+        private static bool PointInRange(Vector2 p, Vector2 _1, Vector2 _2, Align infinitX, Align infinitY, bool up, bool right, out float distX, out float distY)
+        {
+            if (PointInRange(p, _1, _2, infinitX, infinitY))
             {
                 distX = right ? p.X - _1.X : _2.X - p.X;
                 distY = up ? _2.Y - p.Y : p.Y - _1.Y;
@@ -303,9 +317,76 @@ public partial class Hitbox
             return p.X >= _1.X && p.X <= _2.X && p.Y >= _1.Y && p.Y <= _2.Y;
         }
 
+        protected static bool PointInRange(Vector2 p, Vector2 _1, Vector2 _2, Align infinitX, Align infinitY)
+        {
+            bool x;
+
+            if (infinitX == Align.Left)
+            {
+                x = p.X <= _2.X;
+            }
+            else if (infinitX == Align.Right)
+            {
+                x = p.X >= _1.X;
+            }
+            else
+            {
+                x = p.X >= _1.X && p.X <= _2.X;
+            }
+
+            if (x)
+            {
+                if (infinitY == Align.Left)
+                {
+                    return p.Y <= _2.Y;
+                }
+                else if (infinitY == Align.Right)
+                {
+                    return p.Y >= _1.Y;
+                }
+                else
+                {
+                    return p.Y >= _1.Y && p.Y <= _2.Y;
+                }
+            }
+
+            return false;
+        }
+
         public bool PointInRange(Vector2 p)
         {
-            return p.X >= _point.X && p.X <= p2.X && p.Y >= _point.Y && p.Y <= p2.Y;
+            bool x;
+
+            if (this.IsInfinitOnX == Align.Left)
+            {
+                x = p.X <= p2.X;
+            }
+            else if (this.IsInfinitOnX == Align.Right)
+            {
+                x = p.X >= _point.X;
+            }
+            else
+            {
+                x = p.X >= _point.X && p.X <= p2.X;
+            }
+
+            if (x)
+            {
+                if (this.IsInfinitOnY == Align.Left)
+                {
+                    return p.Y <= p2.Y;
+                }
+                else if (this.IsInfinitOnY == Align.Right)
+                {
+                    return p.Y >= _point.Y;
+                }
+                else
+                {
+                    return p.Y >= _point.Y && p.Y <= p2.Y;
+                }
+            }
+
+            return false;
         }
 
         public Vector2 CenterPoint => _centerPoint;
@@ -365,7 +446,7 @@ public partial class Hitbox
             byte i = 0;
             foreach (Vector2 p in this)
             {
-                if (PointInRange(p, hit._point, hit.p2, i < 2, i % 2 == 1, out float dx, out float dy))
+                if (PointInRange(p, hit._point, hit.p2, hit.IsInfinitOnX, hit.IsInfinitOnY, i < 2, i % 2 == 1, out float dx, out float dy))
                 {
                     bools[i] = true;
                     global[i] = true;
@@ -477,7 +558,7 @@ public partial class Hitbox
             byte i = 0;
             foreach (Vector2 p in this)
             {
-                if (PointInRange(p, hit._point, hit.p2, i < 2, i % 2 == 1, out float dx, out float dy))
+                if (PointInRange(p, hit._point, hit.p2, hit.IsInfinitOnX, hit.IsInfinitOnY, i < 2, i % 2 == 1, out float dx, out float dy))
                 {
                     bools[i] = true;
                     colided = true;

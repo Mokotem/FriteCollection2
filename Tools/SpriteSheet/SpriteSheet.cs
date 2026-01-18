@@ -11,11 +11,10 @@ public class SpriteSheet : IDisposable
 
     public readonly int CountX;
     public readonly int CountY;
+    public readonly int Count;
 
     public readonly int Width;
     public readonly int Height;
-
-    public int Count => CountX * CountY;
 
     public SpriteSheet(Texture2D texture, int width, int height, GraphicsDevice device)
     {
@@ -23,6 +22,7 @@ public class SpriteSheet : IDisposable
         this.Height = height;
         this.CountX = texture.Width / width;
         this.CountY = texture.Height / height;
+        this.Count = CountX * CountY;
 
         textures = new Texture2D[this.CountX, this.CountY];
 
