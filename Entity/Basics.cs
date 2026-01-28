@@ -19,6 +19,9 @@ interface ICopy<T>
 /// </summary>
 public class Space : ICopy<Space>, IEnumerable
 {
+    private static readonly Space spacezero = new Space(0, 0);
+    public static Space Zero => spacezero;
+
     public static Point Camera = Point.Zero;
 
     public static void SetDefaultEnvironment(in Environment env)
@@ -61,22 +64,22 @@ public class Space : ICopy<Space>, IEnumerable
         return new EnumCorners(this);
     }
 
-    private void Init()
+
+    public Space(int width, int height)
     {
         Position = Vector2.Zero;
-        Scale = new Vector2(30, 30);
-    }
-
-    public Space()
-    {
+        Scale = new Vector2(width, height);
         this.environment = defaultEnvironment;
-        Init();
     }
 
-    public Space(in Environment env)
+    public Space() : this(30, 30)
+    { 
+
+    }
+
+    public Space(in Environment env) : this()
     {
         this.environment = env;
-        Init();
     }
 
     public Space Copy()

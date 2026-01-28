@@ -45,7 +45,7 @@ public abstract partial class Hitbox : IDraw, IDisposable
     protected Space parent;
     public bool active;
 
-    protected internal Hitbox(in Space parent, byte layer, params string[] tags)
+    protected Hitbox(in Space parent, byte layer, params string[] tags)
     {
 #if DEBUG
         if (layers is null)
@@ -60,16 +60,10 @@ public abstract partial class Hitbox : IDraw, IDisposable
         active = true;
     }
 
-    protected internal Hitbox(in Space parent) : this(in parent, 0)
-    {
-
-    }
-
-
-    protected internal Hitbox(in Space parent, params string[] tags) : this(in parent, 0, tags)
-    {
-
-    }
+    protected Hitbox() : this(Space.Zero, 0) { }
+    protected Hitbox(byte layer, params string[] tags) : this(Space.Zero, layer, tags) { }
+    protected Hitbox(in Space parent) : this(in parent, 0) { }
+    protected Hitbox(in Space parent, params string[] tags) : this(in parent, 0, tags) { }
 
     public bool IsTag(string tag)
     {

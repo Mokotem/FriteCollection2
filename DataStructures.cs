@@ -34,6 +34,11 @@ public enum Align
     Left, Center, Right
 }
 
+public enum Sides
+{
+    Up, Down, Left, Right
+}
+
 /// <summary>
 /// Représente un endroit pour dessiner.
 /// </summary>

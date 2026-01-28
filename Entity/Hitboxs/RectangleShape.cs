@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
+using System;
 
 
 namespace FriteCollection2.Entity.Hitboxs;
@@ -12,19 +13,37 @@ public abstract partial class Hitbox
     {
         private float left, right, up, down;
         private float width, height;
+        private float offsetX, offsetY;
         private float centerX, centerY;
 
-        public RectangleShape(in Space parent) : base(in parent)
+        protected RectangleShape(in Space parent, byte layer, params string[] tags)
+            : base(in parent, layer, tags)
         {
+            SetScale(parent.W, parent.H);
+        }
 
+        protected RectangleShape() : this(Space.Zero, 0) { }
+        protected RectangleShape(byte layer, params string[] tags) : this(Space.Zero, layer, tags) { }
+        protected RectangleShape(in Space parent) : this(in parent, 0) { }
+        protected RectangleShape(in Space parent, params string[] tags) : this(in parent, 0, tags) { }
+
+        public void UpdateScale()
+        {
+            this.SetScale(parent.W, parent.H);
+        }
+
+        public void SetScale(float width, float height)
+        {
+            this.width = width;
+            this.height = height;
         }
 
         protected override void UpdatePosition()
         {
-            left = parent.X;
-            right = parent.X + parent.W;
-            up = parent.Y;
-            down = parent.Y + parent.H;
+            left = parent.X + offsetX;
+            right = parent.X + width + offsetX;
+            up = parent.Y + offsetY;
+            down = parent.Y + height + offsetY;
 
             centerX = (left + right) / 2f;
             centerY = (up + down) / 2f;
@@ -51,6 +70,11 @@ public abstract partial class Hitbox
         public override bool Check(byte layer, ConditionToCheckCollision condition)
         {
             return this.Check(layer, condition, out _);
+        }
+
+        public bool AdvancedCheck()
+        {
+
         }
 
         public override void Draw(in SpriteBatch batch)
