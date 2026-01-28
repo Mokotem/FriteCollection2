@@ -17,7 +17,7 @@ public class TileMap : IDisposable, IDraw
     public class Settings
     {
         internal readonly Dictionary<string, TileSet> TileSets;
-        internal readonly Dictionary<char, Hitbox.Rectangle> hitboxesreplaces;
+        internal readonly Dictionary<char, Hitbox.RectangleShape> hitboxesreplaces;
         internal readonly float[] layers;
 
         public bool HasTileset(string value) => TileSets.ContainsKey(value) && TileSets[value] is not null; 
@@ -35,7 +35,7 @@ public class TileMap : IDisposable, IDraw
         }
 
         public Settings(short back, short ground, short general, short fore,
-            string[] _tilesets, in Dictionary<char, Hitbox.Rectangle> _hitReplaces)
+            string[] _tilesets, in Dictionary<char, Hitbox.RectangleShape> _hitReplaces)
         {
             layers = new float[4]
             {
@@ -64,7 +64,7 @@ public class TileMap : IDisposable, IDraw
     public delegate void Entity(Point pos);
 
     public readonly int Width, Height;
-    private readonly Hitbox.Rectangle[,] _hitboxData;
+    private readonly Hitbox.RectangleShape[,] _hitboxData;
 
     private readonly float[] _targetLayers;
     private readonly Point[] _breakPos;
@@ -87,7 +87,7 @@ public class TileMap : IDisposable, IDraw
 
         System.Random r = new System.Random();
 
-        _hitboxData = new Hitbox.Rectangle[xCount, yCount];
+        _hitboxData = new Hitbox.RectangleShape[xCount, yCount];
 
         for(byte layer_id = 0; layer_id < file.layers.Length; layer_id++)
         {
@@ -228,7 +228,7 @@ public class TileMap : IDisposable, IDraw
         Color = Color.White;
     }
 
-    private Hitbox.Rectangle[] savedHitboxes;
+    private Hitbox.RectangleShape[] savedHitboxes;
 
     public void GenerateHitboxs(bool mergeHitBoxes = true)
     {
@@ -246,21 +246,21 @@ public class TileMap : IDisposable, IDraw
             savedHitboxes = PlaceHitboxes(in _hitboxData, size);
     }
 
-    private Hitbox.Rectangle[] PlaceHitboxes(in Hitbox.Rectangle[,] _hitboxData, Point tileSize)
+    private Hitbox.RectangleShape[] PlaceHitboxes(in Hitbox.RectangleShape[,] _hitboxData, Point tileSize)
     {
         return PlaceHitboxes(in _hitboxData, tileSize.X, tileSize.Y);
     }
 
-    private Hitbox.Rectangle[] PlaceHitboxes(in Hitbox.Rectangle[,] _hitboxData, int sx, int sy)
+    private Hitbox.RectangleShape[] PlaceHitboxes(in Hitbox.RectangleShape[,] _hitboxData, int sx, int sy)
     {
-        List<Hitbox.Rectangle> result = new List<Hitbox.Rectangle>();
+        List<Hitbox.RectangleShape> result = new List<Hitbox.RectangleShape>();
         for (int x = 0; x < xCount; ++x)
         {
             for (int y = 0; y < yCount; ++y)
             {
                 if (_hitboxData[x, y] is not null)
                 {
-                    Hitbox.Rectangle hit = _hitboxData[x, y].Copy();
+                    Hitbox.RectangleShape hit = _hitboxData[x, y].Copy();
                     hit.Active = true;
                     hit.PositionOffset.X += x * sx;
                     hit.PositionOffset.Y += y * sy;
@@ -277,7 +277,7 @@ public class TileMap : IDisposable, IDraw
 
     public void ReactivateHitboxs()
     {
-        foreach (Hitbox.Rectangle hit in savedHitboxes)
+        foreach (Hitbox.RectangleShape hit in savedHitboxes)
         {
             hit.Reactivate();
         }
@@ -286,9 +286,9 @@ public class TileMap : IDisposable, IDraw
     /// <summary>
     /// algo banger que j'ai fais pour éviter la redondance de hitboxes
     /// </summary>
-    private Hitbox.Rectangle[] MergeHitBoxes(in Hitbox.Rectangle[,] lst)
+    private Hitbox.RectangleShape[] MergeHitBoxes(in Hitbox.RectangleShape[,] lst)
     {
-        List<Hitbox.Rectangle> result = new List<Hitbox.Rectangle>();
+        List<Hitbox.RectangleShape> result = new List<Hitbox.RectangleShape>();
         int i = -1;
         while (i + 1 < xCount * yCount)
         {
@@ -296,7 +296,7 @@ public class TileMap : IDisposable, IDraw
             int x = i % xCount;
             int y = i / xCount;
 
-            Hitbox.Rectangle hit1 = lst[x, y];
+            Hitbox.RectangleShape hit1 = lst[x, y];
 
             if (hit1 is not null)
             {
@@ -313,14 +313,14 @@ public class TileMap : IDisposable, IDraw
                     ++width;
                 }
 
-                bool Cond(in Hitbox.Rectangle[,] h)
+                bool Cond(in Hitbox.RectangleShape[,] h)
                 {
                     if (y + height >= yCount)
                         return false;
-                    Hitbox.Rectangle h2 = hit1;
+                    Hitbox.RectangleShape h2 = hit1;
                     for (int k = 0; k < width; k++)
                     {
-                        Hitbox.Rectangle h1 = h[x + k, y + height];
+                        Hitbox.RectangleShape h1 = h[x + k, y + height];
                         if (h1 is null
                            || h1._tag != h2._tag
                            || h1.Layer != h2.Layer
@@ -340,7 +340,7 @@ public class TileMap : IDisposable, IDraw
                     height++;
                 }
 
-                Hitbox.Rectangle hit = hit1.Copy();
+                Hitbox.RectangleShape hit = hit1.Copy();
                 hit.Active = true;
                 hit.PositionOffset.X += x * _file.layers[0].gridCellWidth + this.Position.X;
                 hit.PositionOffset.Y += y * _file.layers[0].gridCellHeight + this.Position.Y;
@@ -409,7 +409,7 @@ public class TileMap : IDisposable, IDraw
 
     public void DestroyHitboxs()
     {
-        foreach (Hitbox.Rectangle hit in this.savedHitboxes)
+        foreach (Hitbox.RectangleShape hit in this.savedHitboxes)
         {
             hit.Destroy();
         }
