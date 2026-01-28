@@ -16,16 +16,16 @@ public abstract partial class Hitbox
         private float offsetX, offsetY;
         private float centerX, centerY;
 
-        protected RectangleShape(in Space parent, byte layer, params string[] tags)
+        public RectangleShape(in Space parent, byte layer, params string[] tags)
             : base(in parent, layer, tags)
         {
             SetScale(parent.W, parent.H);
         }
 
-        protected RectangleShape() : this(Space.Zero, 0) { }
-        protected RectangleShape(byte layer, params string[] tags) : this(Space.Zero, layer, tags) { }
-        protected RectangleShape(in Space parent) : this(in parent, 0) { }
-        protected RectangleShape(in Space parent, params string[] tags) : this(in parent, 0, tags) { }
+        public RectangleShape() : this(Space.Zero, 0) { }
+        public RectangleShape(byte layer, params string[] tags) : this(Space.Zero, layer, tags) { }
+        public RectangleShape(in Space parent) : this(in parent, 0) { }
+        public RectangleShape(in Space parent, params string[] tags) : this(in parent, 0, tags) { }
 
         public void UpdateScale()
         {
