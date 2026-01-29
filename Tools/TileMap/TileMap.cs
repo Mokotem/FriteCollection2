@@ -163,7 +163,7 @@ public class TileMap : IDisposable, IDraw
 
                             FriteCollection2.Entity.Object wall = new FriteCollection2.Entity.Object();
                             wall.Renderer.Texture = tex;
-                            wall.Space.Scale = new Vector2(
+                            wall.Scale = new Vector2(
                                 width * _refTileSet.settings.tileSize.X,
                                 height * _refTileSet.settings.tileSize.Y);
                             walls.Add(wall);
@@ -261,13 +261,9 @@ public class TileMap : IDisposable, IDraw
                 if (_hitboxData[x, y] is not null)
                 {
                     Hitbox.RectangleShape hit = _hitboxData[x, y].Copy();
-                    hit.Active = true;
-                    hit.PositionOffset.X += x * sx;
-                    hit.PositionOffset.Y += y * sy;
-                    hit.LockSize(new Point(
-                        _hitboxData[x, y].Size.X,
-                        _hitboxData[x, y].Size.Y)
-                        );
+                    hit.active = true;
+                    hit.offset.X += x * sx;
+                    hit.offset.Y += y * sy;
                     result.Add(hit);
                 }
             }
@@ -305,9 +301,9 @@ public class TileMap : IDisposable, IDraw
 
                 while (x + width < xCount
                     && lst[x + width, y] is not null
-                    && lst[x + width, y]._tag == hit1._tag
-                    && lst[x + width, y].Layer == hit1.Layer
-                    && lst[x + width, y].Size.Y == hit1.Size.Y)
+                    && lst[x + width, y].HasExactSameTagsAs(hit1)
+                    && lst[x + width, y].layer == hit1.layer
+                    && lst[x + width, y].Width == hit1.Height)
                 {
                     lst[x + width, y] = null;
                     ++width;
@@ -322,9 +318,9 @@ public class TileMap : IDisposable, IDraw
                     {
                         Hitbox.RectangleShape h1 = h[x + k, y + height];
                         if (h1 is null
-                           || h1._tag != h2._tag
-                           || h1.Layer != h2.Layer
-                           || h1.Size.X != h2.Size.X)
+                           || !h1.HasExactSameTagsAs(h2)
+                           || h1.layer != h2.layer
+                           || h1.Width != h2.Height)
                         {
                             return false;
                         }
@@ -341,22 +337,22 @@ public class TileMap : IDisposable, IDraw
                 }
 
                 Hitbox.RectangleShape hit = hit1.Copy();
-                hit.Active = true;
-                hit.PositionOffset.X += x * _file.layers[0].gridCellWidth + this.Position.X;
-                hit.PositionOffset.Y += y * _file.layers[0].gridCellHeight + this.Position.Y;
-                hit.LockSize(
-                    hit1.Size.X * width,
-                    hit1.Size.Y * height);
-                hit.IsStatic = true;
+                hit.active = true;
+                hit.offset.X += x * _file.layers[0].gridCellWidth + this.Position.X;
+                hit.offset.Y += y * _file.layers[0].gridCellHeight + this.Position.Y;
+                hit.SetScale(
+                    hit1.Width * width,
+                    hit1.Height * height);
+                hit.isStatic = true;
 
                 if (x == 0)
-                    hit.IsInfinitOnX = Align.Left;
+                    hit.isInfinitOnX = Align.Left;
                 else if (x + width >= xCount)
-                    hit.IsInfinitOnX = Align.Right;
+                    hit.isInfinitOnX = Align.Right;
                 if (y == 0)
-                    hit.IsInfinitOnY = Align.Left;
+                    hit.isInfinitOnY = Align.Left;
                 else if (y + height >= yCount)
-                    hit.IsInfinitOnY = Align.Right;
+                    hit.isInfinitOnY = Align.Right;
 
 
                 result.Add(hit);
@@ -411,7 +407,7 @@ public class TileMap : IDisposable, IDraw
     {
         foreach (Hitbox.RectangleShape hit in this.savedHitboxes)
         {
-            hit.Destroy();
+            hit.Dispose();
         }
     }
 

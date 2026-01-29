@@ -7,17 +7,15 @@ namespace FriteCollection2.Entity;
 /// <summary>
 /// Object.
 /// </summary>
-public class Object : ICopy<Object>, IDraw
+public class Object : Space, IDraw
 {
-    public Space Space;
     public Renderer Renderer;
 
     public static float outlineLayer = 0.55f;
     public float outLayer = Object.outlineLayer;
 
-    public Object()
+    public Object() : base()
     {
-        Space = new Space();
         Renderer = new Renderer();
     }
 
@@ -26,24 +24,15 @@ public class Object : ICopy<Object>, IDraw
         Renderer.Texture = texture;
     }
 
-    public Object Copy()
-    {
-        return new()
-        {
-            Space = Space.Copy(),
-            Renderer = Renderer.Copy()
-        };
-    }
-
     public void DrawOutline(in SpriteBatch batch)
     {
         if (Renderer.outline)
         {
-            Point pos = new Point((int)(float.Round(Space.Position.X) - Space.Camera.X),
-                    (int)(float.Round(Space.Position.Y) - Space.Camera.Y));
+            Point pos = new Point((int)(float.Round(Position.X) - Camera.X),
+                    (int)(float.Round(Position.Y) - Camera.Y));
 
-            Point scale = new Point((int)float.Round(Space.Scale.X),
-                    (int)float.Round(Space.Scale.Y));
+            Point scale = new Point((int)float.Round(Scale.X),
+                    (int)float.Round(Scale.Y));
 
             foreach (Point r in Renderer.outLinePositions)
             {
@@ -64,11 +53,11 @@ public class Object : ICopy<Object>, IDraw
 
     public void DrawBody(in SpriteBatch batch)
     {
-        Point pos = new Point((int)(float.Round(Space.Position.X) - Space.Camera.X),
-                    (int)(float.Round(Space.Position.Y) - Space.Camera.Y));
+        Point pos = new Point((int)(float.Round(Position.X) - Camera.X),
+                    (int)(float.Round(Position.Y) - Camera.Y));
 
-        Point scale = new Point((int)float.Round(Space.Scale.X),
-                    (int)float.Round(Space.Scale.Y));
+        Point scale = new Point((int)float.Round(Scale.X),
+                    (int)float.Round(Scale.Y));
 
         batch.Draw
         (
@@ -96,7 +85,7 @@ public class Object : ICopy<Object>, IDraw
     {
         if (obj is Object)
         {
-            return Space.Equals(((Object)obj).Space)
+            return base.Equals((Object)obj)
                 && Renderer.Equals(((Object)obj).Renderer);
         }
         return false;
@@ -104,7 +93,7 @@ public class Object : ICopy<Object>, IDraw
 
     public override string ToString()
     {
-        return "Object (" + Space.ToString() + ", " + Renderer.ToString() + ")";
+        return "Object (" + base.ToString() + ", " + Renderer.ToString() + ")";
     }
 }
 

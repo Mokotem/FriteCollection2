@@ -663,17 +663,18 @@ public class Text : UI, IEdit<string>
                     SpriteEffects.None, this.depth + 0.0001f);
                 }
             }
+
             batch.DrawString
-                        (Font, resultString, new Vector2(rect.X + posX + offset.X, rect.Y + offset.Y),
-                        this.Color, 0, Vector2.Zero, Size,
-                        SpriteEffects.None, this.depth);
+                (Font, resultString, new Vector2(rect.X + posX + offset.X, rect.Y + offset.Y),
+                this.Color, 0, Vector2.Zero, Size,
+                SpriteEffects.None, this.depth);
         }
     }
 
     public void Debug(in SpriteBatch batch)
     {
         batch.DrawRectangle(
-            rect.ToRectangleF(), Entity.Hitboxs.Hitbox.DebugColor,
+            rect.ToRectangleF(), Color.Red,
             1, this.depth + 0.0001f);
     }
 }

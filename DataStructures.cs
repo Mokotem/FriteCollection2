@@ -22,6 +22,14 @@ public interface IDrawUI
     public void Draw(in SpriteBatch batch, int width, int height) { }
 }
 
+interface ICopy<T>
+{
+    /// <summary>
+    /// Fait une copie.
+    /// </summary>
+    public T Copy();
+}
+
 public enum Bounds
 {
     TopLeft, Top, TopRight,

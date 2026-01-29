@@ -12,6 +12,8 @@ public abstract partial class Hitbox : IDraw, IDisposable
 
     private static HitboxLayer[] layers;
 
+
+
     public static void CreateLayers(params Color[] debugColors)
     {
 
@@ -40,10 +42,12 @@ public abstract partial class Hitbox : IDraw, IDisposable
         }
     }
 
-    private readonly byte layer;
+    public readonly byte layer;
     private readonly string[] tags;
     protected Space parent;
+
     public bool active;
+    public bool isStatic;
 
     protected Hitbox(in Space parent, byte layer, params string[] tags)
     {
@@ -58,6 +62,7 @@ public abstract partial class Hitbox : IDraw, IDisposable
         this.tags = tags;
         this.parent = parent;
         active = true;
+        isStatic = false;
     }
 
     protected Hitbox() : this(Space.Zero, 0) { }
@@ -73,6 +78,29 @@ public abstract partial class Hitbox : IDraw, IDisposable
                 return true;
         }
         return false;
+    }
+
+    public bool HasTagsOf(Hitbox other)
+    {
+        if (tags.Length > other.tags.Length)
+            return false;
+
+        foreach (string tag in tags)
+        {
+            if (!other.IsTag(tag))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public bool HasExactSameTagsAs(Hitbox other)
+    {
+        if (this.tags.Length < other.tags.Length)
+            return false;
+
+        return HasTagsOf(other);
     }
 
     protected abstract void UpdatePosition();
@@ -94,5 +122,10 @@ public abstract partial class Hitbox : IDraw, IDisposable
     public virtual void Dispose()
     {
         layers[layer].Remove(this);
+    }
+
+    public void Reactivate()
+    {
+        layers[layer].Add(this);
     }
 }

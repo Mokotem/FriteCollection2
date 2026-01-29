@@ -6,14 +6,6 @@ using System.Collections;
 
 namespace FriteCollection2.Entity;
 
-interface ICopy<T>
-{
-    /// <summary>
-    /// Fait une copie.
-    /// </summary>
-    public T Copy();
-}
-
 /// <summary>
 /// Permet de décrire une entité dans l'espace.
 /// </summary>
@@ -324,6 +316,16 @@ public class Renderer : ICopy<Renderer>, ILayer
     {
         _defaultTexture = t;
     }
+    public static void SetDefaultTexture(GraphicsDevice device, Color c)
+    {
+        _defaultTexture = CreateTexture(device, 2, 2, c);
+    }
+
+    public static void SetDefaultTexture(GraphicsDevice device)
+    {
+        SetDefaultTexture(device, Color.White);
+    }
+
 
     public static readonly Point[] outLinePositions = new Point[8]
     {
@@ -344,7 +346,7 @@ public class Renderer : ICopy<Renderer>, ILayer
 
     public SpriteEffects effect = SpriteEffects.None;
 
-    public bool outline = true;
+    public bool outline = false;
 
     public static Color DefaultOutline = Color.Black;
     public Color outlineColor;
