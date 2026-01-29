@@ -39,7 +39,7 @@ public enum Bounds
 
 public enum Align
 {
-    Left, Center, Right
+    Left = -1, Center = 0, Right = 1
 }
 
 public enum Sides

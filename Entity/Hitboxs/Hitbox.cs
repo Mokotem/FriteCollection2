@@ -10,9 +10,25 @@ public abstract partial class Hitbox : IDraw, IDisposable
 {
     public delegate bool ConditionToCheckCollision(Hitbox hit);
 
+    protected static bool SelectAllHitboxs(Hitbox hit) => true;
+
+
+    protected static ConditionToCheckCollision SelectTag(string tag) => (Hitbox hit) => hit.IsTag(tag);
+
+
     private static HitboxLayer[] layers;
 
+    public struct CollisionData<T> where T : Hitbox
+    {
+        public readonly T colider;
+        public readonly Sides side;
 
+        public CollisionData(in T col, Sides side)
+        {
+            this.colider = col;
+            this.side = side;
+        }
+    }
 
     public static void CreateLayers(params Color[] debugColors)
     {
@@ -114,7 +130,22 @@ public abstract partial class Hitbox : IDraw, IDisposable
 
     public bool Check(string tagToCheck)
     {
-        return Check(this.layer, (Hitbox hit) => hit.IsTag(tagToCheck));
+        return Check(this.layer, SelectTag(tagToCheck));
+    }
+
+    public bool Check(ConditionToCheckCollision condition)
+    {
+        return Check(this.layer, condition);
+    }
+
+    public bool Check(byte layer)
+    {
+        return Check(layer, SelectAllHitboxs);
+    }
+
+    public bool Check(byte layer, string tagToCheck)
+    {
+        return Check(layer, SelectTag(tagToCheck));
     }
 
     public abstract void Draw(in SpriteBatch batch);
