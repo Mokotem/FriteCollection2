@@ -87,9 +87,9 @@ public abstract partial class Hitbox
         {
             this.UpdatePosition();
 
-            float mindx = -1f, mindy = -1f;
+            float mindx = float.PositiveInfinity, mindy = float.PositiveInfinity;
             bool globalIsFullX = false, globalIsFullY = false;
-            bool globalSideIsRight = false, globalSideIsTop = false;
+            bool globalSideIsRight = false, globalSideIsDown = false;
 
             List<CollisionData<Rectangle>> result = new List<CollisionData<Rectangle>>();
 
@@ -99,10 +99,10 @@ public abstract partial class Hitbox
                 {
                     col.UpdatePosition();
 
-                    bool isRight, isTop, isfullx, isfully;
+                    bool isRight, isDown, isfullx, isfully;
 
                     if (!MakeCollisionRange(this.left, this.right, col.left, col.right, out float dx, out isRight, out isfullx)
-                     || !MakeCollisionRange(this.up, this.down, col.up, col.down, out float dy, out isTop, out isfully))
+                     || !MakeCollisionRange(this.up, this.down, col.up, col.down, out float dy, out isDown, out isfully))
                     {
                         continue;
                     }
@@ -116,7 +116,7 @@ public abstract partial class Hitbox
                     if (dy < mindy)
                     {
                         mindy = dy;
-                        globalSideIsTop = isTop;
+                        globalSideIsDown = isDown;
                     }
 
                     globalIsFullX |= isfullx;
@@ -127,7 +127,7 @@ public abstract partial class Hitbox
                     if (DoIChoseTheSideX(isfullx, isfully, dx, dy))
                        sideCol = isRight ? Sides.Right : Sides.Left;
                    else
-                       sideCol = isTop ? Sides.Up : Sides.Down;
+                       sideCol = isDown ? Sides.Down : Sides.Up;
 
                     result.Add(new CollisionData<Rectangle>(in col, sideCol));
                 }
@@ -136,7 +136,7 @@ public abstract partial class Hitbox
             if (DoIChoseTheSideX(globalIsFullX, globalIsFullY, mindx, mindy))
                 globalSide = globalSideIsRight ? Sides.Right : Sides.Left;
             else
-                globalSide = globalSideIsTop ? Sides.Up : Sides.Down;
+                globalSide = globalSideIsDown ? Sides.Down : Sides.Up;
 
             coliders = result.ToArray();
 
