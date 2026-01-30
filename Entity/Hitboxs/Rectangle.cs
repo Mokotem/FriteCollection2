@@ -91,6 +91,8 @@ public abstract partial class Hitbox
             bool globalIsFullX = false, globalIsFullY = false;
             bool globalSideIsRight = false, globalSideIsDown = false;
 
+            bool[] corners = new bool[4];
+
             List<CollisionData<Rectangle>> result = new List<CollisionData<Rectangle>>();
 
             foreach (Rectangle col in layers[layer])
@@ -101,8 +103,11 @@ public abstract partial class Hitbox
 
                     bool isRight, isDown, isfullx, isfully;
 
-                    if (!MakeCollisionRange(this.left, this.right, col.left, col.right, out float dx, out isRight, out isfullx)
-                     || !MakeCollisionRange(this.up, this.down, col.up, col.down, out float dy, out isDown, out isfully))
+                    if (!MakeCollisionRange(this.left, this.right, col.left, col.right,
+                        out corners[0], out corners[1],
+                        out float dx, out isRight, out isfullx)
+                     || !MakeCollisionRange(this.up, this.down, col.up, col.down
+                     out float dy, out isDown, out isfully))
                     {
                         continue;
                     }
@@ -189,9 +194,16 @@ public abstract partial class Hitbox
         }
 
 
-        private static bool MakeCollisionRange(float a, float b, float x, float y, out float distance, out bool isRight, out bool both)
+        private static bool MakeCollisionRange(float a, float b, float x, float y,
+            out bool touchLeftCorner,
+            out bool touchRightCorner,
+            out float distance,
+            out bool isRight,
+            out bool both)
         {
             float dr = b - x;
+            touchLeftCorner = false;
+            touchRightCorner = false;
             both = false;
 
             if (dr < 0)
@@ -222,8 +234,10 @@ public abstract partial class Hitbox
 
             if (b <= y)
             {
+                touchRightCorner = true;
                 if (a >= x)
                 {
+                    touchLeftCorner = true;
                     both = true;
                 }
             }
@@ -232,6 +246,10 @@ public abstract partial class Hitbox
                 if (a < x)
                 {
                     both = true;
+                }
+                else
+                {
+                    touchLeftCorner = true;
                 }
             }
 
