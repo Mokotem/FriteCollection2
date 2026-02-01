@@ -149,7 +149,7 @@ public class Text : IDraw
 
     public void SetPosition(Point pos, Bounds b)
     {
-        Position = pos + BoundFunc.BoundToPoint(b, Space.width, Space.height);
+        //Position = pos + BoundFunc.BoundToPoint(b, Space.width, Space.height);
         Position.X -= (int)float.Round(_scale.X * factor / 2f);
         Position.Y -= (int)float.Round(_scale.Y * factor / 2f);
     }
