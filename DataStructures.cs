@@ -1,4 +1,4 @@
-﻿using Autofac.Core;
+﻿
 using FriteCollection2.Entity;
 using FriteCollection2.UI;
 using Microsoft.Xna.Framework;
@@ -22,19 +22,37 @@ public interface IDrawUI
     public void Draw(in SpriteBatch batch, int width, int height) { }
 }
 
-interface ICopy<T>
+public class Bounds
 {
-    /// <summary>
-    /// Fait une copie.
-    /// </summary>
-    public T Copy();
-}
+    public static readonly Bounds
+        TopLeft = new Bounds(0, 0),
+        Top = new Bounds(1, 0),
+        TopRight = new Bounds(2, 0),
 
-public enum Bounds
-{
-    TopLeft, Top, TopRight,
-    Left, Center, Right,
-    BottomLeft, Bottom, BottomRight,
+        Left = new Bounds(0, 1),
+        Center = new Bounds(1, 1),
+        Right = new Bounds(2, 1),
+
+        BottomLeft = new Bounds(0, 2),
+        Bottom = new Bounds(1, 2),
+        BottomRight = new Bounds(2, 2);
+
+    public static bool operator == (Bounds b1, Bounds b2)
+    {
+        return b1.x == b2.x && b1.y == b2.y;
+    }
+
+    public static bool operator !=(Bounds b1, Bounds b2)
+    {
+        return b1.x != b2.x || b1.y != b2.y;
+    }
+
+    public readonly byte x, y;
+    private Bounds(byte i, byte j)
+    {
+        this.x = i;
+        this.y = j;
+    }
 }
 
 public enum Align
@@ -50,7 +68,7 @@ public enum Sides
 /// <summary>
 /// Représente un endroit pour dessiner.
 /// </summary>
-public class Environment : IDraw, IHaveRectangle
+public class Environment : IDraw
 {
     public Rectangle Rect { get; set; }
     public RenderTarget2D Target { get; private set; }
@@ -59,20 +77,6 @@ public class Environment : IDraw, IHaveRectangle
     public Rectangle TargetRect => new Rectangle(0, 0, Target.Width, Target.Height);
     public Rectangle mRect => new Rectangle(0, 0, Rect.Width, Rect.Height);
     public float Depth => 0.5f;
-
-    public Environment(Rectangle t, RenderTarget2D r)
-    {
-        Rect = t;
-        Target = r;
-        Bounds = BoundFunc.CreateBounds(r.Width, r.Height);
-    }
-
-    public void Edit(Rectangle t, RenderTarget2D r)
-    {
-        Rect = t;
-        Target = r;
-        Bounds = BoundFunc.CreateBounds(r.Width, r.Height);
-    }
 
     public void Draw(in SpriteBatch batch)
     {
@@ -141,9 +145,9 @@ public abstract class AdvancedExecutable : IExecutable, IDrawUI, IDisposable
         return false;
     }
 
-    public virtual void Start() { }
+    public abstract void Start();
 
-    public virtual void Load(in SpriteBatch batch, GraphicsDevice gd) { }
+    public abstract void Load(in SpriteBatch batch, GraphicsDevice gd);
     public virtual void AfterStart() { }
 
     public virtual void BeforeUpdate(float dt) { }
@@ -158,9 +162,9 @@ public abstract class AdvancedExecutable : IExecutable, IDrawUI, IDisposable
     public virtual void DrawMain(in SpriteBatch batch) { }
 
 
-    public virtual void Update(float dt) { }
+    public abstract void Update(float dt);
 
-    public virtual void Draw(in SpriteBatch batch) { }
+    public abstract void Draw(in SpriteBatch batch);
 
     public virtual void Dispose() { }
 }
@@ -265,6 +269,26 @@ public class Scene : AdvancedExecutable
 public class Clone : AdvancedExecutable
 {
     public bool IsDestroyed { get; protected set; }
+
+    public override void Draw(in SpriteBatch batch)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void Load(in SpriteBatch batch, GraphicsDevice gd)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void Start()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void Update(float dt)
+    {
+        throw new NotImplementedException();
+    }
 }
 
 
