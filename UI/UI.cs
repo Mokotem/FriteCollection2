@@ -1,841 +1,238 @@
-﻿using FriteCollection2.Entity;
-using FriteCollection2.Tools.TileMap;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MonoGame.Extended;
-using System;
+using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace FriteCollection2.UI;
 
-public enum Extend
+public class Extend
 {
-    Horizontal, Vertical, Full, None
-}
+    public static readonly Extend
+        None = new Extend(false, false),
+        Full = new Extend(true, true),
+        Horizontal = new Extend(true, false),
+        Vertical = new Extend(false, true);
 
-public interface IHaveRectangle
-{
-    public Rectangle mRect { get; }
-    public float Depth { get; }
-}
-
-public interface IEdit<T>
-{
-    public T Edit
+    public readonly bool x, y;
+    private Extend(bool onx, bool ony)
     {
-        get;
-        set;
+        this.x = onx;
+        this.y = ony;
     }
 }
 
-public abstract class UI : IDisposable, IHaveRectangle, IDraw, ILayer
+public abstract class UI : IDraw
 {
-    internal float depth = 0.5f;
-    public float Depth => depth;
+    protected const int padding = 8, padding2 = padding * 2;
+    protected const int defaultWidth = 32, defaultHeight = defaultWidth;
 
-    public short Layer
+    private protected static Screen screen;
+
+    public static void UpdateMousePos(MouseState state)
     {
-        get => Renderer.FromLayer(depth);
-        set => depth = Renderer.ToLayer(value);
+        screen.UpdateMouse(state);
     }
 
-    public virtual void Dispose() { }
-
-    public static void SetDefaultParent(Microsoft.Xna.Framework.Rectangle env)
+    public static void SetScreenResolution(ushort width, ushort height)
     {
-        _default = env;
+        screen = new Screen(width, height);
     }
 
-    private static Microsoft.Xna.Framework.Rectangle _default;
-    public static Microsoft.Xna.Framework.Rectangle Default => _default;
+    public bool active;
+    protected readonly UI parent;
+    protected Rectangle rect;
+    protected float layer;
 
+    internal virtual Rectangle ParentRect => rect;
+    internal virtual bool IsMouseOn => parent.IsMouseOn;
 
-    public class Rectangle : IHaveRectangle
+    internal virtual Point GetMousePos()
     {
-        public Extend Extend = Extend.None;
-        public Point Position = Point.Zero;
-        public Point Scale = Point.Zero;
-        public Bounds Origin;
-
-        public Microsoft.Xna.Framework.Rectangle mRect => new Microsoft.Xna.Framework.Rectangle(Position, Scale);
-        public float Depth => 0.5f;
-
-        public Rectangle(Bounds origin, Extend extend)
-        {
-            this.Origin = origin;
-            this.Extend = extend;
-        }
-
-        public Rectangle(Bounds origin, Extend extend, Point scale) : this(origin, extend)
-        {
-            this.Scale = scale;
-        }
-
-        public Rectangle(Bounds origin, Extend extend, Point scale, Point position) : this(origin, extend, scale)
-        {
-            this.Position = position;
-        }
+        return parent.GetMousePos();
     }
 
-    public virtual int PositionY
+    protected UI(UI parent, int width, int height)
     {
-        get => space.Position.Y;
-        set
-        {
-            space.Position.Y = value;
-            ApplyPosition(papa is null ? Default : papa.mRect);
-        }
+        rect = new Rectangle(0, 0, width, height);
+        this.parent = parent;
+        this.layer = parent.layer + 0.01f;
+        childs = new List<UI>();
+        parent.childs.Add(this);
+        active = true;
     }
 
-    public virtual int PositionX
+    private static bool Collide(Rectangle r1, Rectangle r2)
     {
-        get => space.Position.X;
-        set
+        if (r1.Right < r2.Left
+          || r1.Bottom < r2.Top
+          || r1.Left > r2.Right
+          || r1.Top > r2.Bottom)
+            return false;
+        return true;
+    }
+
+    public void FlexChildsVertical()
+    {
+        for (byte i = 1; i < childs.Count; i++)
         {
-            space.Position.X = value;
-            ApplyPosition(papa is null ? Default : papa.mRect);
+            childs[i].rect.Y = childs[i - 1].Bottom + padding;
+            childs[i].OnPositionChanged();
         }
     }
 
-    public virtual Point Position
+    protected UI(int width, int height) : this(screen, width, height) { }
+
+    protected UI(Vector2 scale) : this(
+        (int)float.Round(scale.X),
+        (int)float.Round(scale.Y)
+        ) { }
+
+    protected UI(UI parent) : this(parent, defaultWidth, defaultHeight) { }
+    protected UI()
     {
-        get => space.Position;
-        set
+        this.layer = 0f;
+        childs = new List<UI>();
+    }
+
+    private List<UI> childs;
+
+
+    public void ApplyScale(int width = 0, int height = 0)
+    {
+        rect.Width = width;
+        rect.Height = height;
+        OnSizeChanged();
+    }
+
+    private void _SetScale(Extend ext)
+    {
+        if (ext.x)
         {
-            space.Position = value;
-            ApplyPosition(papa is null ? Default : papa.mRect);
+            rect.Width = parent.ParentRect.Width;
+        }
+
+        if (ext.y)
+        {
+            rect.Height = parent.ParentRect.Height;
         }
     }
 
-    private protected bool _active = true;
-    public delegate void Procedure();
-    private protected IHaveRectangle papa;
-
-    public Point Scale
+    public void ApplyScale(Extend ext)
     {
-        get => space.Scale;
-        set
+        _SetScale(ext);
+        OnSizeChanged();
+    }
+
+    public void ApplyScale(Extend ext, int addWidth = 0, int addHeight = 0)
+    {
+        _SetScale(ext);
+        rect.Width += addWidth;
+        rect.Height += addHeight;
+        OnSizeChanged();
+    }
+
+    protected virtual void OnSizeChanged()
+    {
+
+    }
+
+    protected static Point MakePosition(Rectangle parent, Point scale, Bounds pos)
+    {
+        Point result = new Point(0, 0);
+        if (pos.x == 1)
         {
-            space.Scale = value;
-            ApplySpace(papa is null ? Default : papa.mRect);
+            result.X = parent.X + (parent.Width - scale.X) / 2;
         }
-    }
-
-    public bool Active
-    {
-        get => _active;
-        set
+        else if (pos.x == 2)
         {
-            _active = value;
-            foreach (UI c in childs)
-            {
-                c.Active = value;
-            }
-        }
-    }
-
-    private protected Microsoft.Xna.Framework.Rectangle rect;
-
-    private protected List<UI> childs = new List<UI>();
-    public UI[] Childs => childs.ToArray();
-
-    public void DesroyChilds()
-    {
-        foreach (UI child in childs)
-            child.Dispose();
-        childs.Clear();
-    }
-
-    public void Add(UI element)
-    {
-        element.depth = this.depth - 0.05f;
-        childs.Add(element);
-    }
-    public void FlexChilds(Point spacing, Point offset, bool leftAlgn = false)
-    {
-        Point cursor = spacing + offset;
-        int maxHeight = -1;
-        foreach (UI u in childs)
-        {
-            if (u.Active)
-            {
-                if (leftAlgn || cursor.X + u.rect.Width + spacing.X > this.rect.Width)
-                {
-                    cursor.X = spacing.X;
-                    if (u is Text && (u as Text).Edit is not null)
-                    {
-                        cursor.Y += (int)FriteCollection2.UI.Text.Font.MeasureString((u as Text).Edit).Y + spacing.Y;
-                    }
-                    else
-                    {
-                        cursor.Y += maxHeight + spacing.Y;
-                    }
-                    maxHeight = u.rect.Height;
-                }
-                if (u.rect.Height > maxHeight)
-                    maxHeight = u.rect.Height;
-                u.Position = cursor;
-                cursor.X += u.rect.Width + spacing.X;
-            }
-        }
-    }
-
-    public Microsoft.Xna.Framework.Rectangle mRect => rect;
-
-    public static Color DefaultColor = Color.White;
-
-    public Color Color = DefaultColor;
-
-    private protected Rectangle space;
-    public Rectangle Space => space;
-
-    private protected void ApplyScale(Microsoft.Xna.Framework.Rectangle parent)
-    {
-        switch (space.Extend)
-        {
-            case Extend.None:
-                rect.Width = 0;
-                rect.Height = 0;
-                break;
-
-            case Extend.Full:
-                rect.Width = parent.Width;
-                rect.Height = parent.Height;
-                break;
-
-            case Extend.Horizontal:
-                rect.Width = parent.Width;
-                rect.Height = 0;
-                break;
-
-            case Extend.Vertical:
-                rect.Width = 0;
-                rect.Height = parent.Height;
-                break;
-        }
-
-        rect.Width += space.Scale.X;
-        rect.Height += space.Scale.Y;
-
-        foreach (UI e in childs)
-        {
-            e.ApplyScale(this.rect);
-        }
-    }
-
-    internal virtual void ApplyPosition(Microsoft.Xna.Framework.Rectangle parent)
-    {
-        switch ((int)space.Origin % 3)
-        {
-            default:
-                rect.X = parent.X;
-                break;
-
-            case 1:
-                rect.X = parent.X + (parent.Width / 2) - (rect.Width / 2);
-                break;
-
-            case 2:
-                rect.X = parent.X + parent.Width - rect.Width;
-                break;
-        }
-
-        switch ((int)space.Origin / 3)
-        {
-            default:
-                rect.Y = parent.Y;
-                break;
-
-            case 1:
-                rect.Y = parent.Y + (parent.Height / 2) - (rect.Height / 2);
-                break;
-
-            case 2:
-                rect.Y = parent.Y + parent.Height - rect.Height;
-                break;
-        }
-
-        rect.X += space.Position.X;
-        rect.Y += space.Position.Y;
-
-        foreach (UI e in childs)
-        {
-            e.ApplyPosition(this.rect);
-        }
-    }
-
-    private protected virtual void ApplySpace(Microsoft.Xna.Framework.Rectangle parent)
-    {
-        ApplyScale(parent);
-        ApplyPosition(parent);
-    }
-
-    public void ApplySpace()
-    {
-        ApplyScale(papa is null ? Default : papa.mRect);
-        ApplyPosition(papa is null ? Default : papa.mRect);
-    }
-
-    public virtual void Draw(in SpriteBatch batch) { }
-}
-
-public class Image : UI, IEdit<Texture2D>, IDisposable, IDraw
-{
-    private Texture2D image;
-
-    public Texture2D Edit
-    {
-        get => image;
-        set => image = value;
-    }
-
-    public Image(Texture2D image, Rectangle space)
-    {
-        this.image = image;
-        this.space = space;
-        base.ApplyScale(Default);
-        base.ApplyPosition(Default);
-    }
-
-    public Image(Texture2D image, Rectangle space, IHaveRectangle parent)
-    {
-        this.image = image;
-        this.space = space;
-        this.papa = parent;
-        base.ApplyScale(parent.mRect);
-        base.ApplyPosition(parent.mRect);
-        this.depth = parent.Depth - 0.05f;
-    }
-
-    public Image(Rectangle space)
-    {
-        this.image = Renderer.DefaultTexture;
-        this.space = space;
-        base.ApplyScale(Default);
-        base.ApplyPosition(Default);
-    }
-
-    public Image(Rectangle space, IHaveRectangle parent)
-    {
-        this.image = Renderer.DefaultTexture;
-        this.space = space;
-        this.papa = parent;
-        base.ApplyScale(parent.mRect);
-        base.ApplyPosition(parent.mRect);
-        this.depth = parent.Depth - 0.05f;
-    }
-
-    public SpriteEffects effect = SpriteEffects.None;
-
-    public bool outline = false;
-    public Color outlineColor = defaultOutlineColor;
-    public static Color defaultOutlineColor = Color.White;
-
-    public override void Draw(in SpriteBatch batch)
-    {
-        if (_active)
-        {
-            if (outline)
-            {
-                foreach (Point r in Renderer.outLinePositions)
-                {
-                    batch.Draw
-                    (
-                        image,
-                        new Microsoft.Xna.Framework.Rectangle(rect.Location + r, rect.Size),
-                        null,
-                        outlineColor,
-                        0,
-                        Vector2.Zero,
-                        effect,
-                        this.depth + 0.0001f
-                    );
-                }
-            }
-
-            batch.Draw(
-            image,
-            rect,
-            null,
-            this.Color,
-            0, Vector2.Zero, effect,
-            this.depth);
-            foreach (UI element in childs)
-                element.Draw(in batch);
-        }
-    }
-
-    public override void Dispose()
-    {
-        if (image is not null)
-        {
-            image.Dispose();
-            image = null;
-        }
-    }
-}
-
-public class Text : UI, IEdit<string>
-{
-    private Microsoft.Xna.Framework.Rectangle par;
-    private string text;
-    public bool Outline;
-
-    private static SpriteFont _font;
-
-    /// <summary>
-    /// Police principale du projet.
-    /// </summary>
-    public static SpriteFont Font => _font;
-
-    /// <summary>
-    /// Mettre la police principale du projet.
-    /// </summary>
-    /// <param name="font"></param>
-    public static void SetFont(SpriteFont font)
-    {
-        _font = font;
-    }
-
-    public static Color DefaultOutlineColor = Color.Black;
-
-    public Color OutlineColor = DefaultOutlineColor;
-
-    private static Point _fontaspect;
-    public static Point FontAspect => _fontaspect;
-
-    public static void SetFontAspect(Point p)
-    {
-        _fontaspect = p;
-        HasFontAspect = true;
-    }
-
-    public static void RemoveFontAspect()
-    {
-        HasFontAspect = false;
-    }
-
-    private static bool HasFontAspect = false;
-
-    public float Size { get; set; }
-
-    public string Edit
-    {
-        get => resultString;
-        set
-        {
-            if (value != text)
-            {
-                this.text = value;
-                this.ApplyText(value);
-                this.ApplyPosition(papa is null ? Default : papa.mRect);
-            }
-        }
-    }
-
-    public void SetPar(Microsoft.Xna.Framework.Rectangle rect1)
-    {
-        par = rect1;
-    }
-
-    public override int PositionY
-    {
-        set
-        {
-            space.Position.Y = value;
-            ApplyPosition(par);
-        }
-    }
-
-    public int ScreenPositionX => rect.X + posX;
-
-    private protected override void ApplySpace(Microsoft.Xna.Framework.Rectangle parent)
-    {
-        ApplyScale(parent);
-        ApplyText(this.text);
-        ApplyPosition(parent);
-    }
-
-    private string resultString;
-
-    public static int GetWordLength(string word, char[] exepts)
-    {
-        if (exepts.Length < 1)
-            return word.Length;
-
-        int n = 0;
-        for (ushort i = 0; i < word.Length; ++i)
-        {
-            if (!exepts.Contains(word[i]))
-                ++n;
-        }
-        return n;
-    }
-
-    private byte lineNumber;
-    public byte LineCount => lineNumber;
-
-    public static string FormatText(string input, bool sl, char[] exepts,
-        Microsoft.Xna.Framework.Rectangle rect, ushort maxLine,
-        out byte lineNumber,
-        out ushort exedent,
-        out int textWidth)
-    {
-        textWidth = 0;
-        string text = "";
-        string[] words = input.Split(' ');
-        int i = 0;
-        lineNumber = 1;
-        if (sl || words.Length < 2 || rect.Width < 2)
-        {
-            text = input;
-            textWidth = input.Length * FontAspect.X;
-            int maxX;
-            if (HasFontAspect)
-            {
-                maxX = rect.Width / _fontaspect.X;
-            }
-            else
-            {
-                maxX = (int)(rect.Width / _font.MeasureString(input).X);
-            }
-            int wl = GetWordLength(input, exepts);
-            if (wl > maxX)
-            {
-                exedent = (ushort)(wl - maxX);
-                return input;
-            }
+            result.X = parent.Right - scale.X;
         }
         else
         {
-            if (HasFontAspect)
-            {
-                int maxX = rect.Width / _fontaspect.X;
-                int w = 0;
-                int l;
-                while (i < words.Length)
-                {
-                    l = GetWordLength(words[i], exepts);
-
-                    while (l > maxX)
-                    {
-                        text += "\n" + words[i].Remove(maxX);
-                        words[i] = words[i].Remove(0, maxX);
-                        ++lineNumber;
-                        l = GetWordLength(words[i], exepts);
-                    }
-
-                    if (w * FontAspect.X > textWidth)
-                        textWidth = w * FontAspect.X;
-                    w += l + 1;
-
-                    if (w > maxX)
-                    {
-                        ++lineNumber;
-                        if (maxLine > 0 && lineNumber > maxLine)
-                        {
-                            exedent = (ushort)(w - maxX);
-                            // throw new System.Exception("la longueur du texte est trop grande (+" + exedent
-                            // + "). Il faut faire une nouvelle page dans la boite.");
-                            return string.Empty;
-                        }
-                        w = GetWordLength(words[i], exepts);
-                        text = text.Remove(text.Length - 1);
-                        text += "\n" + words[i] + " ";
-                    }
-                    else
-                    {
-                        text += words[i] + " ";
-                    }
-
-                    ++i;
-                }
-            }
-            else
-            {
-                float w = 0;
-                while (i < words.Length)
-                {
-                    string test = text + words[i];
-                    if (Font.MeasureString(test).X > rect.Width)
-                    {
-                        ++lineNumber;
-                        if (lineNumber > maxLine)
-                        {
-                            exedent = 1;
-                            return string.Empty;
-                        }
-                        w = Font.MeasureString(words[i]).X;
-                        if (w > textWidth)
-                            textWidth = (int)float.Round(w);
-                        text = text.Remove(text.Length - 1);
-                        text += "\n" + words[i] + " ";
-                    }
-                    else
-                    {
-                        text = test + " ";
-                    }
-
-                    ++i;
-                }
-            }
-            text = text.Remove(text.Length - 1);
+            result.X = parent.X;
         }
 
-        exedent = 0;
-        return text;
-    }
-
-    private readonly Align TextAlign;
-    private int _textWidth;
-    private int posX;
-
-    public static Point offset;
-
-    public readonly bool SingleLine;
-
-    public int TextWidth => _textWidth;
-
-    private void ApplyText(string input)
-    {
-        this.resultString = FormatText(input, SingleLine, Array.Empty<char>(), this.rect, ushort.MaxValue, out lineNumber, out _,
-            out _textWidth);
-    }
-
-    public Text(string txt, Rectangle space, Align textAlign = Align.Left, bool singleLine = true)
-    {
-        this.SingleLine = singleLine;
-        this.TextAlign = textAlign;
-        space.Scale.X += 1;
-        this.Size = 1f;
-        this.space = space;
-        base.ApplyScale(Default);
-        ApplyText(txt);
-        this.ApplyPosition(Default);
-        par = Default;
-        Outline = true;
-    }
-
-    public Text(string txt, Rectangle space, IHaveRectangle parent, Align textAlign = Align.Left, bool singleLine = true) : base()
-    {
-        this.SingleLine = singleLine;
-        this.TextAlign = textAlign;
-        this.papa = parent;
-        this.Size = 1f;
-        this.space = space;
-        base.ApplyScale(parent.mRect);
-        ApplyText(txt);
-        this.ApplyPosition(parent.mRect);
-        par = parent.mRect;
-        Outline = true;
-        this.depth = parent.Depth - 0.05f;
-    }
-
-    internal override void ApplyPosition(Microsoft.Xna.Framework.Rectangle parent)
-    {
-        base.ApplyPosition(parent);
-        switch (TextAlign)
+        if (pos.y == 1)
         {
-            case Align.Center:
-                posX = (rect.Width - _textWidth) / 2;
-                return;
-            case Align.Right:
-                posX = rect.Width - _textWidth;
-                return;
-            default:
-                posX = 0;
-                return;
+            result.Y = parent.Y + (parent.Height - scale.Y) / 2;
         }
-    }
-
-    public override void Draw(in SpriteBatch batch)
-    {
-        if (_active)
+        else if (pos.y == 2)
         {
-            if (Outline)
+            result.Y = parent.Bottom - scale.Y;
+        }
+        else
+        {
+            result.Y = parent.Y;
+        }
+
+        return result;
+    }
+
+    public virtual int Bottom => rect.Bottom;
+
+    public void ApplyPosition(Bounds pos, int x = 0, int y = 0)
+    {
+        rect.Location = MakePosition(parent.ParentRect, rect.Size, pos);
+        rect.X += x;
+        rect.Y += y;
+        OnPositionChanged();
+    }
+
+    public void ApplyPosition(int x, int y)
+    {
+        ApplyPosition(Bounds.TopLeft, x, y);
+    }
+
+    protected virtual void OnPositionChanged()
+    {
+        //parent.UpdateChildPos(this);
+    }
+
+    protected void DrawChilds(in SpriteBatch batch)
+    {
+        if (active)
+        {
+            foreach (UI c in childs)
             {
-                foreach (Point r in Renderer.outLinePositions)
-                {
-                    batch.DrawString
-                    (Font, resultString, new Vector2(rect.X + r.X + posX + offset.X, rect.Y + r.Y + offset.Y),
-                    OutlineColor, 0, Vector2.Zero, Size,
-                    SpriteEffects.None, this.depth + 0.0001f);
-                }
+                c.Draw(in batch);
             }
-            batch.DrawString
-                        (Font, resultString, new Vector2(rect.X + posX + offset.X, rect.Y + offset.Y),
-                        this.Color, 0, Vector2.Zero, Size,
-                        SpriteEffects.None, this.depth);
         }
     }
 
-    public void Debug(in SpriteBatch batch)
+    public abstract void Draw(in SpriteBatch batch);
+
+    public static void DrawRoot(in SpriteBatch batch)
     {
-        batch.DrawRectangle(
-            rect.ToRectangleF(), Entity.Hitboxs.Hitbox.DebugColor,
-            1, this.depth + 0.0001f);
+        screen.Draw(in batch);
     }
 }
 
-
-public class Panel : UI, IDisposable, IEdit<Texture2D>
+internal class Screen : UI
 {
-    private Texture2D texture;
-    private RenderTarget2D rt;
-
-    public Texture2D Edit
+    internal Screen(int width, int height)
     {
-        get => texture;
-        set => this.texture = value;
+        rect = new Rectangle(0, 0, width, height);
+        isActive = false;
     }
 
-    public static Texture2D CreatePanelTexture(
-        in SpriteBatch batch,
-        GraphicsDevice device,
-        TileSet set,
-        Point size)
+    private Point mousePos;
+    private bool isActive;
+
+
+    internal void UpdateMouse(MouseState mouse)
     {
-        int sx = set.settings.tileSize.X;
-        int sy = set.settings.tileSize.Y;
-        if (size.X < sx * 2)
-        {
-            sx = size.X / 2;
-        }
-        if (size.Y < sy * 2)
-        {
-            sy = size.Y / 2;
-        }
-
-        RenderTarget2D rt = new RenderTarget2D(device, size.X, size.Y);
-
-        device.SetRenderTarget(rt);
-        device.Clear(Color.Transparent);
-        batch.Begin(samplerState: SamplerState.PointClamp);
-
-        for (int x = 0; x < 3; x++)
-        {
-            int width;
-            if (x == 0 || x == 2)
-                width = sx;
-            else
-                width = size.X - sx;
-
-            int posX;
-            if (x == 0)
-                posX = 0;
-            else if (x == 1)
-                posX = sx;
-            else
-                posX = size.X - sx;
-
-
-            for (int y = 0; y < 3; y++)
-            {
-                int height;
-                if (y == 0 || y == 2)
-                    height = sy;
-                else
-                    height = size.Y - sy;
-
-                int posY;
-                if (y == 0)
-                    posY = 0;
-                else if (y == 1)
-                    posY = sy;
-                else
-                    posY = size.Y - sy;
-
-                batch.Draw(set.Texture,
-                    new Microsoft.Xna.Framework.Rectangle(posX, posY, width, height),
-                    set.GetRectangle(x + (y * 3)),
-                    Color.White);
-            }
-        }
-
-        batch.End();
-        return rt;
+        this.mousePos = mouse.Position;
     }
 
-    public void Clear()
-    {
-        foreach (UI c in childs)
-        {
-            c.Active = false;
-        }
-        this.childs.Clear();
-    }
 
-    public Panel(Rectangle space)
+    internal override Point GetMousePos()
     {
-        this.space = space;
-        ApplySpace(Default);
-    }
-
-    public Panel(Rectangle space, IHaveRectangle parent)
-    {
-        this.papa = parent;
-        this.space = space;
-        ApplySpace(parent.mRect);
-        this.depth = parent.Depth - 0.05f;
-    }
-
-    public Panel(TileSet tileSet, in SpriteBatch batch, GraphicsDevice device, Rectangle space)
-    {
-        this.space = space;
-        ApplySpace(Default);
-        this.texture = CreatePanelTexture(in batch, device, tileSet, new Point(rect.Width, rect.Height));
-    }
-
-    public Panel(TileSet tileSet, in SpriteBatch batch, GraphicsDevice device, Rectangle space, IHaveRectangle parent)
-    {
-        this.papa = parent;
-        this.space = space;
-        ApplySpace(parent.mRect);
-        this.texture = CreatePanelTexture(in batch, device, tileSet, new Point(rect.Width, rect.Height));
-        this.depth = parent.Depth - 0.05f;
-    }
-
-    public Panel(Texture2D image, Rectangle space)
-    {
-        this.space = space;
-        ApplySpace(Default);
-        this.texture = image;
-    }
-
-    public Panel(Texture2D image, Rectangle space, IHaveRectangle parent)
-    {
-        this.papa = parent;
-        this.space = space;
-        ApplySpace(parent.mRect);
-        this.texture = image;
-        this.depth = parent.Depth - 0.05f;
+        return mousePos;
     }
 
     public override void Draw(in SpriteBatch batch)
     {
-        if (_active)
-        {
-            if (texture != null)
-                batch.Draw
-                 (texture, rect, null, Color,
-                 0, Vector2.Zero, SpriteEffects.None, this.depth);
-            foreach (UI element in childs.ToArray())
-                element.Draw(in batch);
-        }
-    }
-
-    public override void Dispose()
-    {
-        if (texture is not null)
-            texture.Dispose();
-        if (rt is not null)
-            rt.Dispose();
-        rt = null;
-        texture = null;
-        foreach (UI ui in childs)
-        {
-            ui.Dispose();
-        }
+        DrawChilds(in batch);
     }
 }
+   

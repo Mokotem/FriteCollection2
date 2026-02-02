@@ -10,6 +10,7 @@ namespace FriteCollection2.Entity.Hitboxs;
 public abstract partial class Hitbox
 {
     public class Rectangle : Hitbox
+    public class Rectangle : Hitbox, ICopy<Rectangle>
     {
         private float left, right, up, down;
 
@@ -104,11 +105,11 @@ public abstract partial class Hitbox
                     bool isRight, isDown, isfullx, isfully;
 
                     if (!MakeCollisionRange(this.left, this.right, col.left, col.right,
-                       out corners[0], out corners[1],
-                       out float dx, out isRight, out isfullx)
-                    || !MakeCollisionRange(this.up, this.down, col.up, col.down
+                        out corners[0], out corners[1],
+                        out float dx, out isRight, out isfullx)
+                     || !MakeCollisionRange(this.up, this.down, col.up, col.down
 
-                    out float dy, out isDown, out isfully))
+                     out float dy, out isDown, out isfully))
                     {
                         continue;
                     }
