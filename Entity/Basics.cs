@@ -24,6 +24,9 @@ public class Space : IEnumerable
 
     private readonly Environment environment;
 
+    public float rotation = 0f;
+    public Vector2 centerPoint = Vector2.Zero;
+
     public class EnumCorners : IEnumerator
     {
         byte i;

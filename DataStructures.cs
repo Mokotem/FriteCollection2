@@ -22,47 +22,65 @@ public interface IDrawUI
     public void Draw(in SpriteBatch batch, int width, int height) { }
 }
 
-public class Bounds
-{
-    public static readonly Bounds
-        TopLeft = new Bounds(0, 0),
-        Top = new Bounds(1, 0),
-        TopRight = new Bounds(2, 0),
-
-        Left = new Bounds(0, 1),
-        Center = new Bounds(1, 1),
-        Right = new Bounds(2, 1),
-
-        BottomLeft = new Bounds(0, 2),
-        Bottom = new Bounds(1, 2),
-        BottomRight = new Bounds(2, 2);
-
-    public static bool operator == (Bounds b1, Bounds b2)
-    {
-        return b1.x == b2.x && b1.y == b2.y;
-    }
-
-    public static bool operator !=(Bounds b1, Bounds b2)
-    {
-        return b1.x != b2.x || b1.y != b2.y;
-    }
-
-    public readonly byte x, y;
-    private Bounds(byte i, byte j)
-    {
-        this.x = i;
-        this.y = j;
-    }
-}
-
 public enum Align
 {
     Left = -1, Center = 0, Right = 1
 }
 
-public enum Sides
+public class Sides
 {
-    Up, Down, Left, Right
+    public static readonly Sides
+        Top = new Sides(1, 0),
+        Bottom = new Sides(1, 2),
+        Left = new Sides(0, 1),
+        Right = new Sides(2, 1);
+
+    public static bool operator ==(Sides b1, Sides b2)
+    {
+        return b1.x == b2.x && b1.y == b2.y;
+    }
+
+    public static bool operator !=(Sides b1, Sides b2)
+    {
+        return b1.x != b2.x || b1.y != b2.y;
+    }
+
+    public readonly byte x, y;
+    private protected Sides(byte i, byte j)
+    {
+        this.x = i;
+        this.y = j;
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is Bounds)
+        {
+            Bounds b = (Bounds)obj;
+            return b.x == this.x && b.y == this.y;
+        }
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return //up down left right;
+    }
+}
+
+public class Bounds : Sides
+{
+    public static readonly Bounds
+        TopLeft = new Bounds(0, 0),
+        TopRight = new Bounds(2, 0),
+        Center = new Bounds(1, 1),
+        BottomLeft = new Bounds(0, 2),
+        BottomRight = new Bounds(2, 2);
+
+    private Bounds(byte i, byte j) : base(i, j)
+    {
+
+    }
 }
 
 /// <summary>

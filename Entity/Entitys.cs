@@ -42,8 +42,8 @@ public class Object : Space, IDraw
                     new Rectangle(pos + r, scale),
                     null,
                     Renderer.outlineColor,
-                    0,
-                    Vector2.Zero,
+                    rotation,
+                    centerPoint,
                     Renderer.effect,
                     outLayer
                 );
@@ -65,8 +65,8 @@ public class Object : Space, IDraw
             new Rectangle(pos, scale),
             null,
             Renderer.Color,
-            0,
-            Vector2.Zero,
+            rotation,
+            centerPoint,
             Renderer.effect,
             Renderer.GetLayer()
         );

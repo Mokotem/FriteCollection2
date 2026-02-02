@@ -9,8 +9,7 @@ namespace FriteCollection2.Entity.Hitboxs;
 
 public abstract partial class Hitbox
 {
-    public class Rectangle : Hitbox
-    public class Rectangle : Hitbox, ICopy<Rectangle>
+    public partial class Rectangle : Hitbox
     {
         private float left, right, up, down;
 
@@ -84,7 +83,7 @@ public abstract partial class Hitbox
             return Check(layer, condition, out Rectangle _);
         }
 
-        public bool Check(byte layer, ConditionToCheckCollision condition, out Sides globalSide, out CollisionData<Rectangle>[] coliders)
+        public bool Check(byte layer, ConditionToCheckCollision condition, out Sides globalSide, out CollisionData<Rectangle>[] coliders, out int closestColId)
         {
             this.UpdatePosition();
 
@@ -93,6 +92,8 @@ public abstract partial class Hitbox
             bool globalSideIsRight = false, globalSideIsDown = false;
 
             bool[] corners = new bool[4];
+
+            closestColId = 0;
 
             List<CollisionData<Rectangle>> result = new List<CollisionData<Rectangle>>();
 
@@ -103,27 +104,35 @@ public abstract partial class Hitbox
                     col.UpdatePosition();
 
                     bool isRight, isDown, isfullx, isfully;
+                    bool touchLeft, touchRight, touchUp, touchDown;
 
                     if (!MakeCollisionRange(this.left, this.right, col.left, col.right,
-                        out corners[0], out corners[1],
+                        out touchLeft, out touchRight,
                         out float dx, out isRight, out isfullx)
-                     || !MakeCollisionRange(this.up, this.down, col.up, col.down
-
-                     out float dy, out isDown, out isfully))
+                     || !MakeCollisionRange(this.up, this.down, col.up, col.down,
+                        out touchUp, out touchDown,
+                        out float dy, out isDown, out isfully))
                     {
                         continue;
                     }
+
+                    corners[0] |= touchLeft && touchUp;
+                    corners[1] |= touchRight && touchUp;
+                    corners[2] |= touchLeft && touchDown;
+                    corners[3] |= touchRight && touchDown;
 
                     if (dx < mindx)
                     {
                         mindx = dx;
                         globalSideIsRight = isRight;
+                        closestColId = result.Count;
                     }
 
                     if (dy < mindy)
                     {
                         mindy = dy;
                         globalSideIsDown = isDown;
+                        closestColId = result.Count;
                     }
 
                     globalIsFullX |= isfullx;
@@ -134,67 +143,95 @@ public abstract partial class Hitbox
                     if (DoIChoseTheSideX(isfullx, isfully, dx, dy))
                        sideCol = isRight ? Sides.Right : Sides.Left;
                    else
-                       sideCol = isDown ? Sides.Down : Sides.Up;
+                       sideCol = isDown ? Sides.Bottom : Sides.Top;
 
                     result.Add(new CollisionData<Rectangle>(in col, sideCol));
                 }
             }
-
-            if (DoIChoseTheSideX(globalIsFullX, globalIsFullY, mindx, mindy))
-                globalSide = globalSideIsRight ? Sides.Right : Sides.Left;
-            else
-                globalSide = globalSideIsDown ? Sides.Down : Sides.Up;
-
+                
             coliders = result.ToArray();
 
-            return result.Count > 0;
+            if (result.Count > 0)
+            {
+
+                switch (corners[0], corners[1], corners[2], corners[3])
+                {
+                    case (true, true, false, false):
+                        globalSide = Sides.Top;
+                        return true;
+                    case (false, false, true, true):
+                        globalSide = Sides.Bottom;
+                        return true;
+                    case (true, false, true, false):
+                        globalSide = Sides.Left;
+                        return true;
+                    case (false, true, false, true):
+                        globalSide = Sides.Right;
+                        return true;
+                    case (true, true, true, true):
+                        globalIsFullX = true;
+                        globalIsFullY = true;
+                        break;
+                }
+
+                if (DoIChoseTheSideX(globalIsFullX, globalIsFullY, mindx, mindy))
+                    globalSide = globalSideIsRight ? Sides.Right : Sides.Left;
+                else
+                    globalSide = globalSideIsDown ? Sides.Bottom : Sides.Top;
+
+
+                return true;
+            }
+
+            globalSide = Sides.Bottom;
+            return false;
         }
 
         public bool Check(byte layer, ConditionToCheckCollision condition, out Sides globalSide)
         {
-            return Check(layer, condition, out globalSide, out _);
+            return Check(layer, condition, out globalSide, out _, out _);
         }
 
         public bool Check(byte layer, string tagToCheck, out Sides globalSide)
         {
-            return Check(layer, SelectTag(tagToCheck), out globalSide, out _);
+            return Check(layer, SelectTag(tagToCheck), out globalSide, out _, out _);
         }
 
         public bool Check(byte layer, out Sides globalSide)
         {
-            return Check(layer, SelectAllHitboxs, out globalSide, out _);
+            return Check(layer, SelectAllHitboxs, out globalSide, out _, out _);
         }
 
         public bool Check(ConditionToCheckCollision condition, out Sides globalSide)
         {
-            return Check(this.layer, condition, out globalSide, out _);
+            return Check(this.layer, condition, out globalSide, out _, out _);
         }
 
         public bool Check(string tagToCheck, out Sides globalSide)
         {
-            return Check(this.layer, SelectTag(tagToCheck), out globalSide, out _);
+            return Check(this.layer, SelectTag(tagToCheck), out globalSide, out _, out _);
         }
 
         public bool Check(out Sides globalSide)
         {
-            return Check(this.layer, SelectAllHitboxs, out globalSide, out _);
+            return Check(this.layer, SelectAllHitboxs, out globalSide, out _, out _);
         }
 
-        public bool Check(byte layer, string tagToCheck, out Sides side, out CollisionData<Rectangle>[] coliders)
+        public bool Check(byte layer, out Sides side, out CollisionData<Rectangle>[] coliders, out int closestColId)
         {
-            return Check(layer, (Hitbox hit) => hit.IsTag(tagToCheck), out side, out coliders);
+            return Check(layer, SelectAllHitboxs, out side, out coliders, out closestColId);
         }
 
-        public bool Check(byte layer, out Sides side, out CollisionData<Rectangle>[] coliders)
+
+        public bool Check(byte layer, string tagToCheck, out Sides side, out CollisionData<Rectangle>[] coliders, out int closestColId)
         {
-            return Check(layer, SelectAllHitboxs, out side, out coliders);
+            return Check(layer, SelectTag(tagToCheck), out side, out coliders, out closestColId);
         }
 
-        public bool Check(string tagToCheck, out Sides side, out CollisionData<Rectangle>[] coliders)
+        public bool Check(string tagToCheck, out Sides side, out CollisionData<Rectangle>[] coliders, out int closestColId)
         {
-            return Check(this.layer, (Hitbox hit) => hit.IsTag(tagToCheck), out side, out coliders);
+            return Check(this.layer, SelectTag(tagToCheck), out side, out coliders, out closestColId);
         }
-
 
         private static bool MakeCollisionRange(float a, float b, float x, float y,
             out bool touchLeftCorner,
@@ -241,6 +278,7 @@ public abstract partial class Hitbox
                 {
                     touchLeftCorner = true;
                     both = true;
+                    distance = float.Min(y - b, a - x);
                 }
             }
             else
@@ -248,6 +286,7 @@ public abstract partial class Hitbox
                 if (a < x)
                 {
                     both = true;
+                    distance = float.Min(b - y, x - a);
                 }
                 else
                 {

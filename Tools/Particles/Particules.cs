@@ -20,6 +20,7 @@ public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle
 
     private ushort index;
     private float timer;
+    private float[] _timers;
 
     private bool _isEmpty;
     public bool IsEmpty => _isEmpty;
@@ -30,6 +31,7 @@ public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle
     {
         this.delay = 1f / pps;
         _data = new P[capacity];
+        _timers = new float[capacity];
         for (ushort i = 0; i < capacity; ++i)
             _data[i] = new();
         index = 0;
@@ -63,6 +65,7 @@ public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle
     {
         if (!_data[index].Alive)
         {
+            _timers[index] = 0f;
             _data[index].Initialize(in settings);
             ++index;
             if (index >= _data.Length)
@@ -79,14 +82,15 @@ public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle
         }
     }
 
-    public void Update(float dt)
+    public void Update(float delta)
     {
         _isEmpty = true;
         for (ushort i = 0; i < _data.Length; ++i)
         {
             if (_data[i].Alive)
             {
-                _data[i].Update(dt);
+                _timers[i] += delta;
+                _data[i].Update(_timers[i]);
                 if (_data[i].Alive)
                     _isEmpty = false;
             }
