@@ -56,6 +56,12 @@ public abstract partial class Hitbox
             centerY = (up + down) / 2f;
         }
 
+        private bool Intersect(Rectangle col)
+        {
+            return !(right < col.left || left > col.right)  // truc de batard du prof de bdd
+                    && !(down < col.up || up > col.down);
+        }
+
         public bool Check(byte layer, ConditionToCheckCollision condition, out Rectangle collider)
         {
             this.UpdatePosition();
@@ -65,8 +71,7 @@ public abstract partial class Hitbox
                 if (col.active && (col != this) && condition(col))
                 {
                     col.UpdatePosition();
-                    if (!(right < col.left || left > col.right)  // truc de batard du prof de bdd
-                    && !(down < col.up || up > col.down))
+                    if (Intersect(col))
                     {
                         collider = col;
                         return true;

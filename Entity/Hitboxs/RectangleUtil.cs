@@ -6,10 +6,16 @@ public abstract partial class Hitbox
 {
 	public partial class Rectangle : Hitbox
 	{
-		public static void ApplyCollition(in Space mec, Sides globalSide, CollisionData<Rectangle>[] coliders, int closestColId)
+		public void ApplyCollition(Sides globalSide, CollisionData<Rectangle>[] collisions, int closestColId)
 		{
-			ApplyCollition(in mec, coliders[closestColId].colider, globalSide);
-			if ()
+			ApplyCollition(in parent, collisions[closestColId].colider, globalSide);
+			for (byte i = 0; i < collisions.Length; i++)
+			{
+				if (i != closestColId && Intersect(collisions[i].colider))
+				{
+					// suite
+				}
+			}
 		}
 
 		public static void ApplyCollition(in Space mec, Rectangle colider, Sides side)

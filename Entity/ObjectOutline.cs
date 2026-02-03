@@ -41,10 +41,10 @@ public class ObjectOutline : Object
     public override void Draw(in SpriteBatch batch)
     {
         Rectangle rect = ToScreen();
-        this.Renderer._layer = outlineLayer;
         foreach (Point p in outLinePositions)
         {
-            Renderer.Draw(in batch, new Rectangle(rect.Location + p, rect.Size))
+            batch.Draw(Renderer.Texture, rect, null, outlineColor, 0f, Vector2.Zero, Renderer.effect, outlineLayer);
         }
+        Renderer.Draw(in batch, rect);
     }
 }
