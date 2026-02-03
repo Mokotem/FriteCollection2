@@ -27,60 +27,16 @@ public enum Align
     Left = -1, Center = 0, Right = 1
 }
 
-public class Sides
+public enum Sides
 {
-    public static readonly Sides
-        Top = new Sides(1, 0),
-        Bottom = new Sides(1, 2),
-        Left = new Sides(0, 1),
-        Right = new Sides(2, 1);
-
-    public static bool operator ==(Sides b1, Sides b2)
-    {
-        return b1.x == b2.x && b1.y == b2.y;
-    }
-
-    public static bool operator !=(Sides b1, Sides b2)
-    {
-        return b1.x != b2.x || b1.y != b2.y;
-    }
-
-    public readonly byte x, y;
-    private protected Sides(byte i, byte j)
-    {
-        this.x = i;
-        this.y = j;
-    }
-
-    public override bool Equals(object obj)
-    {
-        if (obj is Bounds)
-        {
-            Bounds b = (Bounds)obj;
-            return b.x == this.x && b.y == this.y;
-        }
-        return false;
-    }
-
-    public override int GetHashCode()
-    {
-        return //up down left right;
-    }
+    Up, Down, Left, Right
 }
 
-public class Bounds : Sides
+public enum Bounds
 {
-    public static readonly Bounds
-        TopLeft = new Bounds(0, 0),
-        TopRight = new Bounds(2, 0),
-        Center = new Bounds(1, 1),
-        BottomLeft = new Bounds(0, 2),
-        BottomRight = new Bounds(2, 2);
-
-    private Bounds(byte i, byte j) : base(i, j)
-    {
-
-    }
+    TopLeft, Top, TopRight,
+    Left, Center, Right,
+    BottomLeft, Bottom, BottomRight
 }
 
 /// <summary>

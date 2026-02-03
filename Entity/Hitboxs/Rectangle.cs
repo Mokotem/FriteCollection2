@@ -138,14 +138,20 @@ public abstract partial class Hitbox
                     globalIsFullX |= isfullx;
                     globalIsFullY |= isfully;
 
-                    Sides sideCol;
+                    Sides sideCol, second;
 
                     if (DoIChoseTheSideX(isfullx, isfully, dx, dy))
-                       sideCol = isRight ? Sides.Right : Sides.Left;
-                   else
-                       sideCol = isDown ? Sides.Bottom : Sides.Top;
+                    {
+                        sideCol = isRight ? Sides.Right : Sides.Left;
+                        second = isDown ? Sides.Down : Sides.Up;
+                    }
+                    else
+                    {
+                        sideCol = isDown ? Sides.Down : Sides.Up;
+                        second = isRight ? Sides.Right : Sides.Left;
+                    }
 
-                    result.Add(new CollisionData<Rectangle>(in col, sideCol));
+                    result.Add(new CollisionData<Rectangle>(in col, sideCol, second));
                 }
             }
                 
@@ -157,10 +163,10 @@ public abstract partial class Hitbox
                 switch (corners[0], corners[1], corners[2], corners[3])
                 {
                     case (true, true, false, false):
-                        globalSide = Sides.Top;
+                        globalSide = Sides.Up;
                         return true;
                     case (false, false, true, true):
-                        globalSide = Sides.Bottom;
+                        globalSide = Sides.Down;
                         return true;
                     case (true, false, true, false):
                         globalSide = Sides.Left;
@@ -177,13 +183,13 @@ public abstract partial class Hitbox
                 if (DoIChoseTheSideX(globalIsFullX, globalIsFullY, mindx, mindy))
                     globalSide = globalSideIsRight ? Sides.Right : Sides.Left;
                 else
-                    globalSide = globalSideIsDown ? Sides.Bottom : Sides.Top;
+                    globalSide = globalSideIsDown ? Sides.Down : Sides.Up;
 
 
                 return true;
             }
 
-            globalSide = Sides.Bottom;
+            globalSide = Sides.Down;
             return false;
         }
 
@@ -227,6 +233,7 @@ public abstract partial class Hitbox
         {
             return Check(layer, SelectTag(tagToCheck), out side, out coliders, out closestColId);
         }
+
 
         public bool Check(string tagToCheck, out Sides side, out CollisionData<Rectangle>[] coliders, out int closestColId)
         {

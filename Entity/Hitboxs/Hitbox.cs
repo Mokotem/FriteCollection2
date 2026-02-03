@@ -21,12 +21,13 @@ public abstract partial class Hitbox : IDraw, IDisposable
     public struct CollisionData<T> where T : Hitbox
     {
         public readonly T colider;
-        public readonly Sides side;
+        public readonly Sides side, secondarySide;
 
-        public CollisionData(in T col, Sides side)
+        public CollisionData(in T col, Sides side, Sides second)
         {
             this.colider = col;
             this.side = side;
+            this.secondarySide = second;
         }
     }
 

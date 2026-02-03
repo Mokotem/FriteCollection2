@@ -139,11 +139,11 @@ public abstract class UI : IDraw
     protected static Point MakePosition(Rectangle parent, Point scale, Bounds pos)
     {
         Point result = new Point(0, 0);
-        if (pos.x == 1)
+        if ((int)pos % 3 == 1)
         {
             result.X = parent.X + (parent.Width - scale.X) / 2;
         }
-        else if (pos.x == 2)
+        else if ((int)pos % 3 == 2)
         {
             result.X = parent.Right - scale.X;
         }
@@ -152,11 +152,11 @@ public abstract class UI : IDraw
             result.X = parent.X;
         }
 
-        if (pos.y == 1)
+        if ((int)pos / 3 == 1)
         {
             result.Y = parent.Y + (parent.Height - scale.Y) / 2;
         }
-        else if (pos.y == 2)
+        else if ((int)pos / 3 == 2)
         {
             result.Y = parent.Bottom - scale.Y;
         }
