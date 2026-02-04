@@ -29,7 +29,7 @@ public enum Align
 
 public enum Sides
 {
-    Up, Down, Left, Right
+    Up, Down, Left, Right, Center
 }
 
 public enum Bounds

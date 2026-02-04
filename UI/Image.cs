@@ -10,7 +10,7 @@ public class Image : UI
     internal static Texture2D defaultTex;
     public static Texture2D CreateDefaultTexture(GraphicsDevice device)
     {
-        defaultTex = Renderer.CreateTexture(device, 2, 2, Color.White);
+        defaultTex = TextureCreator.Create(device, 2, 2);
         return defaultTex;
     }
 

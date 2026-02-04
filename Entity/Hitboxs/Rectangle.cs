@@ -45,16 +45,17 @@ public abstract partial class Hitbox
             this._height = height;
         }
 
-        protected override void UpdatePosition()
+        public override void UpdatePosition(float x, float y)
         {
-            left = parent.X + offset.X;
-            right = parent.X + _width + offset.X;
-            up = parent.Y + offset.Y;
-            down = parent.Y + _height + offset.Y;
+            left = x + offset.X;
+            right = x + _width + offset.X;
+            up = y + offset.Y;
+            down = y + _height + offset.Y;
 
             centerX = (left + right) / 2f;
             centerY = (up + down) / 2f;
         }
+
 
         private bool Intersect(Rectangle col)
         {
@@ -85,20 +86,15 @@ public abstract partial class Hitbox
 
         public override bool Check(byte layer, ConditionToCheckCollision condition)
         {
-            return Check(layer, condition, out Rectangle _);
+            return Check(layer, condition);
         }
 
-        public bool Check(byte layer, ConditionToCheckCollision condition, out Sides globalSide, out CollisionData<Rectangle>[] coliders, out int closestColId)
+        public bool Check(byte layer, ConditionToCheckCollision condition, out Sides globalSide, out CollisionData<Rectangle>[] coliders)
         {
             this.UpdatePosition();
 
-            float mindx = float.PositiveInfinity, mindy = float.PositiveInfinity;
-            bool globalIsFullX = false, globalIsFullY = false;
-            bool globalSideIsRight = false, globalSideIsDown = false;
-
+            globalSide = Sides.Center;
             bool[] corners = new bool[4];
-
-            closestColId = 0;
 
             List<CollisionData<Rectangle>> result = new List<CollisionData<Rectangle>>();
 
@@ -121,50 +117,30 @@ public abstract partial class Hitbox
                         continue;
                     }
 
+                    Sides sideCol;
+
+                    if (DoIChoseTheSideX(isfullx, isfully, dx, dy))
+                    {
+                        sideCol = isRight ? Sides.Right : Sides.Left;
+                    }
+                    else
+                    {
+                        sideCol = isDown ? Sides.Down : Sides.Up;
+                    }
+
                     corners[0] |= touchLeft && touchUp;
                     corners[1] |= touchRight && touchUp;
                     corners[2] |= touchLeft && touchDown;
                     corners[3] |= touchRight && touchDown;
 
-                    if (dx < mindx)
-                    {
-                        mindx = dx;
-                        globalSideIsRight = isRight;
-                        closestColId = result.Count;
-                    }
-
-                    if (dy < mindy)
-                    {
-                        mindy = dy;
-                        globalSideIsDown = isDown;
-                        closestColId = result.Count;
-                    }
-
-                    globalIsFullX |= isfullx;
-                    globalIsFullY |= isfully;
-
-                    Sides sideCol, second;
-
-                    if (DoIChoseTheSideX(isfullx, isfully, dx, dy))
-                    {
-                        sideCol = isRight ? Sides.Right : Sides.Left;
-                        second = isDown ? Sides.Down : Sides.Up;
-                    }
-                    else
-                    {
-                        sideCol = isDown ? Sides.Down : Sides.Up;
-                        second = isRight ? Sides.Right : Sides.Left;
-                    }
-
-                    result.Add(new CollisionData<Rectangle>(in col, sideCol, second));
+                    result.Add(new CollisionData<Rectangle>(in col, sideCol));
                 }
             }
-                
+
             coliders = result.ToArray();
 
             if (result.Count > 0)
             {
-
                 switch (corners[0], corners[1], corners[2], corners[3])
                 {
                     case (true, true, false, false):
@@ -179,75 +155,12 @@ public abstract partial class Hitbox
                     case (false, true, false, true):
                         globalSide = Sides.Right;
                         return true;
-                    case (true, true, true, true):
-                        globalIsFullX = true;
-                        globalIsFullY = true;
-                        break;
                 }
-
-                if (DoIChoseTheSideX(globalIsFullX, globalIsFullY, mindx, mindy))
-                    globalSide = globalSideIsRight ? Sides.Right : Sides.Left;
-                else
-                    globalSide = globalSideIsDown ? Sides.Down : Sides.Up;
-
 
                 return true;
             }
 
-            globalSide = Sides.Down;
             return false;
-        }
-
-        public bool Check(byte layer, ConditionToCheckCollision condition, out Sides globalSide)
-        {
-            return Check(layer, condition, out globalSide, out _, out _);
-        }
-
-        public bool Check(byte layer, string tagToCheck, out Sides globalSide)
-        {
-            return Check(layer, SelectTag(tagToCheck), out globalSide, out _, out _);
-        }
-
-        public bool Check(byte layer, out Sides globalSide)
-        {
-            return Check(layer, SelectAllHitboxs, out globalSide, out _, out _);
-        }
-
-        public bool Check(ConditionToCheckCollision condition, out Sides globalSide)
-        {
-            return Check(this.layer, condition, out globalSide, out _, out _);
-        }
-
-        public bool Check(string tagToCheck, out Sides globalSide)
-        {
-            return Check(this.layer, SelectTag(tagToCheck), out globalSide, out _, out _);
-        }
-
-        public bool Check(out Sides globalSide)
-        {
-            return Check(this.layer, SelectAllHitboxs, out globalSide, out _, out _);
-        }
-
-        public bool Check(byte layer, out Sides side, out CollisionData<Rectangle>[] coliders, out int closestColId)
-        {
-            return Check(layer, SelectAllHitboxs, out side, out coliders, out closestColId);
-        }
-
-
-        public bool Check(byte layer, string tagToCheck, out Sides side, out CollisionData<Rectangle>[] coliders, out int closestColId)
-        {
-            return Check(layer, SelectTag(tagToCheck), out side, out coliders, out closestColId);
-        }
-
-
-        public bool Check(string tagToCheck, out Sides side, out CollisionData<Rectangle>[] coliders, out int closestColId)
-        {
-            return Check(this.layer, SelectTag(tagToCheck), out side, out coliders, out closestColId);
-        }
-
-        public bool Check(out Sides side, out CollisionData<Rectangle>[] coliders, out int closestColId)
-        {
-            return Check(this.layer, SelectAllHitboxs, out side, out coliders, out closestColId);
         }
 
         private static bool MakeCollisionRange(float a, float b, float x, float y,
@@ -262,7 +175,7 @@ public abstract partial class Hitbox
             touchRightCorner = false;
             both = false;
 
-            if (dr < 0)
+            if (dr <= 0)
             {
                 distance = 0f;
                 isRight = false;
@@ -270,7 +183,7 @@ public abstract partial class Hitbox
             }
 
             float dl = y - a;
-            if (dl < 0)
+            if (dl <= 0)
             {
                 distance = 0f;
                 isRight = false;
@@ -312,6 +225,30 @@ public abstract partial class Hitbox
             }
 
             return true;
+        }
+
+        public bool Check(ConditionToCheckCollision condition, out Sides globalSide, out CollisionData<Rectangle>[] coliders)
+        {
+            return Check(this.layer, condition, out globalSide, out coliders);
+        }
+
+        public bool Check(out Sides globalSide, string tagToCheck, out CollisionData<Rectangle>[] coliders)
+        {
+            return Check(this.layer, SelectTag(tagToCheck), out globalSide, out coliders);
+        }
+
+        public bool Check(out Sides globalSide, out CollisionData<Rectangle>[] coliders)
+        {
+            return Check(this.layer, SelectAllHitboxs, out globalSide, out coliders);
+        }
+
+        public Microsoft.Xna.Framework.Rectangle ToRectangle()
+        {
+            return new Microsoft.Xna.Framework.Rectangle(
+                (int)float.Round(left),
+                (int)float.Round(up),
+                (int)float.Round(_width),
+                (int)float.Round(_height));
         }
 
         private static bool DoIChoseTheSideX(bool isfullx, bool isfully, float dx, float dy)

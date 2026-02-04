@@ -5,7 +5,7 @@ namespace FriteCollection2.Entity;
 
 public class Renderer
 {
-    private static Texture2D _defaultTexture;
+    internal static Texture2D _defaultTexture;
     private static Color _defaultColor = Color.White;
     public static void CreateDefaultTexture(GraphicsDevice device)
     {

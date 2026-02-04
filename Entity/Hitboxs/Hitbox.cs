@@ -21,13 +21,12 @@ public abstract partial class Hitbox : IDraw, IDisposable
     public struct CollisionData<T> where T : Hitbox
     {
         public readonly T colider;
-        public readonly Sides side, secondarySide;
+        public readonly Sides side;
 
-        public CollisionData(in T col, Sides side, Sides second)
+        public CollisionData(in T col, Sides side)
         {
             this.colider = col;
             this.side = side;
-            this.secondarySide = second;
         }
     }
 
@@ -120,7 +119,12 @@ public abstract partial class Hitbox : IDraw, IDisposable
         return HasTagsOf(other);
     }
 
-    protected abstract void UpdatePosition();
+    public abstract void UpdatePosition(float x, float y);
+
+    public void UpdatePosition()
+    {
+        UpdatePosition(parent.X, parent.Y);
+    }
 
     public abstract bool Check(byte layer, ConditionToCheckCollision condition);
 
