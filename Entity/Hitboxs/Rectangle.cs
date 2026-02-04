@@ -245,6 +245,11 @@ public abstract partial class Hitbox
             return Check(this.layer, SelectTag(tagToCheck), out side, out coliders, out closestColId);
         }
 
+        public bool Check(out Sides side, out CollisionData<Rectangle>[] coliders, out int closestColId)
+        {
+            return Check(this.layer, SelectAllHitboxs, out side, out coliders, out closestColId);
+        }
+
         private static bool MakeCollisionRange(float a, float b, float x, float y,
             out bool touchLeftCorner,
             out bool touchRightCorner,

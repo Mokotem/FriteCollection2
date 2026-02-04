@@ -58,11 +58,11 @@ public class NotFoundSpriteSheet : SpriteSheet
 {
     private readonly Texture2D _tex;
 
-    public NotFoundSpriteSheet(int width, int height, GraphicsDevice device)
-        : base(Entity.Renderer.DefaultTexture, 2, 2, device)
-    {
-        _tex = Renderer.CreateNotFoundTexture(device, width, height);
-    }
+    //public NotFoundSpriteSheet(int width, int height, GraphicsDevice device)
+    //    : base(Entity.Renderer.DefaultTexture, 2, 2, device)
+    //{
+    //    _tex = Renderer.CreateNotFoundTexture(device, width, height);
+    //}
 
     public override Texture2D this[int x, int y] => _tex;
 

@@ -83,38 +83,38 @@ public class Text : IDraw
     {
         if (!hide)
         {
-            if (outline)
-            {
-                foreach (Point r in outLinePositions)
-                {
-                    batch.DrawString(
-                        UI.Text.Font,
-                        txt,
-                        new Vector2(Position.X + 3 - Space.Camera.X + r.X, Position.Y + 1 - Space.Camera.Y + r.Y),
-                        Renderer.outlineColor,
-                        0f,
-                        Vector2.Zero,
-                        factor,
-                        SpriteEffects.None,
-                        Renderer.GetLayer() + 0.01f);
-                }
-            }
+            //if (outline)
+            //{
+            //    foreach (Point r in ObjectOutline.outLinePositions)
+            //    {
+            //        batch.DrawString(
+            //            UI.Text.Font,
+            //            txt,
+            //            new Vector2(Position.X + 3 - Space.Camera.X + r.X, Position.Y + 1 - Space.Camera.Y + r.Y),
+            //            Renderer.outlineColor,
+            //            0f,
+            //            Vector2.Zero,
+            //            factor,
+            //            SpriteEffects.None,
+            //            Renderer + 0.01f);
+            //    }
+            //}
 
-            batch.DrawString(
-                FriteCollection2.UI.Text.Font,
-                txt,
-                new Vector2(Position.X + 3 - Space.Camera.X, Position.Y + 1 - Space.Camera.Y),
-                Renderer.Color,
-                0f,
-                Vector2.Zero,
-                factor,
-                SpriteEffects.None,
-                Renderer.GetLayer());
+            //batch.DrawString(
+            //    FriteCollection2.UI.Text.Font,
+            //    txt,
+            //    new Vector2(Position.X + 3 - Space.Camera.X, Position.Y + 1 - Space.Camera.Y),
+            //    Renderer.Color,
+            //    0f,
+            //    Vector2.Zero,
+            //    factor,
+            //    SpriteEffects.None,
+            //    Renderer.GetLayer());
         }
     }
 
-    public override string ToString()
-    {
-        return "Text " + txt + " (" + Renderer.ToString() + ")";
-    }
+    //public override string ToString()
+    //{
+    //    return "Text " + txt + " (" + Renderer.ToString() + ")";
+    //}
 }

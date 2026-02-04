@@ -42,7 +42,7 @@ public class Renderer
 
 
     public Texture2D Texture { get; set; }
-    public Color color;
+    public Color Color;
     public SpriteEffects effect = SpriteEffects.None;
     internal float _layer = 0.5f;
 
@@ -57,25 +57,25 @@ public class Renderer
     public Renderer()
     {
         Texture = _defaultTexture;
-        color = _defaultColor;
+        Color = _defaultColor;
     }
 
     public Renderer(Texture2D texture)
     {
         Texture = texture;
-        color = _defaultColor;
+        Color = _defaultColor;
     }
 
     public Renderer(Color color)
     {
         Texture = _defaultTexture;
-        this.color = color;
+        this.Color = color;
     }
 
     public Renderer(Texture2D texture, Color color)
     {
         Texture = texture;
-        this.color = color;
+        this.Color = color;
     }
 
     public Renderer(Color color, Texture2D texture) : this(texture, color) { }
@@ -89,7 +89,7 @@ public class Renderer
 
     public void Draw(in SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation)
     {
-        Draw(in batch, rectangle, centerPoint, rotation, color);
+        Draw(in batch, rectangle, centerPoint, rotation, Color);
     }
 
     public void Draw(in SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint)
@@ -103,6 +103,6 @@ public class Renderer
 
     public void Draw(in SpriteBatch batch, Rectangle rectangle)
     {
-        Draw(in batch, rectangle, color);
+        Draw(in batch, rectangle, Color);
     }
 }

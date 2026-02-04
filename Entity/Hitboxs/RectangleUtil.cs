@@ -6,6 +6,13 @@ public abstract partial class Hitbox
 {
 	public partial class Rectangle : Hitbox
 	{
+		internal static bool Collinear(Sides s1, Sides s2)
+		{
+			bool up1 = s1 == Sides.Up || s1 == Sides.Down;
+			bool up2 = s2 == Sides.Up || s2 == Sides.Down;
+			return up1 && up2;
+		}
+
 		public void ApplyCollition(Sides globalSide, CollisionData<Rectangle>[] collisions, int closestColId)
 		{
 			ApplyCollition(in parent, collisions[closestColId].colider, globalSide);
@@ -13,7 +20,14 @@ public abstract partial class Hitbox
 			{
 				if (i != closestColId && Intersect(collisions[i].colider))
 				{
-					// suite
+					if (Collinear(globalSide, collisions[i].side))
+					{
+						ApplyCollition(in parent, collisions[i].colider, collisions[i].secondarySide);
+					}
+					else
+					{
+						ApplyCollition(in parent, collisions[i].colider, collisions[i].side);
+					}
 				}
 			}
 		}
