@@ -9,7 +9,7 @@ namespace FriteCollection2.Entity;
 /// </summary>
 public class Text : IDraw
 {
-    public TextRenderer Renderer;
+    public StringRenderer Renderer;
 
     public string Edit
     {
@@ -17,7 +17,7 @@ public class Text : IDraw
         set
         {
             if (Renderer.Text.Length != value.Length)
-                this._scale = TextRenderer.Evaluate(value);
+                this._scale = StringRenderer.Evaluate(value);
             Renderer.Text = value;
         }
     }
@@ -41,8 +41,8 @@ public class Text : IDraw
 
     public Text(string value)
     {
-        this.Renderer = new TextRenderer(value);
-        this._scale = TextRenderer.Evaluate(value);
+        this.Renderer = new StringRenderer(value);
+        this._scale = StringRenderer.Evaluate(value);
         Background = Color.Black;
     }
 

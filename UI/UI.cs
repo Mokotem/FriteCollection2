@@ -38,7 +38,7 @@ public abstract class UI : IDraw
         screen = new Screen(width, height);
     }
 
-    public bool active;
+    public bool Active;
     protected readonly UI parent;
     protected Rectangle rect;
     protected float layer;
@@ -58,17 +58,7 @@ public abstract class UI : IDraw
         this.layer = parent.layer + 0.01f;
         childs = new List<UI>();
         parent.childs.Add(this);
-        active = true;
-    }
-
-    private static bool Collide(Rectangle r1, Rectangle r2)
-    {
-        if (r1.Right < r2.Left
-          || r1.Bottom < r2.Top
-          || r1.Left > r2.Right
-          || r1.Top > r2.Bottom)
-            return false;
-        return true;
+        Active = true;
     }
 
     public void FlexChildsVertical()
@@ -190,7 +180,7 @@ public abstract class UI : IDraw
 
     protected void DrawChilds(in SpriteBatch batch)
     {
-        if (active)
+        if (Active)
         {
             foreach (UI c in childs)
             {

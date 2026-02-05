@@ -18,7 +18,6 @@ public abstract partial class Hitbox
         public float Height => _height;
 
         public Vector2 offset;
-        private float centerX, centerY;
         public Align isInfinitOnX;
         public Align isInfinitOnY;
 
@@ -51,9 +50,6 @@ public abstract partial class Hitbox
             right = x + _width + offset.X;
             up = y + offset.Y;
             down = y + _height + offset.Y;
-
-            centerX = (left + right) / 2f;
-            centerY = (up + down) / 2f;
         }
 
 

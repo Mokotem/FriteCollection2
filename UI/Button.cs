@@ -8,33 +8,38 @@ namespace FriteCollection2.UI;
 public class Button : Text
 {
     public Action Function;
-    private Color bgColor;
+    protected Color bgColor;
 
     public Button(UI parent, string name, Action func, int width = 256, int height = 32) : base(parent, name, Bounds.Center, 15)
     {
         rect = new Rectangle(0, 0, width, height);
-        t = 1;
+        outlineThickness = 1;
         this.Function = func;
     }
 
     public Button(string name, Action func, int width = 256, int height = 32)
         : this(screen, name, func, width, height) { }
 
-    byte t;
+    protected byte outlineThickness;
 
-    public void Update(bool mouseHold, bool isMouseOn, bool active)
+    protected bool InRange()
     {
-        bgColor = new Color(0.9f, 0.9f, 0.9f);
-        t = 2;
-        if (active && this.active)
-        {
-            if (active && rect.Contains(parent.GetMousePos())
+        return rect.Contains(parent.GetMousePos())
                && rect.Left >= parent.ParentRect.Left
                && rect.Right <= parent.ParentRect.Right
                && rect.Top >= parent.ParentRect.Top
-               && rect.Bottom <= parent.ParentRect.Bottom)
+               && rect.Bottom <= parent.ParentRect.Bottom;
+    }
+
+    public virtual void Update(bool mouseHold, bool isMouseOn, bool active)
+    {
+        bgColor = new Color(0.9f, 0.9f, 0.9f);
+        outlineThickness = 2;
+        if (active && this.Active)
+        {
+            if (active && InRange())
             {
-                t = 1;
+                outlineThickness = 1;
                 bgColor = new Color(0.9f, 0.95f, 1f);
                 if (mouseHold)
                 {
@@ -53,10 +58,10 @@ public class Button : Text
 
     public override void Draw(in SpriteBatch batch)
     {
-        if (active)
+        if (Active)
         {
             batch.Draw(Image.defaultTex, new Rectangle(rect.X + 3, rect.Y + 3, rect.Width - 6, rect.Height - 6), bgColor);
-            batch.DrawRectangle(rect.ToRectangleF(), new Color(0f, 0.5f, 1f), t, layer);
+            batch.DrawRectangle(rect.ToRectangleF(), new Color(0f, 0.5f, 1f), outlineThickness, layer);
             base.Draw(in batch);
         }
     }

@@ -1,12 +1,12 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 
-namespace FriteCollection2.Entity;
+namespace FriteCollection2;
 
 public abstract class BaseRenderer
 {
     private static Color _defaultColor = Color.White;
-    public static void ChangeDefaultColor(Color value)
+    public static void SetDefaultColor(Color value)
     {
         _defaultColor = value;
     }
@@ -68,6 +68,9 @@ public class TextureRenderer : BaseRenderer
 
     public Texture2D Texture { get; set; }
 
+    public int Width => Texture.Width;
+    public int Height => Texture.Height;
+
     public TextureRenderer() : base()
     {
         Texture = _defaultTexture;
@@ -117,15 +120,19 @@ public class TextureRenderer : BaseRenderer
     }
 }
 
-public class TextRenderer : BaseRenderer
+public class StringRenderer : BaseRenderer
 {
     private static SpriteFont _font;
     private static bool hasAspect;
     private static byte fw, fh;
-    public static void SetDefaultFont(SpriteFont value)
+    private static int ofx, ofy;
+    private static float baseScale;
+
+    public static void SetDefaultFont(SpriteFont value, byte scale)
     {
         _font = value;
         hasAspect = false;
+        baseScale = (float)scale;
     }
     public static void SetDefaultFont(SpriteFont value, byte fontWidth, byte fontHeight)
     {
@@ -133,6 +140,15 @@ public class TextRenderer : BaseRenderer
         hasAspect = true;
         fw = fontWidth;
         fh = fontHeight;
+    }
+    public static void SetOffset(int x, int y)
+    {
+        ofx = x;
+        ofy = y;
+    }
+    public static void SetOffset(Point offset)
+    {
+        SetOffset(offset.X, offset.Y);
     }
 
     public static Point Evaluate(string value)
@@ -168,50 +184,57 @@ public class TextRenderer : BaseRenderer
 
     public string Text;
     private SpriteFont font;
+    private float _scalefactor = 1f;
+    public float ScaleFactor => _scalefactor;
 
-    public TextRenderer() : base()
+    public void SetSize(byte value)
+    {
+        _scalefactor = value / baseScale;
+    }
+
+    public StringRenderer() : base()
     {
         Text = string.Empty;
         font = _font;
     }
 
-    public TextRenderer(string text) : this()
+    public StringRenderer(string text) : this()
     {
         Text = text;
     }
 
-    public TextRenderer(Color color) : base(color)
+    public StringRenderer(Color color) : base(color)
     {
         Text = string.Empty;
         font = _font;
     }
 
-    public TextRenderer(string text, Color color) : this(color)
+    public StringRenderer(string text, Color color) : this(color)
     {
         Text = text;
     }
 
-    public TextRenderer(Color color, string text) : this(text, color) { }
+    public StringRenderer(Color color, string text) : this(text, color) { }
 
-    public TextRenderer(SpriteFont font) : base()
+    public StringRenderer(SpriteFont font) : base()
     {
         Text = string.Empty;
         this.font = font;
     }
 
-    public TextRenderer(SpriteFont font, string text) : base()
+    public StringRenderer(SpriteFont font, string text) : base()
     {
         Text = text;
         this.font = font;
     }
 
-    public TextRenderer(SpriteFont font, Color color) : base(color)
+    public StringRenderer(SpriteFont font, Color color) : base(color)
     {
         Text = string.Empty;
         this.font = font;
     }
 
-    public TextRenderer(SpriteFont font, string text, Color color) : base(color)
+    public StringRenderer(SpriteFont font, string text, Color color) : base(color)
     {
         Text = text;
         this.font = font;
@@ -220,7 +243,7 @@ public class TextRenderer : BaseRenderer
     public void Draw(in SpriteBatch batch, Point pos, Vector2 centerPoint, float rotation, Color c)
     {
         if (!hide)
-            batch.DrawString(this.font, Text, pos.ToVector2(), Color, rotation, centerPoint, 1f, effect, _layer);
+            batch.DrawString(this.font, Text, pos.ToVector2(), Color, rotation, centerPoint, _scalefactor, effect, _layer);
     }
 
     public void Draw(in SpriteBatch batch, Point position, Vector2 centerPoint, float rotation)

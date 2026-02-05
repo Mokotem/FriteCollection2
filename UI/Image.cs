@@ -14,15 +14,13 @@ public class Image : UI
         return defaultTex;
     }
 
-    protected Texture2D tex;
+    public TextureRenderer Renderer;
     private Rectangle imgRect;
-    public Color color;
 
     public Image(UI parent, Texture2D texture) : base(parent, texture.Width, texture.Height)
     {
-        this.tex = texture;
+        this.Renderer = new TextureRenderer(texture, Color.White);
         imgRect = base.rect;
-        color = Color.White;
     }
 
     public Image(Texture2D texture) : this(screen, texture) { }
@@ -47,13 +45,13 @@ public class Image : UI
 
     public void ChangeTexture(Texture2D tex)
     {
-        this.tex = tex;
+        this.Renderer.Texture = tex;
     }
 
     public void ApplyOriginalSize()
     {
-        int y = tex.Width * rect.Height; // 16
-        int x = tex.Height * rect.Width; // 60
+        int y = Renderer.Width * rect.Height; // 16
+        int x = Renderer.Height * rect.Width; // 60
 
         bool fullOnY = x > y;
 
@@ -62,7 +60,7 @@ public class Image : UI
             imgRect.Y = rect.Y;
             imgRect.Height = rect.Height;
 
-            imgRect.Width = y / tex.Height;
+            imgRect.Width = y / Renderer.Height;
             imgRect.X = rect.X + ((rect.Width - imgRect.Width) / 2);
         }
         else
@@ -70,16 +68,16 @@ public class Image : UI
             imgRect.X = rect.X;
             imgRect.Width = rect.Width;
 
-            imgRect.Height = x / tex.Width;
+            imgRect.Height = x / Renderer.Width;
             imgRect.Y = rect.Y + ((rect.Height - imgRect.Height) / 2);
         }
     }
 
     public override void Draw(in SpriteBatch batch)
     {
-        if (active)
+        if (Active)
         {
-            batch.Draw(tex, imgRect, color);
+            Renderer.Draw(in batch, imgRect);
             DrawChilds(in batch);
         }
     }

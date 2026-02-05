@@ -79,7 +79,7 @@ public class Panel : UI
 
     public void DrawTarget(GraphicsDevice device, in SpriteBatch batch)
     {
-        if (active)
+        if (Active)
         {
             device.SetRenderTarget(scroolTarget);
             device.Clear(Color.Transparent);
@@ -97,7 +97,7 @@ public class Panel : UI
 
     public override void Draw(in SpriteBatch batch)
     {
-        if (active)
+        if (Active)
         {
             batch.Draw(Image.defaultTex, rect, color);
             batch.Draw(target, targetRect, Color.White);

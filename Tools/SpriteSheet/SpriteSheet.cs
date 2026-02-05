@@ -1,5 +1,4 @@
 ﻿using System;
-using FriteCollection2.Entity;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -59,7 +58,7 @@ public class NotFoundSpriteSheet : SpriteSheet
     private readonly Texture2D _tex;
 
     public NotFoundSpriteSheet(int width, int height, GraphicsDevice device)
-        : base(Entity.TextureRenderer._defaultTexture, 2, 2, device)
+        : base(TextureRenderer._defaultTexture, 2, 2, device)
     {
         _tex = TextureCreator.CreateNotFound(device, width, height);
     }

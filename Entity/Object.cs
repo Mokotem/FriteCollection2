@@ -1,9 +1,5 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 
 namespace FriteCollection2.Entity;
 
@@ -47,5 +43,25 @@ public class Object : Space, IDraw
     public override string ToString()
     {
         return "Object (" + base.ToString() + ", " + Renderer.ToString() + ")";
+    }
+}
+
+public class RotatableObject : Object
+{
+    public float rotation;
+    public Vector2 center;
+
+    public void SetCenterPoint(Bounds bound)
+    {
+        center = BoundFunc.BoundToVector(bound, Renderer.Width, Renderer.Height);
+    }
+
+    public RotatableObject() : base() { }
+    public RotatableObject(Texture2D texture) : base(texture) { }
+    public RotatableObject(int width, int height) : base(width, height) { }
+
+    public override void Draw(in SpriteBatch batch)
+    {
+        Renderer.Draw(in batch, ToScreen(), center, rotation);
     }
 }

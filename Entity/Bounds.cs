@@ -2,9 +2,9 @@
 
 namespace FriteCollection2.Entity;
 
-public static class BoundFunc
+internal static class BoundFunc
 {
-    public static float AlignToFloat(Align a, float width)
+    internal static float AlignToFloat(Align a, float width)
     {
         return a switch
         {
@@ -15,7 +15,7 @@ public static class BoundFunc
         };
     }
 
-    public static Vector2 BoundToVector(Bounds b, float width, float height)
+    internal static Vector2 BoundToVector(Bounds b, float width, float height)
     {
         return b switch
         {
@@ -35,7 +35,7 @@ public static class BoundFunc
         };
     }
 
-    public static Point BoundToPoint(Bounds b, int width, int height)
+    internal static Point BoundToPoint(Bounds b, int width, int height)
     {
         return b switch
         {

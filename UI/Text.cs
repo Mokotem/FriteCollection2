@@ -6,29 +6,24 @@ namespace FriteCollection2.UI;
 
 public class Text : UI
 {
-    private static SpriteFont font;
-    public static SpriteFont Font => font;
+    private Rectangle textRect;
+    public StringRenderer Renderer;
 
-    private static byte baseScale;
-    public static void SetFont(SpriteFont font, byte baseScale)
+    public short Layer
     {
-        Text.font = font;
-        Text.baseScale = baseScale;
+        get => Renderer.Layer;
+        set => Renderer.Layer = value;
     }
 
-    private Rectangle textRect;
-    private string value;
     private Bounds textAlign;
-    public Color color;
-    private readonly float scale;
 
     public Text(UI parent, string value, Bounds textAlign, byte taille = 16) : base(parent)
     {
         textRect = new Rectangle(0, 0, 0, 0);
         this.textAlign = textAlign;
-        color = Color.Black;
-        this.value = value;
-        this.scale = taille / (float)baseScale;
+        this.Renderer = new StringRenderer(value);
+        this.Renderer.SetSize(taille);
+        this.Renderer._layer = this.layer;
         ApplyScale(Extend.Horizontal);
     }
 
@@ -40,10 +35,10 @@ public class Text : UI
 
     public void ChangeText(string value)
     {
-        this.value = value;
-        Vector2 taille = font.MeasureString(value);
-        textRect.Width = (int)float.Round(taille.X * scale);
-        textRect.Height = (int)float.Round(taille.Y * scale);
+        this.Renderer.Text = value;
+        Vector2 taille = StringRenderer.Evaluate(value).ToVector2();
+        textRect.Width = (int)float.Round(taille.X * Renderer.ScaleFactor);
+        textRect.Height = (int)float.Round(taille.Y * Renderer.ScaleFactor);
         textRect.Location = MakePosition(rect, textRect.Size, textAlign);
         textRect.Y -= 2;
     }
@@ -52,21 +47,21 @@ public class Text : UI
 
     protected override void OnSizeChanged()
     {
-        ChangeText(value);
+        ChangeText(Renderer.Text);
         base.OnSizeChanged();
     }
 
     protected override void OnPositionChanged()
     {
-        ChangeText(value);
+        ChangeText(Renderer.Text);
         base.OnPositionChanged();
     }
 
     public override void Draw(in SpriteBatch batch)
     {
-        if (active)
+        if (Active)
         {
-            batch.DrawString(font, value, textRect.Location.ToVector2(), color, 0f, Vector2.Zero, scale, SpriteEffects.None, layer);
+            Renderer.Draw(in batch, textRect.Location);
         }
     }
 }
