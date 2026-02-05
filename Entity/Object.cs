@@ -9,14 +9,14 @@ namespace FriteCollection2.Entity;
 
 public class Object : Space, IDraw
 {
-    public Renderer Renderer;
+    public TextureRenderer Renderer;
 
     public static float outlineLayer = 0.55f;
     public float outLayer = Object.outlineLayer;
 
     public Object() : base()
     {
-        Renderer = new Renderer();
+        Renderer = new TextureRenderer();
     }
 
     public Object(Texture2D texture) : base(texture)
@@ -26,7 +26,7 @@ public class Object : Space, IDraw
 
     public Object(int width, int height) : base(width, height)
     {
-        Renderer = new Renderer();
+        Renderer = new TextureRenderer();
     }
 
     public virtual void Draw(in SpriteBatch batch)

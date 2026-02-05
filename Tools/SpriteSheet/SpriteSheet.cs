@@ -59,7 +59,7 @@ public class NotFoundSpriteSheet : SpriteSheet
     private readonly Texture2D _tex;
 
     public NotFoundSpriteSheet(int width, int height, GraphicsDevice device)
-        : base(Entity.Renderer._defaultTexture, 2, 2, device)
+        : base(Entity.TextureRenderer._defaultTexture, 2, 2, device)
     {
         _tex = TextureCreator.CreateNotFound(device, width, height);
     }

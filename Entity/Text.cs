@@ -9,112 +9,64 @@ namespace FriteCollection2.Entity;
 /// </summary>
 public class Text : IDraw
 {
-    public static Point EvaluateText(string txt, byte fw, byte fh)
-    {
-        Point result = new Point(1, 1);
-        ushort i = 0;
-        int count = 1;
-        while (i < txt.Length)
-        {
-            if (txt[i].Equals('\n'))
-            {
-                i += 2;
-                count = 1;
-                result.Y++;
-            }
-            else
-            {
-                count++;
-                if (count > result.X)
-                    result.X = count;
-                i++;
-            }
-        }
-        return new Point(result.X * fw, result.Y * fh);
-    }
-
-    private string txt;
+    public TextRenderer Renderer;
 
     public string Edit
     {
-        get => txt;
+        get => Renderer.Text;
         set
         {
-            if (txt.Length != value.Length)
-                this._scale = EvaluateText(value, 4, 6);
-            txt = value;
+            if (Renderer.Text.Length != value.Length)
+                this._scale = TextRenderer.Evaluate(value);
+            Renderer.Text = value;
         }
     }
 
-    public float factor = 1f;
     private Point _scale;
     public Point Scale => _scale;
     public Point Position;
-    public bool hide = false, outline = true;
+    public bool outline = true;
 
-    public float Width => _scale.X * factor;
-    public float Height => _scale.Y * factor;
+    public float Width => _scale.X;
+    public float Height => _scale.Y;
 
     public Color Background;
 
     public void SetPosition(Point pos, Bounds b)
     {
         Position = pos + BoundFunc.BoundToPoint(b, Space.parent.Width, Space.parent.Height);
-        Position.X -= (int)float.Round(_scale.X * factor / 2f);
-        Position.Y -= (int)float.Round(_scale.Y * factor / 2f);
+        Position.X -= (int)float.Round(_scale.X / 2f);
+        Position.Y -= (int)float.Round(_scale.Y / 2f);
     }
 
     public Text(string value)
     {
-        this._scale = EvaluateText(value, 4, 6);
-        this.txt = value;
-        Background = Color.Black;
-    }
-
-    public Text(string value, int factor)
-    {
-        this.factor = factor;
-        this._scale = EvaluateText(value, 4, 6);
-        this.txt = value;
+        this.Renderer = new TextRenderer(value);
+        this._scale = TextRenderer.Evaluate(value);
         Background = Color.Black;
     }
 
     public void Draw(in SpriteBatch batch)
     {
-        if (!hide)
+        if (!Renderer.hide)
         {
-            //if (outline)
-            //{
-            //    foreach (Point r in ObjectOutline.outLinePositions)
-            //    {
-            //        batch.DrawString(
-            //            UI.Text.Font,
-            //            txt,
-            //            new Vector2(Position.X + 3 - Space.Camera.X + r.X, Position.Y + 1 - Space.Camera.Y + r.Y),
-            //            Renderer.outlineColor,
-            //            0f,
-            //            Vector2.Zero,
-            //            factor,
-            //            SpriteEffects.None,
-            //            Renderer + 0.01f);
-            //    }
-            //}
 
-            //batch.DrawString(
-            //    FriteCollection2.UI.Text.Font,
-            //    txt,
-            //    new Vector2(Position.X + 3 - Space.Camera.X, Position.Y + 1 - Space.Camera.Y),
-            //    Renderer.Color,
-            //    0f,
-            //    Vector2.Zero,
-            //    factor,
-            //    SpriteEffects.None,
-            //    Renderer.GetLayer());
+            Point pos = Position - Space.Camera;
+
+            if (outline)
+            {
+                foreach (Point r in ObjectOutline.outLinePositions)
+                {
+                    Renderer.Draw(in batch, pos + r);
+                }
+            }
+
+            Renderer.Draw(in batch, pos);
         }
     }
 
-    //public override string ToString()
-    //{
-    //    return "Text " + txt + " (" + Renderer.ToString() + ")";
-    //}
+    public override string ToString()
+    {
+        return "Text " + Renderer.Text + " (" + Renderer.ToString() + ")";
+    }
 }

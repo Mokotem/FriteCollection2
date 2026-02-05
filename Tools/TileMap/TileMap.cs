@@ -39,10 +39,10 @@ public class TileMap : IDisposable, IDraw
         {
             layers = new float[4]
             {
-                Renderer.ToLayer(back),
-                Renderer.ToLayer(ground),
-                Renderer.ToLayer(general),
-                Renderer.ToLayer(fore),
+                TextureRenderer.ToLayer(back),
+                TextureRenderer.ToLayer(ground),
+                TextureRenderer.ToLayer(general),
+                TextureRenderer.ToLayer(fore),
             };
 
             this.TileSets = new Dictionary<string, TileSet>();

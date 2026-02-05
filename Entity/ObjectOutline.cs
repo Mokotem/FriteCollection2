@@ -1,10 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FriteCollection2.Entity;
 
@@ -28,8 +23,8 @@ public class ObjectOutline : Object
     private static float outlineLayer = 0f;
     public static short OutlineLayer
     {
-        get => Renderer.FromLayer(outlineLayer);
-        set => outlineLayer = Renderer.ToLayer(value);
+        get => TextureRenderer.FromLayer(outlineLayer);
+        set => outlineLayer = TextureRenderer.ToLayer(value);
     }
 
     public ObjectOutline() : base() { }
