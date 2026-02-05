@@ -157,9 +157,62 @@ public abstract partial class Hitbox
                         return true;
                 }
 
+                if (result.Count > 1)
+                {
+                    if (CheckIfIsSameSide(coliders[0], coliders[1],
+                        (Rectangle r) => r.down,
+                        Sides.Up))
+                    {
+                        globalSide = Sides.Up;
+                        return true;
+                    }
+
+                    if (CheckIfIsSameSide(coliders[0], coliders[1],
+                        (Rectangle r) => r.up,
+                        Sides.Down))
+                    {
+                        globalSide = Sides.Down;
+                        return true;
+                    }
+
+                    if (CheckIfIsSameSide(coliders[0], coliders[1],
+                        (Rectangle r) => r.right,
+                        Sides.Left))
+                    {
+                        globalSide = Sides.Left;
+                        return true;
+                    }
+
+                    if (CheckIfIsSameSide(coliders[0], coliders[1],
+                        (Rectangle r) => r.left,
+                        Sides.Right))
+                    {
+                        globalSide = Sides.Right;
+                        return true;
+                    }
+                }
+
                 return true;
             }
 
+            return false;
+        }
+
+        private delegate float GetRectangleSide(Rectangle rect);
+
+        private static bool CheckIfIsSameSide(
+            CollisionData<Rectangle> col1,
+            CollisionData<Rectangle> col2,
+            GetRectangleSide side,
+            Sides sideToCheck)
+        {
+            if (col1.side == sideToCheck || col2.side == sideToCheck)
+            {
+                if (float.Abs(side(col1.colider) - side(col2.colider)) < 1f)
+                {
+                    return true;
+                }
+            }
             return false;
         }
 
