@@ -13,26 +13,44 @@ public class Toggle : Button
     public Action OnEnable, OnDisable;
     public Color EnableColor;
 
-    public Toggle(UI parent, string name, Action enable, Action disable, int width = 256, int height = 32) : base(parent, name, func, width, height)
+    public Toggle(UI parent, string name, Action enable, Action disable, int width = 256, int height = 32)
+        : base(parent, name, () => { }, width, height)
     {
         this.OnEnable = enable;
         this.OnDisable = disable;
         EnableColor = Color.Yellow;
     }
 
+    public Toggle(string name, Action enable, Action disable, int width = 256, int height = 32)
+        : this(screen, name, enable, disable, width, height) { }
+
+    private void SetColor(float alpha)
+    {
+        if (_on)
+        {
+            this.bgColor = EnableColor * alpha;
+        }
+        else
+        {
+            this.bgColor = Color.White * alpha;
+        }
+        this.bgColor.A = 255;
+    }
+
     public override void Update(bool mouseHold, bool isMouseOn, bool active)
     {
-        bgColor = new Color(0.9f, 0.9f, 0.9f);
+        this.SetColor(0.9f);
         outlineThickness = 2;
         if (active && this.Active)
         {
             if (active && InRange())
             {
                 outlineThickness = 1;
-                bgColor = new Color(0.9f, 0.95f, 1f);
+                this.SetColor(0.95f);
+
                 if (mouseHold)
                 {
-                    bgColor = new Color(0.8f, 0.9f, 1f);
+                    this.SetColor(0.8f);
                 }
                 else
                 {

@@ -15,6 +15,7 @@ public class Button : Text
         rect = new Rectangle(0, 0, width, height);
         outlineThickness = 1;
         this.Function = func;
+        this.ApplyScale(width, height);
     }
 
     public Button(string name, Action func, int width = 256, int height = 32)
