@@ -7,8 +7,9 @@ namespace FriteCollection2.UI;
 
 public class Button : Text
 {
-    public Action Function;
+    public Action Function { get; init; }
     protected Color bgColor;
+    public bool Enabled = true;
 
     public Button(UI parent, string name, Action func, int width = 256, int height = 32) : base(parent, name, Bounds.Center, 15)
     {

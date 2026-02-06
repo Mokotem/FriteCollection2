@@ -7,6 +7,9 @@ namespace FriteCollection2.UI;
 public class Panel : UI
 {
     private readonly RenderTarget2D target, scroolTarget;
+
+    public RenderTarget2D Target => scroolTarget;
+
     private Rectangle targetRect;
     private readonly Rectangle rectForChilds;
     private readonly Color color;

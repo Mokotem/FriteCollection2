@@ -123,6 +123,8 @@ public class TextureRenderer : BaseRenderer
 public class StringRenderer : BaseRenderer
 {
     private static SpriteFont _font;
+    public static SpriteFont Font => _font;
+
     private static bool hasAspect;
     private static byte fw, fh;
     private static int ofx, ofy;
