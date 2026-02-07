@@ -31,6 +31,8 @@ public abstract partial class Hitbox : IDraw, IDisposable
         }
     }
 
+    public delegate bool HitboxMessage(short value);
+
     public static void CreateLayers(params Color[] debugColors)
     {
 
@@ -61,7 +63,11 @@ public abstract partial class Hitbox : IDraw, IDisposable
 
     public readonly byte layer;
     private readonly string[] tags;
-    protected Space parent;
+    protected readonly Space _parent;
+
+    public Space Parent => _parent;
+
+    public HitboxMessage SendMessage { get; init; }
 
     public bool active;
     public bool isStatic;
@@ -77,7 +83,7 @@ public abstract partial class Hitbox : IDraw, IDisposable
         this.layer = layer;
         layers[layer].Add(this);
         this.tags = tags;
-        this.parent = parent;
+        this._parent = parent;
         active = true;
         isStatic = false;
     }
@@ -134,7 +140,7 @@ public abstract partial class Hitbox : IDraw, IDisposable
 
     public void UpdatePosition()
     {
-        UpdatePosition(parent.X, parent.Y);
+        UpdatePosition(_parent.X, _parent.Y);
     }
 
     public abstract bool Check(byte layer, ConditionToCheckCollision condition);

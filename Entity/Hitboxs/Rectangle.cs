@@ -22,7 +22,7 @@ public abstract partial class Hitbox
         public float Up => _up;
         public float Down => _down;
 
-        public Vector2 offset;
+        public Point offset;
         public Align isInfinitOnX;
         public Align isInfinitOnY;
 
@@ -31,7 +31,7 @@ public abstract partial class Hitbox
         public Rectangle(in Space parent, byte layer, params string[] tags)
             : base(in parent, layer, tags)
         {
-            offset = Vector2.Zero;
+            offset = Point.Zero;
             SetScale(parent.W, parent.H);
         }
 
@@ -47,7 +47,7 @@ public abstract partial class Hitbox
 
         public void UpdateScale()
         {
-            this.SetScale(parent.W, parent.H);
+            this.SetScale(_parent.W, _parent.H);
         }
 
         public void SetScale(float width, float height)
