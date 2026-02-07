@@ -1,10 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace FriteCollection2.Entity;
+namespace FriteCollection2;
 
-internal static class BoundFunc
+public static class BoundFunc
 {
-    internal static float AlignToFloat(Align a, float width)
+    public static float AlignToFloat(Align a, float width)
     {
         return a switch
         {
@@ -15,7 +15,7 @@ internal static class BoundFunc
         };
     }
 
-    internal static Vector2 BoundToVector(Bounds b, float width, float height)
+    public static Vector2 BoundToVector(Bounds b, float width, float height)
     {
         return b switch
         {
@@ -35,7 +35,7 @@ internal static class BoundFunc
         };
     }
 
-    internal static Point BoundToPoint(Bounds b, int width, int height)
+    public static Point BoundToPoint(Bounds b, int width, int height)
     {
         return b switch
         {

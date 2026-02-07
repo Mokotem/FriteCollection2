@@ -23,7 +23,7 @@ public class Text : UI
         this.textAlign = textAlign;
         this.Renderer = new StringRenderer(value);
         this.Renderer.SetSize(taille);
-        this.Renderer._layer = this.layer;
+        this.Renderer._layer = parent.Depth + 0.01f;
         ApplyScale(Extend.Horizontal);
     }
 
@@ -33,6 +33,8 @@ public class Text : UI
 
     public Text(string value, byte taille = 16) : this(screen, value, taille) { }
 
+    public override float Depth => Renderer._layer;
+
     public void ChangeText(string value)
     {
         this.Renderer.Text = value;
@@ -41,6 +43,12 @@ public class Text : UI
         textRect.Height = (int)float.Round(taille.Y * Renderer.ScaleFactor);
         textRect.Location = MakePosition(rect, textRect.Size, textAlign);
         textRect.Y -= 2;
+    }
+
+    public string Edit
+    {
+        get => Renderer.Text;
+        set => ChangeText(value);
     }
 
     public override int Bottom => textRect.Bottom;

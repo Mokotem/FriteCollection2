@@ -1,4 +1,7 @@
 ﻿
+
+using Microsoft.Xna.Framework;
+
 namespace FriteCollection2.Entity.Hitboxs;
 
 
@@ -18,23 +21,59 @@ public abstract partial class Hitbox
 			switch (side)
 			{
 				case Sides.Right:
-					mec.X = colider.left - mec.W;
+					mec.X = colider._left - mec.W;
 					return;
 				case Sides.Left:
-					mec.X = colider.right;
+					mec.X = colider._right;
 					return;
 				case Sides.Up:
-					mec.Y = colider.down;
+					mec.Y = colider._down;
 					return;
 				case Sides.Down:
-					mec.Y = colider.up - mec.H;
+					mec.Y = colider._up - mec.H;
 					return;
 			}
 		}
 
-		public static void ApplyCollition(in Space mec, CollisionData<Rectangle> collision)
+        public static void ApplyCollition(in Space mec, Rectangle colider, Sides side, Vector2 vitesse)
+        {
+            switch (side)
+            {
+                case Sides.Right:
+					if (vitesse.X < 0)
+						return;
+
+                    mec.X = colider._left - mec.W;
+                    return;
+                case Sides.Left:
+					if (vitesse.X > 0)
+						return;
+
+                    mec.X = colider._right;
+                    return;
+                case Sides.Up:
+					if (vitesse.Y > 0)
+						return;
+
+                    mec.Y = colider._down;
+                    return;
+                case Sides.Down:
+					if (vitesse.Y < 0)
+						return;
+
+                    mec.Y = colider._up - mec.H;
+                    return;
+            }
+        }
+
+        public static void ApplyCollition(in Space mec, CollisionData<Rectangle> collision)
 		{
-			ApplyCollition(in mec, collision.colider, collision.side);
+			ApplyCollition(in mec, collision.collider, collision.side);
 		}
-	}
+
+        public static void ApplyCollition(in Space mec, CollisionData<Rectangle> collision, Vector2 vitesse)
+        {
+            ApplyCollition(in mec, collision.collider, collision.side, vitesse);
+        }
+    }
 }

@@ -21,7 +21,7 @@ public class Extend
     }
 }
 
-public abstract class UI : IDraw
+public abstract class UI : IDraw, IHaveRectangle
 {
     protected const int padding = 8, padding2 = padding * 2;
     protected const int defaultWidth = 32, defaultHeight = defaultWidth;
@@ -41,9 +41,11 @@ public abstract class UI : IDraw
     public bool Active;
     protected readonly UI parent;
     protected Rectangle rect;
-    protected float layer;
 
-    internal virtual Rectangle ParentRect => rect;
+    protected internal virtual Rectangle ParentRect => rect;
+    public Rectangle mRect => ParentRect;
+    public abstract float Depth { get; }
+
     internal virtual bool IsMouseOn => parent.IsMouseOn;
 
     internal virtual Point GetMousePos()
@@ -55,10 +57,9 @@ public abstract class UI : IDraw
     {
         rect = new Rectangle(0, 0, width, height);
         this.parent = parent;
-        this.layer = parent.layer + 0.01f;
         childs = new List<UI>();
-        parent.childs.Add(this);
         Active = true;
+        parent.childs.Add(this);
     }
 
     public void FlexChildsVertical()
@@ -80,7 +81,6 @@ public abstract class UI : IDraw
     protected UI(UI parent) : this(parent, defaultWidth, defaultHeight) { }
     protected UI()
     {
-        this.layer = 0f;
         childs = new List<UI>();
     }
 
@@ -160,6 +160,7 @@ public abstract class UI : IDraw
 
     public virtual int Bottom => rect.Bottom;
 
+
     public void ApplyPosition(Bounds pos, int x = 0, int y = 0)
     {
         rect.Location = MakePosition(parent.ParentRect, rect.Size, pos);
@@ -168,14 +169,14 @@ public abstract class UI : IDraw
         OnPositionChanged();
     }
 
-    public void ApplyPosition(int x, int y)
+    public void ApplyPosition(int x = 0, int y = 0)
     {
         ApplyPosition(Bounds.TopLeft, x, y);
     }
 
     protected virtual void OnPositionChanged()
     {
-        //parent.UpdateChildPos(this);
+
     }
 
     protected void DrawChilds(in SpriteBatch batch)
@@ -202,12 +203,11 @@ internal class Screen : UI
     internal Screen(int width, int height)
     {
         rect = new Rectangle(0, 0, width, height);
-        isActive = false;
     }
 
     private Point mousePos;
-    private bool isActive;
 
+    public override float Depth => 0f;
 
     internal void UpdateMouse(MouseState mouse)
     {

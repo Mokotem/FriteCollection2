@@ -11,21 +11,33 @@ public abstract partial class Hitbox
 {
     public partial class Rectangle : Hitbox
     {
-        private float left, right, up, down;
+        private float _left, _right, _up, _down;
 
         private float _width, _height;
         public float Width => _width;
         public float Height => _height;
 
+        public float Left => _left;
+        public float Right => _right;
+        public float Up => _up;
+        public float Down => _down;
+
         public Vector2 offset;
         public Align isInfinitOnX;
         public Align isInfinitOnY;
+
+        public Vector2 CenterPoint => new Vector2((_left + _right) / 2f, (_up + _down) / 2f);
 
         public Rectangle(in Space parent, byte layer, params string[] tags)
             : base(in parent, layer, tags)
         {
             offset = Vector2.Zero;
             SetScale(parent.W, parent.H);
+        }
+
+        public Rectangle(in Space parent, string tag = "", byte layer = 0) : this(in parent, layer, tag)
+        {
+
         }
 
         public Rectangle() : this(Space.Zero, 0) { }
@@ -46,17 +58,17 @@ public abstract partial class Hitbox
 
         public override void UpdatePosition(float x, float y)
         {
-            left = x + offset.X;
-            right = x + _width + offset.X;
-            up = y + offset.Y;
-            down = y + _height + offset.Y;
+            _left = x + offset.X;
+            _right = x + _width + offset.X;
+            _up = y + offset.Y;
+            _down = y + _height + offset.Y;
         }
 
 
         private bool Intersect(Rectangle col)
         {
-            return !(right < col.left || left > col.right)  // truc de batard du prof de bdd
-                    && !(down < col.up || up > col.down);
+            return !(_right < col._left || _left > col._right)  // truc de batard du prof de bdd
+                    && !(_down < col._up || _up > col._down);
         }
 
         public bool Check(byte layer, ConditionToCheckCollision condition, out Rectangle collider)
@@ -78,6 +90,11 @@ public abstract partial class Hitbox
 
             collider = null;
             return false;
+        }
+
+        public bool Check(ConditionToCheckCollision condition, out Rectangle collider)
+        {
+            return Check(this.layer, condition, out collider);
         }
 
         public override bool Check(byte layer, ConditionToCheckCollision condition)
@@ -103,10 +120,10 @@ public abstract partial class Hitbox
                     bool isRight, isDown, isfullx, isfully;
                     bool touchLeft, touchRight, touchUp, touchDown;
 
-                    if (!MakeCollisionRange(this.left, this.right, col.left, col.right,
+                    if (!MakeCollisionRange(this._left, this._right, col._left, col._right,
                         out touchLeft, out touchRight,
                         out float dx, out isRight, out isfullx)
-                     || !MakeCollisionRange(this.up, this.down, col.up, col.down,
+                     || !MakeCollisionRange(this._up, this._down, col._up, col._down,
                         out touchUp, out touchDown,
                         out float dy, out isDown, out isfully))
                     {
@@ -156,7 +173,7 @@ public abstract partial class Hitbox
                 if (result.Count > 1)
                 {
                     if (CheckIfIsSameSide(coliders[0], coliders[1],
-                        (Rectangle r) => r.down,
+                        (Rectangle r) => r._down,
                         Sides.Up))
                     {
                         globalSide = Sides.Up;
@@ -164,7 +181,7 @@ public abstract partial class Hitbox
                     }
 
                     if (CheckIfIsSameSide(coliders[0], coliders[1],
-                        (Rectangle r) => r.up,
+                        (Rectangle r) => r._up,
                         Sides.Down))
                     {
                         globalSide = Sides.Down;
@@ -172,7 +189,7 @@ public abstract partial class Hitbox
                     }
 
                     if (CheckIfIsSameSide(coliders[0], coliders[1],
-                        (Rectangle r) => r.right,
+                        (Rectangle r) => r._right,
                         Sides.Left))
                     {
                         globalSide = Sides.Left;
@@ -180,7 +197,7 @@ public abstract partial class Hitbox
                     }
 
                     if (CheckIfIsSameSide(coliders[0], coliders[1],
-                        (Rectangle r) => r.left,
+                        (Rectangle r) => r._left,
                         Sides.Right))
                     {
                         globalSide = Sides.Right;
@@ -204,7 +221,7 @@ public abstract partial class Hitbox
         {
             if (col1.side == sideToCheck || col2.side == sideToCheck)
             {
-                if (float.Abs(side(col1.colider) - side(col2.colider)) < 1f)
+                if (float.Abs(side(col1.collider) - side(col2.collider)) < 1f)
                 {
                     return true;
                 }
@@ -294,8 +311,8 @@ public abstract partial class Hitbox
         public Microsoft.Xna.Framework.Rectangle ToRectangle()
         {
             return new Microsoft.Xna.Framework.Rectangle(
-                (int)float.Round(left),
-                (int)float.Round(up),
+                (int)float.Round(_left),
+                (int)float.Round(_up),
                 (int)float.Round(_width),
                 (int)float.Round(_height));
         }
@@ -315,7 +332,7 @@ public abstract partial class Hitbox
         public override void Draw(in SpriteBatch batch)
         {
             batch.DrawRectangle(
-                new RectangleF(left, up, _width, _height), layers[layer].debugColor);
+                new RectangleF(_left, _up, _width, _height), layers[layer].debugColor);
         }
 
         public Rectangle Copy()

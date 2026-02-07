@@ -39,18 +39,30 @@ public enum Bounds
     BottomLeft, Bottom, BottomRight
 }
 
+public interface IHaveRectangle
+{
+    public Rectangle mRect { get; }
+    public float Depth { get; }
+
+}
+
 /// <summary>
 /// Représente un endroit pour dessiner.
 /// </summary>
-public class Environment : IDraw
+public class Environment : IDraw, IHaveRectangle
 {
     public Rectangle Rect { get; set; }
     public RenderTarget2D Target { get; private set; }
-    public Vector2[] Bounds { get; private set; }
 
     public Rectangle TargetRect => new Rectangle(0, 0, Target.Width, Target.Height);
     public Rectangle mRect => new Rectangle(0, 0, Rect.Width, Rect.Height);
     public float Depth => 0.5f;
+
+    public Environment(Rectangle rect, RenderTarget2D target)
+    {
+        this.Rect = rect;
+        this.Target = target;
+    }
 
     public void Draw(in SpriteBatch batch)
     {
@@ -92,7 +104,7 @@ public interface IExecutable : IDraw
 public abstract class AdvancedExecutable : IExecutable, IDrawUI, IDisposable
 {
     private static ushort currentId = 0;
-    internal readonly ushort id;
+    public readonly ushort id;
 
     protected AdvancedExecutable()
     {

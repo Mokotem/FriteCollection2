@@ -12,14 +12,14 @@ public class Panel : UI
 
     private Rectangle targetRect;
     private readonly Rectangle rectForChilds;
-    private readonly Color color;
+    public readonly TextureRenderer Renderer;
     private int scrollValue;
 
     public Panel(GraphicsDevice device, UI parent, Bounds pos, Extend ext, int height,
         int addWidth = 0, int addHeight = 0, int addx = 0, int addy = 0, float addLayer = 0)
         : base(parent)
     {
-        this.layer += addLayer;
+        this.Renderer._layer = parent.Depth + 0.01f + addLayer;
         base.ApplyScale(ext, addWidth, addHeight);
         if (height < 2)
         {
@@ -33,8 +33,8 @@ public class Panel : UI
         targetRect = new Rectangle(rect.X + padding, rect.Y + padding, target.Width, target.Height);
         rectForChilds = new Rectangle(0, 0, target.Width, target.Height);
 
-        float c = 1f - (layer * 8);
-        color = new Color(c, c, c);
+        float c = 1f - (Renderer._layer * 8);
+        this.Renderer = new TextureRenderer(new Color(c, c, c));
     }
 
     public Panel(GraphicsDevice device, UI parent, Bounds pos, Extend ext,
@@ -51,6 +51,7 @@ public class Panel : UI
 
 
     internal override Rectangle ParentRect => rectForChilds;
+    public override float Depth => Renderer._layer;
 
     internal override Point GetMousePos()
     {
@@ -102,7 +103,7 @@ public class Panel : UI
     {
         if (Active)
         {
-            batch.Draw(Image.defaultTex, rect, color);
+            Renderer.Draw(in batch, rect);
             batch.Draw(target, targetRect, Color.White);
         }
     }

@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 
 namespace FriteCollection2;
 
-public abstract class BaseRenderer
+public abstract class Renderer
 {
     private static Color _defaultColor = Color.White;
     public static void SetDefaultColor(Color value)
@@ -35,6 +35,8 @@ public abstract class BaseRenderer
     public SpriteEffects effect = SpriteEffects.None;
     internal float _layer = 0.5f;
 
+    public float Depth => _layer;
+
     public bool hide = false;
 
     public short Layer
@@ -43,20 +45,22 @@ public abstract class BaseRenderer
         set => _layer = ToLayer(value);
     }
 
-    public BaseRenderer()
+    public Renderer()
     {
         Color = _defaultColor;
     }
 
-    public BaseRenderer(Color color)
+    public Renderer(Color color)
     {
         this.Color = color;
     }
 }
 
-public class TextureRenderer : BaseRenderer
+public class TextureRenderer : Renderer
 {
     internal static Texture2D _defaultTexture;
+    public static Texture2D Default => _defaultTexture;
+
     public static void CreateDefaultTexture(GraphicsDevice device)
     {
         _defaultTexture = TextureCreator.Create(device, 2, 2);
@@ -100,7 +104,7 @@ public class TextureRenderer : BaseRenderer
     }
 
 
-    public void Draw(in SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation)
+    public virtual void Draw(in SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation)
     {
         Draw(in batch, rectangle, centerPoint, rotation, Color);
     }
@@ -120,13 +124,15 @@ public class TextureRenderer : BaseRenderer
     }
 }
 
-public class StringRenderer : BaseRenderer
+public class StringRenderer : Renderer
 {
     private static SpriteFont _font;
     public static SpriteFont Font => _font;
 
     private static bool hasAspect;
     private static byte fw, fh;
+    public static Point Aspect => new Point(fw, fh);
+
     private static int ofx, ofy;
     private static float baseScale;
 
@@ -136,12 +142,13 @@ public class StringRenderer : BaseRenderer
         hasAspect = false;
         baseScale = (float)scale;
     }
-    public static void SetDefaultFont(SpriteFont value, byte fontWidth, byte fontHeight)
+    public static void SetDefaultFont(SpriteFont value, byte scale, byte fontWidth, byte fontHeight)
     {
         _font = value;
         hasAspect = true;
         fw = fontWidth;
         fh = fontHeight;
+        baseScale = scale;
     }
     public static void SetOffset(int x, int y)
     {
@@ -182,6 +189,74 @@ public class StringRenderer : BaseRenderer
             Vector2 scale = _font.MeasureString(value);
             return new Point((int)float.Round(scale.X), (int)float.Round(scale.Y));
         }
+    }
+
+    public static string Format(string value, Point box, char[] echapements)
+    {
+#if DEBUG
+        if (!hasAspect)
+        {
+            throw new System.Exception("aaaa");
+        }
+#endif
+
+        string result = "";
+        string[] words = value.Split(' ');
+
+        int line = 0;
+        int wc = 0;
+
+        for (int i = 0; i < words.Length; i++)
+        {
+            wc++;
+            result += words[i];
+            int taille = LetterCount(words[i], echapements);
+            line += taille * fw;
+            if (line == box.X || wc == 1)
+            {
+                result += words[i] + "\n";
+                line = 0;
+                wc = 0;
+            }
+            else if (line > box.X)
+            {
+                result += "\n" + words[i];
+                line = taille;
+                wc = 1;
+            }
+            else
+            {
+                result += words[i] + " ";
+            }
+        }
+
+        return result;
+    }
+
+    public static string Format(string value, Point box)
+    {
+        return Format(value, box, System.Array.Empty<char>());
+    }
+
+    private static int LetterCount(string word, char[] echaps)
+    {
+        int result = 0;
+        foreach(char l in word)
+        {
+            if (!Contains(echaps, l))
+                result++;
+        }
+        return result;
+    }
+
+    private static bool Contains(char[] tab, char c)
+    {
+        foreach(char e in tab)
+        {
+            if (e.Equals(c))
+                return true;
+        }
+        return false;
     }
 
     public string Text;

@@ -2,6 +2,7 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended.Collections;
 using System;
 
 namespace FriteCollection2.Entity.Hitboxs;
@@ -20,12 +21,12 @@ public abstract partial class Hitbox : IDraw, IDisposable
 
     public struct CollisionData<T> where T : Hitbox
     {
-        public readonly T colider;
+        public readonly T collider;
         public readonly Sides side;
 
         public CollisionData(in T col, Sides side)
         {
-            this.colider = col;
+            this.collider = col;
             this.side = side;
         }
     }
@@ -96,6 +97,16 @@ public abstract partial class Hitbox : IDraw, IDisposable
         return false;
     }
 
+    public bool IsTag(char value, int index)
+    {
+        foreach (string t in this.tags)
+        {
+            if (t[0].Equals(value))
+                return true;
+        }
+        return false;
+    }
+
     public bool HasTagsOf(Hitbox other)
     {
         if (tags.Length > other.tags.Length)
@@ -155,9 +166,22 @@ public abstract partial class Hitbox : IDraw, IDisposable
 
     public abstract void Draw(in SpriteBatch batch);
 
+    public static void Debug(in SpriteBatch batch)
+    {
+        foreach(HitboxLayer l in layers)
+        {
+            l.Draw(in batch);
+        }
+    }
+
     public virtual void Dispose()
     {
         layers[layer].Remove(this);
+    }
+
+    public void Destroy()
+    {
+        Dispose();
     }
 
     public void Reactivate()
