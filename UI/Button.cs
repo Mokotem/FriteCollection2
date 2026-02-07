@@ -62,7 +62,7 @@ public class Button : Text
     {
         if (Active)
         {
-            batch.Draw(Image.defaultTex, new Rectangle(rect.X + 3, rect.Y + 3, rect.Width - 6, rect.Height - 6), bgColor);
+            batch.Draw(TextureRenderer.Default, new Rectangle(rect.X + 3, rect.Y + 3, rect.Width - 6, rect.Height - 6), bgColor);
             batch.DrawRectangle(rect.ToRectangleF(), new Color(0f, 0.5f, 1f), outlineThickness, Renderer._layer);
             base.Draw(in batch);
         }

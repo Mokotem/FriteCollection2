@@ -461,7 +461,14 @@ public abstract partial class Hitbox
 
         public Rectangle Copy()
         {
-            return null;
+            Rectangle r = new Rectangle(in this._parent, tags);
+            r._left = this._left;
+            r._up = this._up;
+            r._down = this._down;
+            r._right = this._right;
+            r._width = this._width;
+            r._height = this._height;
+            return r;
         }
     }
 }

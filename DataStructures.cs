@@ -258,22 +258,18 @@ public class Clone : AdvancedExecutable
 
     public override void Draw(in SpriteBatch batch)
     {
-        throw new NotImplementedException();
     }
 
     public override void Load(in SpriteBatch batch, GraphicsDevice gd)
     {
-        throw new NotImplementedException();
     }
 
     public override void Start()
     {
-        throw new NotImplementedException();
     }
 
     public override void Update(float dt)
     {
-        throw new NotImplementedException();
     }
 }
 

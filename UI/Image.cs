@@ -7,13 +7,6 @@ namespace FriteCollection2.UI;
 
 public class Image : UI
 {
-    public static Texture2D defaultTex;
-    public static Texture2D CreateDefaultTexture(GraphicsDevice device)
-    {
-        defaultTex = TextureCreator.Create(device, 2, 2);
-        return defaultTex;
-    }
-
     public TextureRenderer Renderer;
     private Rectangle imgRect;
 
@@ -24,9 +17,19 @@ public class Image : UI
         this.Renderer._layer = parent.Depth + 0.01f;
     }
 
+    public Image(UI parent) : base(parent)
+    {
+        this.Renderer = new TextureRenderer(Color.White);
+        imgRect = base.rect;
+        this.Renderer._layer = parent.Depth + 0.01f;
+    }
+
+    public Image() : this(screen)
+    {
+
+    }
+
     public Image(Texture2D texture) : this(screen, texture) { }
-    public Image(UI parent) : this(parent, defaultTex) { }
-    public Image() : this(screen, defaultTex) { }
 
     public Texture2D Edit
     {
