@@ -33,6 +33,20 @@ public class ObjectOutline : Object
 
     public ObjectOutline(int width, int height) : base(width, height) { }
 
+    public void DrawBody(in SpriteBatch batch)
+    {
+        base.Draw(in batch);
+    }
+
+    public void DrawOutline(in SpriteBatch batch)
+    {
+        Rectangle rect = ToScreen();
+        foreach (Point p in outLinePositions)
+        {
+            batch.Draw(Renderer.Texture, rect, null, outlineColor, 0f, Vector2.Zero, Renderer.effect, outlineLayer);
+        }
+    }
+
     public override void Draw(in SpriteBatch batch)
     {
         Rectangle rect = ToScreen();

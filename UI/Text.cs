@@ -53,6 +53,9 @@ public class Text : UI
 
     public override int Bottom => textRect.Bottom;
 
+    public int TextHeight => 0;
+    public int TextWidth => 30;
+
     protected override void OnSizeChanged()
     {
         ChangeText(Renderer.Text);

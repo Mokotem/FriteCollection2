@@ -33,7 +33,7 @@ public abstract class UI : IDraw, IHaveRectangle
         screen.UpdateMouse(state);
     }
 
-    public static void SetScreenResolution(ushort width, ushort height)
+    public static void SetScreenResolution(int width, int height)
     {
         screen = new Screen(width, height);
     }
@@ -41,6 +41,22 @@ public abstract class UI : IDraw, IHaveRectangle
     public bool Active;
     protected readonly UI parent;
     protected Rectangle rect;
+
+    public int Width => rect.Width;
+    public int Height => rect.Height;
+
+    public Point Size => rect.Size;
+
+    public int PositionX
+    {
+        get => rect.Left;
+        set => rect.X = value;
+    }
+    public int PositionY
+    {
+        get => rect.Top;
+        set => rect.Y = value;
+    }
 
     protected internal virtual Rectangle ParentRect => rect;
     public Rectangle mRect => ParentRect;
@@ -167,6 +183,11 @@ public abstract class UI : IDraw, IHaveRectangle
         rect.X += x;
         rect.Y += y;
         OnPositionChanged();
+    }
+
+    public void ApplyPosition(Point pos)
+    {
+        ApplyPosition(pos.X, pos.Y);
     }
 
     public void ApplyPosition(int x = 0, int y = 0)

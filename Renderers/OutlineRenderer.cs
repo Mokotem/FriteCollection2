@@ -15,17 +15,21 @@ public class OutlineRenderer : TextureRenderer
     public OutlineRenderer() : base() { }
     public OutlineRenderer(Texture2D texture, Color outline) : base()
     {
-        this.Outline = outline;
+        this.outlineColor = outline;
     }
     public OutlineRenderer(Color color) : base(color) { }
 
-    public Color Outline;
+    public Color outlineColor;
+    public bool outline = true;
 
     public override void Draw(in SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation)
     {
-        batch.Draw(_defaultTexture,
-            new Rectangle(rectangle.X - 1, rectangle.Y - 1, rectangle.Width + 2, rectangle.Height + 2), null,
-            Outline, rotation, centerPoint, SpriteEffects.None, _layer + 0.0001f);
+        if (outline)
+        {
+            batch.Draw(_defaultTexture,
+                new Rectangle(rectangle.X - 1, rectangle.Y - 1, rectangle.Width + 2, rectangle.Height + 2), null,
+                outlineColor, rotation, centerPoint, SpriteEffects.None, _layer + 0.0001f);
+        }
         base.Draw(batch, rectangle, centerPoint, rotation);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
+using System;
 
 namespace FriteCollection2;
 
@@ -135,6 +136,7 @@ public class StringRenderer : Renderer
 
     private static int ofx, ofy;
     private static float baseScale;
+    public Color OutlineColor;
 
     public static void SetDefaultFont(SpriteFont value, byte scale)
     {
@@ -160,7 +162,7 @@ public class StringRenderer : Renderer
         SetOffset(offset.X, offset.Y);
     }
 
-    public static Point Evaluate(string value)
+    public static Point Evaluate(string value, char[] echaps)
     {
         if (hasAspect)
         {
@@ -176,9 +178,12 @@ public class StringRenderer : Renderer
                 }
                 else
                 {
-                    count++;
-                    if (count > result.X)
-                        result.X = count;
+                    if (!Contains(echaps, value[i]))
+                    {
+                        count++;
+                        if (count > result.X)
+                            result.X = count;
+                    }
                 }
                 i++;
             }
@@ -190,8 +195,17 @@ public class StringRenderer : Renderer
             return new Point((int)float.Round(scale.X), (int)float.Round(scale.Y));
         }
     }
+    public static Point Evaluate(string value)
+    {
+        return Evaluate(value, Array.Empty<char>());
+    }
 
-    public static string Format(string value, Point box, char[] echapements)
+    public static string Format(string value, bool sl, char[] echapements,
+        Point box,
+        ushort maxLine,
+        out byte lineNumber,
+        out ushort exedent,
+        out int textWidth)
     {
 #if DEBUG
         if (!hasAspect)
@@ -205,6 +219,8 @@ public class StringRenderer : Renderer
 
         int line = 0;
         int wc = 0;
+        lineNumber = 1;
+        textWidth = 0;
 
         for (int i = 0; i < words.Length; i++)
         {
@@ -217,25 +233,39 @@ public class StringRenderer : Renderer
                 result += words[i] + "\n";
                 line = 0;
                 wc = 0;
+                lineNumber++;
             }
             else if (line > box.X)
             {
                 result += "\n" + words[i];
                 line = taille;
                 wc = 1;
+                lineNumber++;
             }
             else
             {
                 result += words[i] + " ";
             }
+
+            if (line > textWidth)
+            {
+                textWidth = line;
+            }
+
+            if (lineNumber > maxLine)
+            {
+                exedent = (ushort)taille;
+                return result;
+            }
         }
 
+        exedent = 0;
         return result;
     }
 
     public static string Format(string value, Point box)
     {
-        return Format(value, box, System.Array.Empty<char>());
+        return Format(value, false, System.Array.Empty<char>(), box, ushort.MaxValue, out _, out _, out _);
     }
 
     private static int LetterCount(string word, char[] echaps)

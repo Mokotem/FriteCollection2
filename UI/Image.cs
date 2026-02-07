@@ -34,7 +34,7 @@ public class Image : UI
         set => Renderer.Texture = value;
     }
 
-    internal override Rectangle ParentRect => imgRect;
+    protected internal override Rectangle ParentRect => imgRect;
 
     public override float Depth => Renderer._layer;
 

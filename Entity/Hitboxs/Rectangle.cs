@@ -22,9 +22,14 @@ public abstract partial class Hitbox
         public float Up => _up;
         public float Down => _down;
 
+        public Point Size => new Point(
+            (int)float.Round(_width),
+            (int)float.Round(_height)
+            );
+
         public Point offset;
-        public Align isInfinitOnX;
-        public Align isInfinitOnY;
+        public Align IsInfinitOnX;
+        public Align IsInfinitOnY;
 
         public Vector2 CenterPoint => new Vector2((_left + _right) / 2f, (_up + _down) / 2f);
 
@@ -54,6 +59,11 @@ public abstract partial class Hitbox
         {
             this._width = width;
             this._height = height;
+        }
+
+        public void SetScale(Point value)
+        {
+            SetScale(value.X, value.Y);
         }
 
         public override void UpdatePosition(float x, float y)
@@ -100,6 +110,11 @@ public abstract partial class Hitbox
         public override bool Check(byte layer, ConditionToCheckCollision condition)
         {
             return Check(layer, condition);
+        }
+
+        public bool Check(out Rectangle collider)
+        {
+            return Check(this.layer, SelectAllHitboxs, out collider);
         }
 
         public bool Check(byte layer, ConditionToCheckCollision condition, out Sides globalSide, out CollisionData<Rectangle>[] coliders)
@@ -306,6 +321,115 @@ public abstract partial class Hitbox
         public bool Check(out Sides globalSide, out CollisionData<Rectangle>[] coliders)
         {
             return Check(this.layer, SelectAllHitboxs, out globalSide, out coliders);
+        }
+
+        public static bool Check(byte layer, Vector2 point, ConditionToCheckCollision condition, out Rectangle collider)
+        {
+            foreach(Rectangle rect in layers[layer])
+            {
+                if (condition(rect))
+                {
+                    rect.UpdatePosition();
+                    if (point.X > rect._left && point.X < rect._right
+                        && point.Y > rect._up && point.Y < rect._down)
+                    {
+                        collider = rect;
+                        return true;
+                    }
+                }
+            }
+
+            collider = null;
+            return false;
+        }
+
+        public static bool Check(Vector2 point, ConditionToCheckCollision condition)
+        {
+            return Check(0, point, condition, out _);
+        }
+
+        public static bool Check(Vector2 point)
+        {
+            return Check(0, point, SelectAllHitboxs, out _);
+        }
+
+        public static bool Check(byte layer, Vector2 point, string tagToCheck)
+        {
+            return Check(layer, point, SelectTag(tagToCheck), out _);
+        }
+
+        public static bool Check(Vector2 point, string tagToCheck)
+        {
+            return Check(0, point, SelectTag(tagToCheck), out _);
+        }
+
+        public static bool Check(Vector2 point, ConditionToCheckCollision condition, out Rectangle collider)
+        {
+            return Check(0, point, condition, out collider);
+        }
+
+        public static bool Check(Vector2 point, out Rectangle collider)
+        {
+            return Check(0, point, SelectAllHitboxs, out collider);
+        }
+
+        public static bool Check(byte layer, Vector2 point, string tagToCheck, out Rectangle collider)
+        {
+            return Check(layer, point, SelectTag(tagToCheck), out collider);
+        }
+
+        public static bool Check(Vector2 point, string tagToCheck, out Rectangle collider)
+        {
+            return Check(0, point, SelectTag(tagToCheck), out collider);
+        }
+
+
+        public Sides CheckWith(Rectangle col, out bool[] corners)
+        {
+            corners = new bool[4];
+
+            this.UpdatePosition();
+            col.UpdatePosition();
+
+            bool isRight, isDown, isfullx, isfully;
+            bool touchLeft, touchRight, touchUp, touchDown;
+
+            if (!MakeCollisionRange(this._left, this._right, col._left, col._right,
+                out touchLeft, out touchRight,
+                out float dx, out isRight, out isfullx)
+             || !MakeCollisionRange(this._up, this._down, col._up, col._down,
+                out touchUp, out touchDown,
+                out float dy, out isDown, out isfully))
+            {
+                return Sides.Center;
+            }
+
+            Sides sideCol;
+
+            if (DoIChoseTheSideX(isfullx, isfully, dx, dy))
+            {
+                sideCol = isRight ? Sides.Right : Sides.Left;
+            }
+            else
+            {
+                sideCol = isDown ? Sides.Down : Sides.Up;
+            }
+
+            corners[0] |= touchLeft && touchUp;
+            corners[1] |= touchRight && touchUp;
+            corners[2] |= touchLeft && touchDown;
+            corners[3] |= touchRight && touchDown;
+
+            return sideCol;
+        }
+
+        public bool CheckWith(Rectangle col)
+        {
+            this.UpdatePosition();
+            col.UpdatePosition();
+
+            return !(this._right < col._left || this._left > col._right
+                || this._up > col._down || this._down < col._up);
         }
 
         public Microsoft.Xna.Framework.Rectangle ToRectangle()

@@ -93,6 +93,11 @@ public abstract partial class Hitbox : IDraw, IDisposable
     protected Hitbox(in Space parent) : this(in parent, 0) { }
     protected Hitbox(in Space parent, params string[] tags) : this(in parent, 0, tags) { }
 
+    public void AddToLayer(byte layer)
+    {
+        layers[layer].Add(this);
+    }
+
     public bool IsTag(string tag)
     {
         foreach (string t in this.tags)
@@ -140,7 +145,10 @@ public abstract partial class Hitbox : IDraw, IDisposable
 
     public void UpdatePosition()
     {
-        UpdatePosition(_parent.X, _parent.Y);
+        if (!isStatic)
+        {
+            UpdatePosition(_parent.X, _parent.Y);
+        }
     }
 
     public abstract bool Check(byte layer, ConditionToCheckCollision condition);

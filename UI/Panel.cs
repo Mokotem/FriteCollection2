@@ -50,7 +50,7 @@ public class Panel : UI
           : this(device, screen, pos, ext, height, addWidth, addHeight, addx, addy, addLayer) { }
 
 
-    internal override Rectangle ParentRect => rectForChilds;
+    protected internal override Rectangle ParentRect => rectForChilds;
     public override float Depth => Renderer._layer;
 
     internal override Point GetMousePos()

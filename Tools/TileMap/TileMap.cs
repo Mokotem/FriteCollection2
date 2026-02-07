@@ -346,13 +346,13 @@ public class TileMap : IDisposable, IDraw
                 hit.isStatic = true;
 
                 if (x == 0)
-                    hit.isInfinitOnX = Align.Left;
+                    hit.IsInfinitOnX = Align.Left;
                 else if (x + width >= xCount)
-                    hit.isInfinitOnX = Align.Right;
+                    hit.IsInfinitOnX = Align.Right;
                 if (y == 0)
-                    hit.isInfinitOnY = Align.Left;
+                    hit.IsInfinitOnY = Align.Left;
                 else if (y + height >= yCount)
-                    hit.isInfinitOnY = Align.Right;
+                    hit.IsInfinitOnY = Align.Right;
 
 
                 result.Add(hit);
