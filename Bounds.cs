@@ -15,6 +15,17 @@ public static class BoundFunc
         };
     }
 
+    public static int AlignToInt(Align a, int width)
+    {
+        return a switch
+        {
+            Align.Left => 0,
+            Align.Center => rounds2(width / 2f),
+            Align.Right => width,
+            _ => 0
+        };
+    }
+
     public static Vector2 BoundToVector(Bounds b, float width, float height)
     {
         return b switch

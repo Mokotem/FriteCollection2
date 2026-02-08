@@ -19,7 +19,7 @@ public class Panel : UI
         int addWidth = 0, int addHeight = 0, int addx = 0, int addy = 0, float addLayer = 0)
         : base(parent)
     {
-        this.Renderer._layer = parent.Depth + 0.01f + addLayer;
+        this.Renderer._layer = parent.Depth - 0.01f + addLayer;
         base.ApplyScale(ext, addWidth, addHeight);
         if (height < 2)
         {

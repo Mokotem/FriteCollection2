@@ -7,30 +7,30 @@ namespace FriteCollection2.Entity;
 /// <summary>
 /// Object.
 /// </summary>
-public class Text : IDraw
+public class Text : Renderer, IDraw
 {
-    public StringRenderer Renderer;
+    private string text;
 
     public string Edit
     {
-        get => Renderer.Text;
+        get => text;
         set
         {
-            if (Renderer.Text.Length != value.Length)
+            if (text.Length != value.Length)
                 this._scale = StringRenderer.Evaluate(value);
-            Renderer.Text = value;
+            text = value;
         }
     }
 
     private Point _scale;
     public Point Scale => _scale;
     public Point Position;
-    public bool outline = true;
 
     public float Width => _scale.X;
     public float Height => _scale.Y;
 
-    public Color Background;
+    public bool outline = true;
+    public Color OutlineColor;
 
     public void SetPosition(Point pos, Bounds b)
     {
@@ -41,32 +41,28 @@ public class Text : IDraw
 
     public Text(string value)
     {
-        this.Renderer = new StringRenderer(value);
+        this.text = value;
         this._scale = StringRenderer.Evaluate(value);
-        Background = Color.Black;
     }
 
     public void Draw(in SpriteBatch batch)
     {
-        if (!Renderer.hide)
+        if (!hide)
         {
-
             Point pos = Position - Space.Camera;
-
             if (outline)
             {
-                foreach (Point r in ObjectOutline.outLinePositions)
-                {
-                    Renderer.Draw(in batch, pos + r);
-                }
+                batch.Draw(TextureRenderer.Default, new Rectangle(pos.X - 1, pos.Y + 1, _scale.X + 1, _scale.Y),
+                    null,
+                    OutlineColor, 0f, Vector2.Zero, effect, _layer + 0.0001f);
             }
-
-            Renderer.Draw(in batch, pos);
+            batch.DrawString(StringRenderer.Font, text, pos.ToVector2(), this.Color, 0f,
+                Vector2.Zero, 1f, effect, this._layer);
         }
     }
 
     public override string ToString()
     {
-        return "Text " + Renderer.Text + " (" + Renderer.ToString() + ")";
+        return "Text " + text + " ()";
     }
 }

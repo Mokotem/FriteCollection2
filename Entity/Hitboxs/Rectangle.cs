@@ -109,7 +109,7 @@ public abstract partial class Hitbox
 
         public override bool Check(byte layer, ConditionToCheckCollision condition)
         {
-            return Check(layer, condition);
+            return Check(layer, condition, out _);
         }
 
         public bool Check(out Rectangle collider)

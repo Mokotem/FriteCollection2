@@ -127,6 +127,12 @@ public class TextureRenderer : Renderer
 
 public class StringRenderer : Renderer
 {
+    private static Color _defaultColor = Color.White;
+    public new static void SetDefaultColor(Color value)
+    {
+        _defaultColor = value;
+    }
+
     private static SpriteFont _font;
     public static SpriteFont Font => _font;
 
@@ -136,7 +142,9 @@ public class StringRenderer : Renderer
 
     private static int ofx, ofy;
     private static float baseScale;
+
     public Color OutlineColor;
+    public bool outline = true;
 
     public static void SetDefaultFont(SpriteFont value, byte scale)
     {
@@ -166,6 +174,11 @@ public class StringRenderer : Renderer
     {
         if (hasAspect)
         {
+            if (value.Length < 2)
+            {
+                return new Point(Aspect.X, Aspect.Y - 2);
+            }
+
             Point result = new Point(1, 1);
             ushort i = 0;
             int count = 1;
@@ -299,10 +312,11 @@ public class StringRenderer : Renderer
         _scalefactor = value / baseScale;
     }
 
-    public StringRenderer() : base()
+    public StringRenderer() : base(StringRenderer._defaultColor)
     {
         Text = string.Empty;
         font = _font;
+        OutlineColor = OutlineRenderer._default;
     }
 
     public StringRenderer(string text) : this()
@@ -314,6 +328,7 @@ public class StringRenderer : Renderer
     {
         Text = string.Empty;
         font = _font;
+        OutlineColor = OutlineRenderer._default;
     }
 
     public StringRenderer(string text, Color color) : this(color)
@@ -333,38 +348,63 @@ public class StringRenderer : Renderer
     {
         Text = text;
         this.font = font;
+        OutlineColor = OutlineRenderer._default;
     }
 
     public StringRenderer(SpriteFont font, Color color) : base(color)
     {
         Text = string.Empty;
         this.font = font;
+        OutlineColor = OutlineRenderer._default;
     }
 
     public StringRenderer(SpriteFont font, string text, Color color) : base(color)
     {
         Text = text;
         this.font = font;
+        OutlineColor = OutlineRenderer._default;
+    }
+
+    public void Draw(in SpriteBatch batch, Point pos, Vector2 centerPoint, float rotation, Color c, float layer)
+    {
+        if (!hide)
+        {
+            if (outline)
+            {
+                foreach (Point r in OutlineRenderer.outLinePositions)
+                {
+                    batch.DrawString(this.font, Text, (pos + r).ToVector2(), OutlineColor,
+                        rotation, centerPoint, _scalefactor, effect, layer + 0.001f);
+                }
+            }
+            batch.DrawString(this.font, Text, pos.ToVector2(), c, rotation, centerPoint, _scalefactor, effect, layer);
+        }
     }
 
     public void Draw(in SpriteBatch batch, Point pos, Vector2 centerPoint, float rotation, Color c)
     {
         if (!hide)
-            batch.DrawString(this.font, Text, pos.ToVector2(), Color, rotation, centerPoint, _scalefactor, effect, _layer);
+            batch.DrawString(this.font, Text, pos.ToVector2(), c, rotation, centerPoint, _scalefactor, effect, _layer);
     }
 
     public void Draw(in SpriteBatch batch, Point position, Vector2 centerPoint, float rotation)
     {
-        Draw(in batch, position, centerPoint, rotation, Color);
+        Draw(in batch, position, centerPoint, rotation, Color, this._layer);
     }
 
     public void Draw(in SpriteBatch batch, Point position, Vector2 centerPoint)
     {
         Draw(in batch, position, centerPoint, 0f);
     }
+
     public void Draw(in SpriteBatch batch, Point position, Color c)
     {
-        Draw(in batch, position, Vector2.Zero, 0f, c);
+        Draw(in batch, position, Vector2.Zero, 0f, c, _layer);
+    }
+
+    public void Draw(in SpriteBatch batch, Point position, Color c, float layer)
+    {
+        Draw(in batch, position, Vector2.Zero, 0f, c, layer);
     }
 
     public void Draw(in SpriteBatch batch, Point position)

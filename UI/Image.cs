@@ -14,14 +14,14 @@ public class Image : UI
     {
         this.Renderer = new TextureRenderer(texture, Color.White);
         imgRect = base.rect;
-        this.Renderer._layer = parent.Depth + 0.01f;
+        this.Renderer._layer = parent.Depth - 0.01f;
     }
 
     public Image(UI parent) : base(parent)
     {
         this.Renderer = new TextureRenderer(Color.White);
         imgRect = base.rect;
-        this.Renderer._layer = parent.Depth + 0.01f;
+        this.Renderer._layer = parent.Depth - 0.01f;
     }
 
     public Image() : this(screen)
