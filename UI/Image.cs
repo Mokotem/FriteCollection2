@@ -7,19 +7,19 @@ namespace FriteCollection2.UI;
 
 public class Image : UI
 {
-    public TextureRenderer Renderer;
+    public OutlineRenderer Renderer;
     private Rectangle imgRect;
 
     public Image(UI parent, Texture2D texture) : base(parent, texture.Width, texture.Height)
     {
-        this.Renderer = new TextureRenderer(texture, Color.White);
+        this.Renderer = new OutlineRenderer(texture);
         imgRect = base.rect;
         this.Renderer._layer = parent.Depth - 0.01f;
     }
 
     public Image(UI parent) : base(parent)
     {
-        this.Renderer = new TextureRenderer(Color.White);
+        this.Renderer = new OutlineRenderer();
         imgRect = base.rect;
         this.Renderer._layer = parent.Depth - 0.01f;
     }

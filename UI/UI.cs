@@ -214,11 +214,13 @@ public abstract class UI : IDraw, IHaveRectangle
         Point o = BoundFunc.BoundToPoint(center, rect.Width, rect.Height);
         this.rect.X = x - o.X;
         this.rect.Y = y - o.Y;
+        this.OnPositionChanged();
     }
 
     public virtual void SetPositionX(int x)
     {
         this.rect.X = x;
+        this.OnPositionChanged();
     }
 
     public void SetPositionX(int x, Align align)
@@ -226,9 +228,10 @@ public abstract class UI : IDraw, IHaveRectangle
         this.SetPositionX(x - BoundFunc.AlignToInt(align, rect.Width));
     }
 
-    public virtual void SetPositionY(int x)
+    public virtual void SetPositionY(int y)
     {
-        this.rect.X = x;
+        this.rect.Y = y;
+        this.OnPositionChanged();
     }
 
     public void SetPositionY(int y, Align align)

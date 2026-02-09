@@ -98,14 +98,16 @@ public class TextureRenderer : Renderer
 
     public TextureRenderer(Color color, Texture2D texture) : this(texture, color) { }
 
-    public void Draw(in SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation, Color c)
+    public virtual void Draw(in SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation, Color c)
     {
         if (!hide)
+        {
             batch.Draw(Texture, rectangle, null, c, rotation, centerPoint, effect, _layer);
+        }
     }
 
 
-    public virtual void Draw(in SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation)
+    public void Draw(in SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation)
     {
         Draw(in batch, rectangle, centerPoint, rotation, Color);
     }

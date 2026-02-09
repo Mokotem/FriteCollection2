@@ -49,11 +49,19 @@ public class OutlineRenderer : TextureRenderer
     public OutlineRenderer(Texture2D texture, Color outline) : base()
     {
         this.OutlineColor = outline;
+        _oolayer = _olayer;
+    }
+
+    public OutlineRenderer(Texture2D texture) : base(texture)
+    {
+        this.OutlineColor = _default;
+        _oolayer = _olayer;
     }
 
     public OutlineRenderer(Color color) : base(color)
     {
         this.OutlineColor = _default;
+        _oolayer = _olayer;
     }
 
     public Color OutlineColor;
@@ -63,9 +71,12 @@ public class OutlineRenderer : TextureRenderer
     {
         if (outline)
         {
-            batch.Draw(_defaultTexture,
-                new Rectangle(rectangle.X - 1, rectangle.Y - 1, rectangle.Width + 2, rectangle.Height + 2), null,
-                OutlineColor, rotation, centerPoint, SpriteEffects.None, _oolayer);
+            foreach(Point p in outLinePositions)
+            {
+                batch.Draw(Texture,
+                    new Rectangle(rectangle.Location + p, rectangle.Size),
+                    null, OutlineColor, rotation, centerPoint, effect, _oolayer);
+            }
         }
     }
 
@@ -84,14 +95,9 @@ public class OutlineRenderer : TextureRenderer
         base.Draw(batch, rectangle, Vector2.Zero, 0f);
     }
 
-    public override void Draw(in SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation)
+    public override void Draw(in SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation, Color c)
     {
-        if (outline)
-        {
-            batch.Draw(_defaultTexture,
-                new Rectangle(rectangle.X - 1, rectangle.Y - 1, rectangle.Width + 2, rectangle.Height + 2), null,
-                OutlineColor, rotation, centerPoint, SpriteEffects.None, _oolayer);
-        }
-        base.Draw(batch, rectangle, centerPoint, rotation);
+        DrawOutline(in batch, rectangle, centerPoint, rotation);
+        base.Draw(batch, rectangle, centerPoint, rotation, c);
     }
 }
