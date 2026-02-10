@@ -27,7 +27,7 @@ public class Image : UI
 
     public Image() : this(screen)
     {
-
+        this.Renderer.Color = FriteCollection2.Renderer._defaultColor;
     }
 
     public Image(Texture2D texture) : this(screen, texture) { }

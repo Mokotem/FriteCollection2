@@ -6,7 +6,7 @@ namespace FriteCollection2;
 
 public abstract class Renderer
 {
-    private static Color _defaultColor = Color.White;
+    internal static Color _defaultColor = Color.White;
     public static void SetDefaultColor(Color value)
     {
         _defaultColor = value;

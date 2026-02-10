@@ -21,12 +21,12 @@ public class Extend
     }
 }
 
-public abstract class UI : IDraw, IHaveRectangle
+public abstract class UI : IDraw
 {
     protected const int padding = 8, padding2 = padding * 2;
     protected const int defaultWidth = 32, defaultHeight = defaultWidth;
 
-    private protected static Screen screen;
+    protected static Screen screen;
 
     public static void UpdateMousePos(MouseState state)
     {
@@ -67,7 +67,8 @@ public abstract class UI : IDraw, IHaveRectangle
     }
 
     protected internal virtual Rectangle ParentRect => rect;
-    public Rectangle mRect => ParentRect;
+    public Rectangle Rectangle => rect;
+
     public abstract float Depth { get; }
 
     internal virtual bool IsMouseOn => parent.IsMouseOn;
@@ -223,7 +224,7 @@ public abstract class UI : IDraw, IHaveRectangle
         OnPositionChanged();
     }
 
-    public void SetPosition(Bounds center, int x = 0, int y = 0)
+    public virtual void SetPosition(Bounds center, int x = 0, int y = 0)
     {
         Point o = BoundFunc.BoundToPoint(center, rect.Width, rect.Height);
         this.rect.X = x - o.X;
@@ -268,7 +269,7 @@ public abstract class UI : IDraw, IHaveRectangle
 
     }
 
-    protected void DrawChilds(in SpriteBatch batch)
+    public void DrawChilds(in SpriteBatch batch)
     {
         if (Active)
         {
