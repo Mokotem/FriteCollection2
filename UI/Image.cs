@@ -15,6 +15,7 @@ public class Image : UI
         this.Renderer = new OutlineRenderer(texture);
         imgRect = base.rect;
         this.Renderer._layer = parent.Depth - 0.01f;
+        this.Renderer.Color = Color.White;
     }
 
     public Image(UI parent) : base(parent)

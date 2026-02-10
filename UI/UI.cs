@@ -50,12 +50,20 @@ public abstract class UI : IDraw, IHaveRectangle
     public int PositionX
     {
         get => rect.Left;
-        set => rect.X = value;
+        set
+        {
+            rect.X = value;
+            OnPositionChanged();
+        }
     }
     public int PositionY
     {
         get => rect.Top;
-        set => rect.Y = value;
+        set
+        {
+            rect.Y = value;
+            OnPositionChanged();
+        }
     }
 
     protected internal virtual Rectangle ParentRect => rect;
@@ -146,13 +154,19 @@ public abstract class UI : IDraw, IHaveRectangle
         OnSizeChanged();
     }
 
-    public void SetScaleY(int height)
+    public virtual void SetScale(int width = 0, int height = 0)
+    {
+        rect.Width = width;
+        rect.Height = height;
+        OnSizeChanged();
+    }
+    public virtual void SetScaleY(int height)
     {
         rect.Height = height;
         OnSizeChanged();
     }
 
-    public void SetScaleX(int width)
+    public virtual void SetScaleX(int width)
     {
         rect.Width = width;
         OnSizeChanged();

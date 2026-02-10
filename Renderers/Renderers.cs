@@ -12,7 +12,7 @@ public abstract class Renderer
         _defaultColor = value;
     }
 
-    private const short LayerFloor = -1000, LayerRoof = 1000;
+    private const short LayerFloor = -1024, LayerRoof = 1024;
     private const float LayerRange = LayerRoof - LayerFloor;
     public static float ToLayer(short value)
     {
@@ -183,7 +183,7 @@ public class StringRenderer : Renderer
 
             Point result = new Point(1, 1);
             ushort i = 0;
-            int count = 1;
+            int count = 0;
             while (i < value.Length)
             {
                 if (value[i].Equals('\n'))
@@ -233,28 +233,23 @@ public class StringRenderer : Renderer
         string[] words = value.Split(' ');
 
         int line = 0;
-        int wc = 0;
         lineNumber = 1;
         textWidth = 0;
 
         for (int i = 0; i < words.Length; i++)
         {
-            wc++;
-            result += words[i];
             int taille = LetterCount(words[i], echapements);
             line += taille * fw;
-            if (line == box.X || wc == 1)
+            if (line == box.X)
             {
                 result += words[i] + "\n";
                 line = 0;
-                wc = 0;
                 lineNumber++;
             }
             else if (line > box.X)
             {
                 result += "\n" + words[i];
                 line = taille;
-                wc = 1;
                 lineNumber++;
             }
             else

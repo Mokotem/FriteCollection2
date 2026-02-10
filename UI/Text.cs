@@ -51,6 +51,14 @@ public class Text : UI
         set => ChangeText(value);
     }
 
+    public void Format()
+    {
+        if (textRect.Width > rect.Width)
+        {
+            ChangeText(StringRenderer.Format(Renderer.Text, rect.Size));
+        }
+    }
+
     public int TextHeight => 0;
     public int TextWidth => 30;
 
