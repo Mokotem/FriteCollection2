@@ -23,7 +23,6 @@ public class Extend
 
 public abstract class UI : IDraw
 {
-    protected const int padding = 8, padding2 = padding * 2;
     protected const int defaultWidth = 32, defaultHeight = defaultWidth;
 
     protected static Screen screen;
@@ -42,29 +41,13 @@ public abstract class UI : IDraw
     protected readonly UI parent;
     protected Rectangle rect;
 
+    private Bounds _lastPos, _lastCenter;
+    private int _lastx, _lasty;
+
     public int Width => rect.Width;
     public int Height => rect.Height;
 
     public Point Size => rect.Size;
-
-    public int PositionX
-    {
-        get => rect.Left;
-        set
-        {
-            rect.X = value;
-            OnPositionChanged();
-        }
-    }
-    public int PositionY
-    {
-        get => rect.Top;
-        set
-        {
-            rect.Y = value;
-            OnPositionChanged();
-        }
-    }
 
     protected internal virtual Rectangle ParentRect => rect;
     public Rectangle Rectangle => rect;
@@ -80,45 +63,31 @@ public abstract class UI : IDraw
 
     protected UI(UI parent, int width, int height)
     {
-        rect = new Rectangle(0, 0, width, height);
         this.parent = parent;
+        rect = new Rectangle(
+            parent.ParentRect.X,
+            parent.ParentRect.Y,
+            width,
+            height);
+
         childs = new List<UI>();
         Active = true;
         parent.childs.Add(this);
+
+        _lastPos = Bounds.TopLeft;
+        _lastCenter = Bounds.TopLeft;
     }
 
-    public void FlexChildsVertical()
+    protected UI(UI parent, Extend extend, int width = 0, int height = 0)
+        : this(parent, width, height)
     {
-        for (byte i = 1; i < childs.Count; i++)
-        {
-            childs[i].rect.Y = childs[i - 1].Bottom + padding;
-            childs[i].OnPositionChanged();
-        }
+        _SetScale(extend);
     }
 
     protected UI(int width, int height) : this(screen, width, height) { }
-
-    protected UI(Vector2 scale) : this(
-        (int)float.Round(scale.X),
-        (int)float.Round(scale.Y)
-        ) { }
-
-    protected UI(UI parent) : this(parent, defaultWidth, defaultHeight) { }
-    protected UI()
-    {
-        childs = new List<UI>();
-        parent = screen;
-    }
+    protected UI(Extend extend, int width = 0, int height = 0) : this(screen, extend, width, height) { }
 
     private List<UI> childs;
-
-
-    public void ApplyScale(int width = 0, int height = 0)
-    {
-        rect.Width = width;
-        rect.Height = height;
-        OnSizeChanged();
-    }
 
     private void _SetScale(Extend ext)
     {
@@ -133,81 +102,68 @@ public abstract class UI : IDraw
         }
     }
 
-    public void ApplyScale(Extend ext)
+#if DEBUG
+    private void _MakeSureIHaveNoChild()
     {
-        _SetScale(ext);
-        OnSizeChanged();
+        if (childs.Count > 0)
+        {
+            throw new System.Exception("tu tprends pour qui, can't change size if it has childs");
+        }
     }
+#endif
 
-    public void ApplyScale(Extend ext, int addWidth = 0, int addHeight = 0)
+
+    public void AddScale(int dx, int dy)
     {
-        _SetScale(ext);
-        rect.Width += addWidth;
-        rect.Height += addHeight;
-        OnSizeChanged();
+#if DEBUG
+        _MakeSureIHaveNoChild();
+#endif
+        rect.Width += dx;
+        rect.Height += dy;
     }
-
-    public void SetScale(Extend ext, int width = 0, int height = 0)
+    public void ScaleY(int height)
     {
-        rect.Width = width;
+#if DEBUG
+        _MakeSureIHaveNoChild();
+#endif
         rect.Height = height;
+    }
+
+    public void ScaleX(int width)
+    {
+#if DEBUG
+        _MakeSureIHaveNoChild();
+#endif
+        rect.Width = width;
+    }
+
+    public void Scale(Extend ext, int width = 0, int height = 0)
+    {
+        ScaleX(width);
+        ScaleY(height);
         _SetScale(ext);
-        OnSizeChanged();
     }
 
-    public virtual void SetScale(int width = 0, int height = 0)
+    public void Scale(int width, int height)
     {
-        rect.Width = width;
-        rect.Height = height;
-        OnSizeChanged();
-    }
-    public virtual void SetScaleY(int height)
-    {
-        rect.Height = height;
-        OnSizeChanged();
+        ScaleX(width);
+        ScaleY(height);
     }
 
-    public virtual void SetScaleX(int width)
+    public void Scale(int size)
     {
-        rect.Width = width;
-        OnSizeChanged();
+        ScaleX(size);
+        ScaleY(size);
     }
 
-    protected virtual void OnSizeChanged()
+    protected static Point MakePosition(Rectangle parent, Point scale, Bounds pos, Bounds center)
     {
-
+        return BoundFunc.BoundToPoint(pos, parent.Width, parent.Height) - BoundFunc.BoundToPoint(center, scale.X, scale.Y);
     }
 
     protected static Point MakePosition(Rectangle parent, Point scale, Bounds pos)
     {
-        Point result = new Point(0, 0);
-        if ((int)pos % 3 == 1)
-        {
-            result.X = parent.X + (parent.Width - scale.X) / 2;
-        }
-        else if ((int)pos % 3 == 2)
-        {
-            result.X = parent.Right - scale.X;
-        }
-        else
-        {
-            result.X = parent.X;
-        }
-
-        if ((int)pos / 3 == 1)
-        {
-            result.Y = parent.Y + (parent.Height - scale.Y) / 2;
-        }
-        else if ((int)pos / 3 == 2)
-        {
-            result.Y = parent.Bottom - scale.Y;
-        }
-        else
-        {
-            result.Y = parent.Y;
-        }
-
-        return result;
+        return BoundFunc.BoundToPoint(pos, parent.Width, parent.Height) - BoundFunc.BoundToPoint(pos, scale.X, scale.Y);
     }
 
     public virtual int Bottom => rect.Bottom;
@@ -215,27 +171,60 @@ public abstract class UI : IDraw
     public virtual int Right => rect.Right;
     public virtual int Top => rect.Top;
 
+    /*
+     * Note pour les positions:
+     * les méthodes type 'Apply' sont relatives au parent
+     * les méthodes type 'Set' agissent directement sur le rectangle
+    */
 
-    public void ApplyPosition(Bounds pos, int x = 0, int y = 0)
+    public void ApplyPosition(Bounds pos, Bounds center, int dx = 0, int dy = 0)
     {
-        rect.Location = MakePosition(parent.ParentRect, rect.Size, pos);
-        rect.X += x;
-        rect.Y += y;
-        OnPositionChanged();
+        this._lastPos = pos;
+        this._lastCenter = center;
+        _lastx = dx;
+        _lasty = dy;
+
+        rect.Location = MakePosition(parent.ParentRect, rect.Size, pos, center);
+        rect.X += dx;
+        rect.Y += dy;
+        this.OnIShouldUpdatePositionsOfMyChilds();
     }
 
-    public virtual void SetPosition(Bounds center, int x = 0, int y = 0)
+    public void ApplyPosition(Bounds pos, int dx = 0, int dy = 0)
     {
-        Point o = BoundFunc.BoundToPoint(center, rect.Width, rect.Height);
-        this.rect.X = x - o.X;
-        this.rect.Y = y - o.Y;
-        this.OnPositionChanged();
+        this.ApplyPosition(pos, pos, dx, dy);
     }
 
-    public virtual void SetPositionX(int x)
+    public void ApplyPosition(int dx = 0, int dy = 0)
+    {
+        this.ApplyPosition(Bounds.TopLeft, Bounds.TopLeft, dx, dy);
+    }
+
+    public void SetPosition(Bounds center, int x = 0, int y = 0)
+    {
+        Point s = BoundFunc.BoundToPoint(center, rect.Width, rect.Height);
+        rect.X = x - s.X;
+        rect.Y = y - s.Y;
+        this.OnIShouldUpdatePositionsOfMyChilds();
+    }
+
+    public void SetPosition(int x, int y)
+    {
+        rect.X = x;
+        rect.Y = y;
+        this.OnIShouldUpdatePositionsOfMyChilds();
+    }
+
+    public int PositionX
+    {
+        get => rect.Y;
+        set => SetPositionX(value);
+    }
+
+    public void SetPositionX(int x)
     {
         this.rect.X = x;
-        this.OnPositionChanged();
+        this.OnIShouldUpdatePositionsOfMyChilds();
     }
 
     public void SetPositionX(int x, Align align)
@@ -243,10 +232,16 @@ public abstract class UI : IDraw
         this.SetPositionX(x - BoundFunc.AlignToInt(align, rect.Width));
     }
 
-    public virtual void SetPositionY(int y)
+    public int PositionY
+    {
+        get => rect.Y;
+        set => SetPositionY(value);
+    }
+
+    public void SetPositionY(int y)
     {
         this.rect.Y = y;
-        this.OnPositionChanged();
+        this.OnIShouldUpdatePositionsOfMyChilds();
     }
 
     public void SetPositionY(int y, Align align)
@@ -259,38 +254,40 @@ public abstract class UI : IDraw
         ApplyPosition(pos.X, pos.Y);
     }
 
-    public void ApplyPosition(int x = 0, int y = 0)
+    protected void OnIShouldUpdatePositionsOfMyChilds()
     {
-        ApplyPosition(Bounds.TopLeft, x, y);
-    }
-
-    protected virtual void OnPositionChanged()
-    {
-
-    }
-
-    public void DrawChilds(in SpriteBatch batch)
-    {
-        if (Active)
+        foreach (UI c in childs)
         {
-            foreach (UI c in childs)
-            {
-                c.Draw(in batch);
-            }
+            c.OnParentPositionChanged();
         }
     }
 
-    public abstract void Draw(in SpriteBatch batch);
+    protected virtual void OnParentPositionChanged()
+    {
+        ApplyPosition(_lastPos, _lastx, _lasty);
+        this.OnIShouldUpdatePositionsOfMyChilds();
+    }
 
+    public virtual void Draw(in SpriteBatch batch)
+    {
+        foreach (UI c in childs)
+        {
+            c.Draw(in batch);
+        }
+    }
+
+    /// <summary>
+    /// barbar
+    /// </summary>
     public static void DrawRoot(in SpriteBatch batch)
     {
         screen.Draw(in batch);
     }
 }
 
-internal class Screen : UI
+public class Screen : UI
 {
-    internal Screen(int width, int height)
+    internal Screen(int width, int height) : base(width, height)
     {
         rect = new Rectangle(0, 0, width, height);
     }
@@ -304,15 +301,14 @@ internal class Screen : UI
         this.mousePos = mouse.Position;
     }
 
-
     internal override Point GetMousePos()
     {
         return mousePos;
     }
 
-    public override void Draw(in SpriteBatch batch)
+    protected override void OnParentPositionChanged()
     {
-        DrawChilds(in batch);
+        throw new System.Exception("I have no parent, i am the beginning of the universe");
     }
 }
    

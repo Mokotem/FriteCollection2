@@ -6,6 +6,7 @@ namespace FriteCollection2.UI;
 
 public class Panel : UI
 {
+    private const int padding = 8, padding2 = padding * 2;
     private readonly RenderTarget2D target, scroolTarget;
 
     public RenderTarget2D Target => scroolTarget;
@@ -17,10 +18,11 @@ public class Panel : UI
 
     public Panel(GraphicsDevice device, UI parent, Bounds pos, Extend ext, int height,
         int addWidth = 0, int addHeight = 0, int addx = 0, int addy = 0, float addLayer = 0)
-        : base(parent)
+        : base(parent, 0, 0)
     {
         this.Renderer._layer = parent.Depth - 0.01f + addLayer;
-        base.ApplyScale(ext, addWidth, addHeight);
+        base.Scale(ext);
+        AddScale(addWidth, addHeight);
         if (height < 2)
         {
             height = rect.Height - padding2;
@@ -74,9 +76,9 @@ public class Panel : UI
         }
     }
 
-    protected override void OnPositionChanged()
+    protected override void OnParentPositionChanged()
     {
-        base.OnPositionChanged();
+        base.OnParentPositionChanged();
         targetRect.X = rect.X + padding;
         targetRect.Y = rect.Y + padding;
     }
@@ -88,7 +90,7 @@ public class Panel : UI
             device.SetRenderTarget(scroolTarget);
             device.Clear(Color.Transparent);
             batch.Begin();
-            base.DrawChilds(in batch);
+            base.Draw(in batch);
             batch.End();
 
             device.SetRenderTarget(target);

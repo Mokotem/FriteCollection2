@@ -17,14 +17,14 @@ public class Text : UI
 
     private Bounds textAlign;
 
-    public Text(UI parent, string value, Bounds textAlign, byte taille = 8) : base(parent)
+    public Text(UI parent, string value, Bounds textAlign, byte taille = 8) : base(parent, 0, 0)
     {
         textRect = new Rectangle(0, 0, 0, 0);
         this.textAlign = textAlign;
         this.Renderer = new StringRenderer(value);
         this.Renderer.SetSize(taille);
         this.Renderer._layer = parent.Depth - 0.01f;
-        ApplyScale(Extend.Full);
+        Scale(Extend.Full);
     }
 
     public Text(string value, Bounds textAlign, byte taille = 8) : this(screen, value, textAlign, taille) { }
@@ -67,16 +67,10 @@ public class Text : UI
     public override int Top => textRect.Top;
     public override int Bottom => textRect.Bottom;
 
-    protected override void OnSizeChanged()
+    protected override void OnParentPositionChanged()
     {
-        ChangeText(Renderer.Text);
-        base.OnSizeChanged();
-    }
-
-    protected override void OnPositionChanged()
-    {
-        ChangeText(Renderer.Text);
-        base.OnPositionChanged();
+        base.OnParentPositionChanged();
+        textRect.Location = MakePosition(rect, textRect.Size, textAlign);
     }
 
     public override void Draw(in SpriteBatch batch)
