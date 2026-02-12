@@ -37,7 +37,20 @@ public abstract class UI : IDraw
         screen = new Screen(width, height);
     }
 
-    public bool Active;
+    private bool _active = true;
+    public bool Active
+    {
+        get => _active;
+        set
+        {
+            if (!_active && value)
+            {
+                ApplyPosition(_lastPos, _lastx, _lasty);
+            }
+            _active = value;
+        }
+    }
+
     protected readonly UI parent;
     protected Rectangle rect;
 
@@ -63,6 +76,21 @@ public abstract class UI : IDraw
 
     protected UI(UI parent, int width, int height)
     {
+#if DEBUG
+        if (parent is null)
+        {
+            if (width < 90 || width < 90)
+            {
+                throw new System.Exception("parent cannot be null");
+            }
+            else
+            {
+                childs = new List<UI>();
+                return;
+            }
+        }
+        
+#endif
         this.parent = parent;
         rect = new Rectangle(
             parent.ParentRect.X,
@@ -105,9 +133,11 @@ public abstract class UI : IDraw
 #if DEBUG
     private void _MakeSureIHaveNoChild()
     {
-        if (childs.Count > 0)
+        
+        foreach(UI c in childs)
         {
-            throw new System.Exception("tu tprends pour qui, can't change size if it has childs");
+            if (c.Active)
+                throw new System.Exception("tu tprends pour qui, can't change size if it has childs");
         }
     }
 #endif
@@ -120,21 +150,28 @@ public abstract class UI : IDraw
 #endif
         rect.Width += dx;
         rect.Height += dy;
+        this.OnMyScaleChange();
     }
     public void ScaleY(int height)
     {
+        if (height != rect.Height)
+        {
 #if DEBUG
-        _MakeSureIHaveNoChild();
+            _MakeSureIHaveNoChild();
 #endif
-        rect.Height = height;
+            rect.Height = height;
+        }
     }
 
     public void ScaleX(int width)
     {
+        if (width != rect.Width)
+        {
 #if DEBUG
-        _MakeSureIHaveNoChild();
+            _MakeSureIHaveNoChild();
 #endif
-        rect.Width = width;
+            rect.Width = width;
+        }
     }
 
     public void Scale(Extend ext, int width = 0, int height = 0)
@@ -142,28 +179,31 @@ public abstract class UI : IDraw
         ScaleX(width);
         ScaleY(height);
         _SetScale(ext);
+        this.OnMyScaleChange();
     }
 
     public void Scale(int width, int height)
     {
         ScaleX(width);
         ScaleY(height);
+        this.OnMyScaleChange();
     }
 
     public void Scale(int size)
     {
         ScaleX(size);
         ScaleY(size);
+        this.OnMyScaleChange();
     }
 
     protected static Point MakePosition(Rectangle parent, Point scale, Bounds pos, Bounds center)
     {
-        return BoundFunc.BoundToPoint(pos, parent.Width, parent.Height) - BoundFunc.BoundToPoint(center, scale.X, scale.Y);
+        return parent.Location + BoundFunc.BoundToPoint(pos, parent.Width, parent.Height) - BoundFunc.BoundToPoint(center, scale.X, scale.Y);
     }
 
     protected static Point MakePosition(Rectangle parent, Point scale, Bounds pos)
     {
-        return BoundFunc.BoundToPoint(pos, parent.Width, parent.Height) - BoundFunc.BoundToPoint(pos, scale.X, scale.Y);
+        return MakePosition(parent, scale, pos, pos);
     }
 
     public virtual int Bottom => rect.Bottom;
@@ -254,7 +294,7 @@ public abstract class UI : IDraw
         ApplyPosition(pos.X, pos.Y);
     }
 
-    protected void OnIShouldUpdatePositionsOfMyChilds()
+    protected virtual void OnIShouldUpdatePositionsOfMyChilds()
     {
         foreach (UI c in childs)
         {
@@ -266,6 +306,11 @@ public abstract class UI : IDraw
     {
         ApplyPosition(_lastPos, _lastx, _lasty);
         this.OnIShouldUpdatePositionsOfMyChilds();
+    }
+
+    protected virtual void OnMyScaleChange()
+    {
+
     }
 
     public virtual void Draw(in SpriteBatch batch)

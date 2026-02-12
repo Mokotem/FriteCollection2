@@ -22,6 +22,7 @@ public class Text : UI
         textRect = new Rectangle(0, 0, 0, 0);
         this.textAlign = textAlign;
         this.Renderer = new StringRenderer(value);
+        this.ChangeText(value);
         this.Renderer.SetSize(taille);
         this.Renderer._layer = parent.Depth - 0.01f;
         Scale(Extend.Full);
@@ -67,9 +68,21 @@ public class Text : UI
     public override int Top => textRect.Top;
     public override int Bottom => textRect.Bottom;
 
+
+    protected override void OnIShouldUpdatePositionsOfMyChilds()
+    {
+        base.OnIShouldUpdatePositionsOfMyChilds();
+        textRect.Location = MakePosition(rect, textRect.Size, textAlign);
+    }
+
     protected override void OnParentPositionChanged()
     {
         base.OnParentPositionChanged();
+        textRect.Location = MakePosition(rect, textRect.Size, textAlign);
+    }
+
+    protected override void OnMyScaleChange()
+    {
         textRect.Location = MakePosition(rect, textRect.Size, textAlign);
     }
 
