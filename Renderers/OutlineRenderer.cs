@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
+using FriteCollection2.UI;
 
 namespace FriteCollection2;
 
@@ -41,25 +42,32 @@ public class OutlineRenderer : TextureRenderer
         set => _oolayer = ToLayer(value);
     }
 
-    public OutlineRenderer() : base()
+    public OutlineRenderer(UI.UI parent) : base(parent)
     {
         _oolayer = _olayer;
         this.OutlineColor = _default;
     }
 
-    public OutlineRenderer(Texture2D texture, Color outline) : base()
+
+    public OutlineRenderer(short layer) : base(layer)
+    {
+        _oolayer = _olayer;
+        this.OutlineColor = _default;
+    }
+
+    public OutlineRenderer(UI.UI parent, Texture2D texture, Color outline) : base(parent)
     {
         this.OutlineColor = outline;
         _oolayer = _olayer;
     }
 
-    public OutlineRenderer(Texture2D texture) : base(texture)
+    public OutlineRenderer(UI.UI parent, Texture2D texture) : base(parent, texture)
     {
         this.OutlineColor = _default;
         _oolayer = _olayer;
     }
 
-    public OutlineRenderer(Color color) : base(color)
+    public OutlineRenderer(UI.UI parent, Color color) : base(parent, color)
     {
         this.OutlineColor = _default;
         _oolayer = _olayer;

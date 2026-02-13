@@ -46,14 +46,22 @@ public abstract class Renderer
         set => _layer = ToLayer(value);
     }
 
-    public Renderer()
+    public Renderer(short layer)
     {
         Color = _defaultColor;
+        this._layer = ToLayer(layer);
     }
 
-    public Renderer(Color color)
+    public Renderer(UI.UI parent)
+    {
+        Color = _defaultColor;
+        this._layer = parent.Depth - 0.0001f;
+    }
+
+    public Renderer(UI.UI parent, Color color)
     {
         this.Color = color;
+        this._layer = parent.Depth - 0.0001f;
     }
 }
 
@@ -76,27 +84,32 @@ public class TextureRenderer : Renderer
     public int Width => Texture.Width;
     public int Height => Texture.Height;
 
-    public TextureRenderer() : base()
+    public TextureRenderer(UI.UI parent) : base(parent)
     {
         Texture = _defaultTexture;
     }
 
-    public TextureRenderer(Texture2D texture) : base()
-    {
-        Texture = texture;
-    }
-
-    public TextureRenderer(Color color) : base(color)
+    public TextureRenderer(short layer) : base(layer)
     {
         Texture = _defaultTexture;
     }
 
-    public TextureRenderer(Texture2D texture, Color color) : base(color)
+    public TextureRenderer(UI.UI parent, Texture2D texture) : base(parent)
     {
         Texture = texture;
     }
 
-    public TextureRenderer(Color color, Texture2D texture) : this(texture, color) { }
+    public TextureRenderer(UI.UI parent, Color color) : base(parent, color)
+    {
+        Texture = _defaultTexture;
+    }
+
+    public TextureRenderer(UI.UI parent, Texture2D texture, Color color) : base(parent, color)
+    {
+        Texture = texture;
+    }
+
+    public TextureRenderer(UI.UI parent, Color color, Texture2D texture) : this(parent, texture, color) { }
 
     public virtual void Draw(in SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation, Color c)
     {
@@ -178,7 +191,7 @@ public class StringRenderer : Renderer
         {
             if (value.Length < 2)
             {
-                return new Point(Aspect.X, Aspect.Y - 2);
+                return new Point(Aspect.X - 1, Aspect.Y - 4);
             }
 
             Point result = new Point(1, 1);
@@ -202,7 +215,7 @@ public class StringRenderer : Renderer
                 }
                 i++;
             }
-            return new Point(result.X * fw, result.Y * fh);
+            return new Point(result.X * fw - 1, (result.Y * fh) - 4);
         }
         else
         {
@@ -309,53 +322,53 @@ public class StringRenderer : Renderer
         _scalefactor = value / baseScale;
     }
 
-    public StringRenderer() : base(StringRenderer._defaultColor)
+    public StringRenderer(UI.UI parent) : base(parent, StringRenderer._defaultColor)
     {
         Text = string.Empty;
         font = _font;
         OutlineColor = OutlineRenderer._default;
     }
 
-    public StringRenderer(string text) : this()
+    public StringRenderer(UI.UI parent, string text) : this(parent)
     {
         Text = text;
     }
 
-    public StringRenderer(Color color) : base(color)
+    public StringRenderer(UI.UI parent, Color color) : base(parent, color)
     {
         Text = string.Empty;
         font = _font;
         OutlineColor = OutlineRenderer._default;
     }
 
-    public StringRenderer(string text, Color color) : this(color)
+    public StringRenderer(UI.UI parent, string text, Color color) : this(parent, color)
     {
         Text = text;
     }
 
-    public StringRenderer(Color color, string text) : this(text, color) { }
+    public StringRenderer(UI.UI parent, Color color, string text) : this(parent, text, color) { }
 
-    public StringRenderer(SpriteFont font) : base()
+    public StringRenderer(UI.UI parent, SpriteFont font) : base(parent)
     {
         Text = string.Empty;
         this.font = font;
     }
 
-    public StringRenderer(SpriteFont font, string text) : base()
+    public StringRenderer(UI.UI parent, SpriteFont font, string text) : base(parent)
     {
         Text = text;
         this.font = font;
         OutlineColor = OutlineRenderer._default;
     }
 
-    public StringRenderer(SpriteFont font, Color color) : base(color)
+    public StringRenderer(UI.UI parent, SpriteFont font, Color color) : base(parent, color)
     {
         Text = string.Empty;
         this.font = font;
         OutlineColor = OutlineRenderer._default;
     }
 
-    public StringRenderer(SpriteFont font, string text, Color color) : base(color)
+    public StringRenderer(UI.UI parent, SpriteFont font, string text, Color color) : base(parent, color)
     {
         Text = text;
         this.font = font;

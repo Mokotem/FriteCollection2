@@ -104,22 +104,22 @@ public interface IExecutable : IDraw
 public abstract class AdvancedExecutable : IExecutable, IDrawUI, IDisposable
 {
     private static ushort currentId = 0;
-    public readonly ushort id;
+    public readonly ushort exe_id;
 
     protected AdvancedExecutable()
     {
-        this.id = currentId;
+        this.exe_id = currentId;
         currentId++;
     }
 
     protected AdvancedExecutable(ushort id)
     {
-        this.id = id;
+        this.exe_id = id;
     }
 
     public override int GetHashCode()
     {
-        return id;
+        return exe_id;
     }
 
     public override bool Equals(object obj)

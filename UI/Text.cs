@@ -21,11 +21,11 @@ public class Text : UI
     {
         textRect = new Rectangle(0, 0, 0, 0);
         this.textAlign = textAlign;
-        this.Renderer = new StringRenderer(value);
+        this.Renderer = new StringRenderer(parent, value);
         this.ChangeText(value);
         this.Renderer.SetSize(taille);
         this.Renderer._layer = parent.Depth - 0.01f;
-        Scale(Extend.Full);
+        Scale(Extend.None);
     }
 
     public Text(string value, Bounds textAlign, byte taille = 8) : this(screen, value, textAlign, taille) { }
@@ -36,14 +36,15 @@ public class Text : UI
 
     public override float Depth => Renderer._layer;
 
+    public int TextWidth => textRect.Width;
+
     public void ChangeText(string value)
     {
         this.Renderer.Text = value;
         Vector2 taille = StringRenderer.Evaluate(value).ToVector2();
         textRect.Width = (int)float.Round(taille.X * Renderer.ScaleFactor);
         textRect.Height = (int)float.Round(taille.Y * Renderer.ScaleFactor);
-        textRect.Location = MakePosition(rect, textRect.Size, textAlign);
-        textRect.Y -= 2;
+        this.OnMyScaleChange();
     }
 
     public string Edit
@@ -60,9 +61,6 @@ public class Text : UI
         }
     }
 
-    public int TextHeight => 0;
-    public int TextWidth => 30;
-
     public override int Left => textRect.Left;
     public override int Right => textRect.Right;
     public override int Top => textRect.Top;
@@ -72,18 +70,19 @@ public class Text : UI
     protected override void OnIShouldUpdatePositionsOfMyChilds()
     {
         base.OnIShouldUpdatePositionsOfMyChilds();
-        textRect.Location = MakePosition(rect, textRect.Size, textAlign);
+        this.OnMyScaleChange();
     }
 
     protected override void OnParentPositionChanged()
     {
         base.OnParentPositionChanged();
-        textRect.Location = MakePosition(rect, textRect.Size, textAlign);
+        this.OnMyScaleChange();
     }
 
-    protected override void OnMyScaleChange()
+    protected sealed override void OnMyScaleChange()
     {
         textRect.Location = MakePosition(rect, textRect.Size, textAlign);
+        textRect.Y -= 2;
     }
 
     public override void Draw(in SpriteBatch batch)

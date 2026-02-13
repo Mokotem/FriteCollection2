@@ -39,7 +39,7 @@ public class Text : Renderer, IDraw
         Position.Y -= (int)float.Round(_scale.Y / 2f);
     }
 
-    public Text(string value)
+    public Text(string value) : base(0)
     {
         this.text = value;
         this._scale = StringRenderer.Evaluate(value);

@@ -36,7 +36,7 @@ public class Panel : UI
         rectForChilds = new Rectangle(0, 0, target.Width, target.Height);
 
         float c = 1f - (Renderer._layer * 8);
-        this.Renderer = new TextureRenderer(new Color(c, c, c));
+        this.Renderer = new TextureRenderer(parent, new Color(c, c, c));
     }
 
     public Panel(GraphicsDevice device, UI parent, Bounds pos, Extend ext,

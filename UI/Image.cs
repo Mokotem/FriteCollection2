@@ -11,7 +11,7 @@ public class Image : UI
 
     public Image(UI parent, Texture2D texture, int width, int height) : base(parent, width, height)
     {
-        this.Renderer = new OutlineRenderer(texture);
+        this.Renderer = new OutlineRenderer(parent, texture);
         this.Renderer._layer = parent.Depth - 0.01f;
         this.Renderer.Color = Color.White;
     }

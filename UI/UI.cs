@@ -269,7 +269,7 @@ public abstract class UI : IDraw
 
     public void SetPositionX(int x, Align align)
     {
-        this.SetPositionX(x - BoundFunc.AlignToInt(align, rect.Width));
+        this.SetPositionX(parent.ParentRect.X + x - BoundFunc.AlignToInt(align, rect.Width));
     }
 
     public int PositionY
@@ -286,7 +286,7 @@ public abstract class UI : IDraw
 
     public void SetPositionY(int y, Align align)
     {
-        this.SetPositionX(y - BoundFunc.AlignToInt(align, rect.Height));
+        this.SetPositionY(parent.ParentRect.Y + y - BoundFunc.AlignToInt(align, rect.Height));
     }
 
     public void ApplyPosition(Point pos)

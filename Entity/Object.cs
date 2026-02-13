@@ -12,7 +12,7 @@ public class Object : Space, IDraw
 
     public Object() : base()
     {
-        Renderer = new OutlineRenderer();
+        Renderer = new OutlineRenderer(0);
     }
 
     public Object(Texture2D texture) : base(texture)
@@ -22,7 +22,7 @@ public class Object : Space, IDraw
 
     public Object(int width, int height) : base(width, height)
     {
-        Renderer = new OutlineRenderer();
+        Renderer = new OutlineRenderer(0);
     }
 
     public void DrawBody(in SpriteBatch batch)
