@@ -38,7 +38,7 @@ public abstract class UI : IDraw
     }
 
     private bool _active = true;
-    public bool Active
+    public virtual bool Active
     {
         get => _active;
         set
@@ -99,7 +99,7 @@ public abstract class UI : IDraw
             height);
 
         childs = new List<UI>();
-        Active = true;
+        _active = true;
         parent.childs.Add(this);
 
         _lastPos = Bounds.TopLeft;
@@ -116,6 +116,11 @@ public abstract class UI : IDraw
     protected UI(Extend extend, int width = 0, int height = 0) : this(screen, extend, width, height) { }
 
     private List<UI> childs;
+
+    protected void ClearChilds()
+    {
+        childs.Clear();
+    }
 
     private void _SetScale(Extend ext)
     {
@@ -230,6 +235,26 @@ public abstract class UI : IDraw
         this.OnIShouldUpdatePositionsOfMyChilds();
     }
 
+    public void ApplyPositionX(int dx = 0)
+    {
+        _lastx = dx;
+
+        rect.X = parent.ParentRect.X + BoundFunc.AlignToInt(BoundFunc.BoundsToAlignX(_lastPos), parent.ParentRect.Width)
+            - BoundFunc.AlignToInt(BoundFunc.BoundsToAlignX(_lastCenter), rect.Width);
+        rect.X += dx;
+        this.OnIShouldUpdatePositionsOfMyChilds();
+    }
+
+    public void ApplyPositionY(int dy = 0)
+    {
+        _lasty = dy;
+
+        rect.Y = parent.ParentRect.Y + BoundFunc.AlignToInt(BoundFunc.BoundsToAlignY(_lastPos), parent.ParentRect.Height)
+            - BoundFunc.AlignToInt(BoundFunc.BoundsToAlignY(_lastCenter), rect.Height);
+        rect.Y += dy;
+        this.OnIShouldUpdatePositionsOfMyChilds();
+    }
+
     public void ApplyPosition(Bounds pos, int dx = 0, int dy = 0)
     {
         this.ApplyPosition(pos, pos, dx, dy);
@@ -304,7 +329,7 @@ public abstract class UI : IDraw
 
     protected virtual void OnParentPositionChanged()
     {
-        ApplyPosition(_lastPos, _lastx, _lasty);
+        ApplyPosition(_lastPos, _lastCenter, _lastx, _lasty);
         this.OnIShouldUpdatePositionsOfMyChilds();
     }
 

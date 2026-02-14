@@ -66,5 +66,25 @@ public static class BoundFunc
         };
     }
 
+    public static Align BoundsToAlignX(Bounds bound)
+    {
+        return bound switch
+        {
+            Bounds.TopLeft or Bounds.Left or Bounds.BottomLeft => Align.Left,
+            Bounds.Top or Bounds.Center or Bounds.Bottom => Align.Center,
+            _ => Align.Right,
+        };
+    }
+
+    public static Align BoundsToAlignY(Bounds bound)
+    {
+        return bound switch
+        {
+            Bounds.Top or Bounds.TopLeft or Bounds.TopRight => Align.Left,
+            Bounds.Left or Bounds.Center or Bounds.Right => Align.Center,
+            _ => Align.Right,
+        };
+    }
+
     private static int rounds2(float value) => (int)float.Round(value / 2f);
 }

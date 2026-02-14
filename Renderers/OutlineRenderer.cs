@@ -22,11 +22,11 @@ public class OutlineRenderer : TextureRenderer
 
     internal static Color _default;
 
-    internal static float _olayer;
+    internal static float _defaultolayer;
     public static short DefaultOutlineLayer
     {
-        get => FromLayer(_olayer);
-        set => _olayer = ToLayer(value);
+        get => FromLayer(_defaultolayer);
+        set => _defaultolayer = ToLayer(value);
     }
 
     public static void SetDefault(Color value)
@@ -42,35 +42,40 @@ public class OutlineRenderer : TextureRenderer
         set => _oolayer = ToLayer(value);
     }
 
+    public void StickOutline()
+    {
+        this._oolayer = _layer + 0.0001f;
+    }
+
     public OutlineRenderer(UI.UI parent) : base(parent)
     {
-        _oolayer = _olayer;
+        _oolayer = _defaultolayer;
         this.OutlineColor = _default;
     }
 
 
     public OutlineRenderer(short layer) : base(layer)
     {
-        _oolayer = _olayer;
+        _oolayer = _defaultolayer;
         this.OutlineColor = _default;
     }
 
     public OutlineRenderer(UI.UI parent, Texture2D texture, Color outline) : base(parent)
     {
         this.OutlineColor = outline;
-        _oolayer = _olayer;
+        _oolayer = _defaultolayer;
     }
 
     public OutlineRenderer(UI.UI parent, Texture2D texture) : base(parent, texture)
     {
         this.OutlineColor = _default;
-        _oolayer = _olayer;
+        _oolayer = _defaultolayer;
     }
 
     public OutlineRenderer(UI.UI parent, Color color) : base(parent, color)
     {
         this.OutlineColor = _default;
-        _oolayer = _olayer;
+        _oolayer = _defaultolayer;
     }
 
     public Color OutlineColor;
@@ -94,6 +99,11 @@ public class OutlineRenderer : TextureRenderer
     public void DrawOutline(in SpriteBatch batch, Rectangle rectangle, Color c, float layer)
     {
         this.DrawOutline(in batch, rectangle, Vector2.Zero, 0f, c, layer);
+    }
+
+    public void DrawOutline(in SpriteBatch batch, Rectangle rectangle, Color c)
+    {
+        this.DrawOutline(in batch, rectangle, Vector2.Zero, 0f, c, _layer);
     }
 
     public void DrawBody(in SpriteBatch batch, Rectangle rectangle)
