@@ -55,13 +55,13 @@ public abstract class Renderer
     public Renderer(UI.UI parent)
     {
         Color = _defaultColor;
-        this._layer = parent.Depth - 0.0001f;
+        this._layer = parent.Depth - 0.001f;
     }
 
     public Renderer(UI.UI parent, Color color)
     {
         this.Color = color;
-        this._layer = parent.Depth - 0.0001f;
+        this._layer = parent.Depth - 0.001f;
     }
 }
 
@@ -185,7 +185,7 @@ public class StringRenderer : Renderer
         SetOffset(offset.X, offset.Y);
     }
 
-    public static Point Evaluate(string value, char[] echaps)
+    public static Point Evaluate(string value, char[] echaps, float _scale)
     {
         if (hasAspect)
         {
@@ -220,12 +220,12 @@ public class StringRenderer : Renderer
         else
         {
             Vector2 scale = _font.MeasureString(value);
-            return new Point((int)float.Round(scale.X), (int)float.Round(scale.Y));
+            return new Point((int)float.Round(scale.X * _scale), (int)float.Round(scale.Y * _scale));
         }
     }
-    public static Point Evaluate(string value)
+    public static Point Evaluate(string value, float scale = 1f)
     {
-        return Evaluate(value, Array.Empty<char>());
+        return Evaluate(value, Array.Empty<char>(), scale);
     }
 
     public static string Format(string value, bool sl, char[] echapements,
@@ -235,13 +235,6 @@ public class StringRenderer : Renderer
         out ushort exedent,
         out int textWidth)
     {
-#if DEBUG
-        if (!hasAspect)
-        {
-            throw new System.Exception("aaaa");
-        }
-#endif
-
         string result = "";
         string[] words = value.Split(' ');
 
@@ -249,36 +242,74 @@ public class StringRenderer : Renderer
         lineNumber = 1;
         textWidth = 0;
 
-        for (int i = 0; i < words.Length; i++)
+        if (hasAspect)
         {
-            int taille = LetterCount(words[i], echapements);
-            line += taille * fw;
-            if (line == box.X)
+            for (int i = 0; i < words.Length; i++)
             {
-                result += words[i] + "\n";
-                line = 0;
-                lineNumber++;
-            }
-            else if (line > box.X)
-            {
-                result += "\n" + words[i];
-                line = taille;
-                lineNumber++;
-            }
-            else
-            {
-                result += words[i] + " ";
-            }
+                int taille = LetterCount(words[i], echapements);
+                line += taille * fw;
+                if (line == box.X)
+                {
+                    result += words[i] + "\n";
+                    line = 0;
+                    lineNumber++;
+                }
+                else if (line > box.X)
+                {
+                    result += "\n" + words[i];
+                    line = taille;
+                    lineNumber++;
+                }
+                else
+                {
+                    result += words[i] + " ";
+                }
 
-            if (line > textWidth)
-            {
-                textWidth = line;
-            }
+                if (line > textWidth)
+                {
+                    textWidth = line;
+                }
 
-            if (lineNumber > maxLine)
+                if (lineNumber > maxLine)
+                {
+                    exedent = (ushort)taille;
+                    return result;
+                }
+            }
+        }
+        else
+        {
+            for (int i = 0; i < words.Length; i++)
             {
-                exedent = (ushort)taille;
-                return result;
+                Vector2 asp = _font.MeasureString(words[i]);
+                line += (int)float.Ceiling(asp.X);
+                if (line == box.X)
+                {
+                    result += words[i] + "\n";
+                    line = 0;
+                    lineNumber++;
+                }
+                else if (line > box.X)
+                {
+                    result += "\n" + words[i];
+                    line = (int)float.Ceiling(asp.X);
+                    lineNumber++;
+                }
+                else
+                {
+                    result += words[i] + " ";
+                }
+
+                if (line > textWidth)
+                {
+                    textWidth = line;
+                }
+
+                if (lineNumber > maxLine)
+                {
+                    exedent = (ushort)float.Ceiling(asp.X);
+                    return result;
+                }
             }
         }
 

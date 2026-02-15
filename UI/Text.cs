@@ -17,33 +17,32 @@ public class Text : UI
 
     private Bounds textAlign;
 
-    public Text(UI parent, string value, Bounds textAlign, byte taille = 8) : base(parent, 0, 0)
+    public Text(UI parent, string value, Bounds textAlign, byte taille = 12) : base(parent, 0, 0)
     {
         textRect = new Rectangle(0, 0, 0, 0);
         this.textAlign = textAlign;
         this.Renderer = new StringRenderer(parent, value);
-        this.ChangeText(value);
         this.Renderer.SetSize(taille);
+        this.ChangeText(value);
         this.Renderer._layer = parent.Depth - 0.01f;
         Scale(Extend.None);
     }
 
-    public Text(string value, Bounds textAlign, byte taille = 8) : this(screen, value, textAlign, taille) { }
+    public Text(string value, Bounds textAlign, byte taille = 12) : this(screen, value, textAlign, taille) { }
 
-    public Text(UI parent, string value, byte taille = 8) : this(parent, value, Bounds.TopLeft, taille) { }
+    public Text(UI parent, string value, byte taille = 12) : this(parent, value, Bounds.TopLeft, taille) { }
 
-    public Text(string value, byte taille = 8) : this(screen, value, taille) { }
+    public Text(string value, byte taille = 12) : this(screen, value, taille) { }
 
     public override float Depth => Renderer._layer;
 
     public int TextWidth => textRect.Width;
+    public int TextHeight => textRect.Height;
 
     public void ChangeText(string value)
     {
         this.Renderer.Text = value;
-        Vector2 taille = StringRenderer.Evaluate(value).ToVector2();
-        textRect.Width = (int)float.Round(taille.X * Renderer.ScaleFactor);
-        textRect.Height = (int)float.Round(taille.Y * Renderer.ScaleFactor);
+        textRect.Size = StringRenderer.Evaluate(value, Renderer.ScaleFactor);
         this.OnMyScaleChange();
     }
 

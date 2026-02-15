@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using System;
 
@@ -37,36 +38,36 @@ public class Toggle : Button
         this.bgColor.A = 255;
     }
 
-    public override void Update(bool mouseHold, bool isMouseOn, bool active)
+    public override void Update(bool mouseHold, bool isMouseOn, bool active, KeyboardState kb, KeyboardState pkb)
     {
         this.SetColor(0.9f);
         outlineThickness = 2;
+
+        UpdateCtrl(out bool sh, out bool so, kb, pkb);
+
         if (active && this.Active)
         {
-            if (active && InRange())
+            if (active && (ctrl || InRange()))
             {
                 outlineThickness = 1;
                 this.SetColor(0.95f);
 
-                if (mouseHold)
+                if (mouseHold || sh)
                 {
                     this.SetColor(0.8f);
                 }
-                else
+                else if (isMouseOn || so)
                 {
-                    if (isMouseOn)
+                    Function();
+                    if (_on)
                     {
-                        Function();
-                        if (_on)
-                        {
-                            _on = false;
-                            OnDisable();
-                        }
-                        else
-                        {
-                            _on = true;
-                            OnEnable();
-                        }
+                        _on = false;
+                        OnDisable();
+                    }
+                    else
+                    {
+                        _on = true;
+                        OnEnable();
                     }
                 }
             }

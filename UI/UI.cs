@@ -69,6 +69,9 @@ public abstract class UI : IDraw
 
     internal virtual bool IsMouseOn => parent.IsMouseOn;
 
+    private byte _parentCount;
+    public byte ParentCount => _parentCount;
+
     internal virtual Point GetMousePos()
     {
         return parent.GetMousePos();
@@ -79,6 +82,7 @@ public abstract class UI : IDraw
 #if DEBUG
         if (parent is null)
         {
+            _parentCount = 0;
             if (width < 90 || width < 90)
             {
                 throw new System.Exception("parent cannot be null");
@@ -92,6 +96,10 @@ public abstract class UI : IDraw
         
 #endif
         this.parent = parent;
+
+        this._parentCount = parent._parentCount;
+        this._parentCount++;
+
         rect = new Rectangle(
             parent.ParentRect.X,
             parent.ParentRect.Y,
@@ -338,11 +346,25 @@ public abstract class UI : IDraw
 
     }
 
-    public virtual void Draw(in SpriteBatch batch)
+    public void DrawChilds(in SpriteBatch batch)
     {
         foreach (UI c in childs)
         {
             c.Draw(in batch);
+        }
+    }
+
+    public virtual void Draw(in SpriteBatch batch)
+    {
+        DrawChilds(in batch);
+    }
+
+    public void FlexChildsHorizontal(int margin = 2)
+    {
+        childs[0].SetPositionX(this.ParentRect.X, Align.Left);
+        for(int i = 1; i < childs.Count; i++)
+        {
+            childs[i].SetPositionX(childs[i - 1].Right + margin);
         }
     }
 
