@@ -16,6 +16,8 @@ public class Panel : UI
     public readonly TextureRenderer Renderer;
     private int scrollValue;
 
+    public SamplerState sampler;
+
     public Panel(GraphicsDevice device, UI parent, Bounds pos, Extend ext, int height,
         int addWidth = 0, int addHeight = 0, int addx = 0, int addy = 0, float addLayer = 0)
         : base(parent, 0, 0)
@@ -37,6 +39,7 @@ public class Panel : UI
 
         int c = 255 - (ParentCount * 24);
         this.Renderer.Color = new Color(c, c, c, 255);
+        sampler = SamplerState.LinearWrap;
     }
 
     public Panel(GraphicsDevice device, UI parent, Bounds pos, Extend ext,
@@ -76,6 +79,13 @@ public class Panel : UI
         }
     }
 
+    protected override void OnIShouldUpdatePositionsOfMyChilds()
+    {
+        base.OnIShouldUpdatePositionsOfMyChilds();
+        targetRect.X = rect.X + padding;
+        targetRect.Y = rect.Y + padding;
+    }
+
     protected override void OnParentPositionChanged()
     {
         base.OnParentPositionChanged();
@@ -87,7 +97,7 @@ public class Panel : UI
     {
         device.SetRenderTarget(scroolTarget);
         device.Clear(Color.Transparent);
-        batch.Begin();
+        batch.Begin(samplerState: sampler);
         base.Draw(in batch);
         batch.End();
     }
@@ -105,7 +115,7 @@ public class Panel : UI
     {
         device.SetRenderTarget(target);
         device.Clear(Color.Transparent);
-        batch.Begin();
+        batch.Begin(samplerState: sampler);
         batch.Draw(scroolTarget, new Rectangle(0, -scrollValue, scroolTarget.Width, scroolTarget.Height), Color.White);
         batch.End();
     }

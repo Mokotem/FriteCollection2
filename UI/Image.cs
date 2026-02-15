@@ -23,6 +23,31 @@ public class Image : UI
     public Image(Texture2D texture, int width, int height) : this(screen, texture, width, height) { }
     public Image(int width, int height) : this(screen, TextureRenderer.Default, width, height) { }
 
+    public void ApplyOriginalSize(Rectangle parent)
+    {
+        int y = Renderer.Width * parent.Height; // 16
+        int x = Renderer.Height * parent.Width; // 60
+
+        bool fullOnY = x > y;
+
+        if (fullOnY)
+        {
+            rect.Y = parent.Y;
+            rect.Height = parent.Height;
+
+            rect.Width = y / Renderer.Height;
+            rect.X = parent.X + ((parent.Width - rect.Width) / 2);
+        }
+        else
+        {
+            rect.X = parent.X;
+            rect.Width = parent.Width;
+
+            rect.Height = x / Renderer.Width;
+            rect.Y = parent.Y + ((parent.Height - rect.Height) / 2);
+        }
+    }
+
     public Texture2D Edit
     {
         get => Renderer.Texture;

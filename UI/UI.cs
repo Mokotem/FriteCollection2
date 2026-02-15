@@ -79,7 +79,6 @@ public abstract class UI : IDraw
 
     protected UI(UI parent, int width, int height)
     {
-#if DEBUG
         if (parent is null)
         {
             _parentCount = 0;
@@ -94,7 +93,6 @@ public abstract class UI : IDraw
             }
         }
         
-#endif
         this.parent = parent;
 
         this._parentCount = parent._parentCount;
@@ -125,7 +123,7 @@ public abstract class UI : IDraw
 
     private List<UI> childs;
 
-    protected void ClearChilds()
+    public void ClearChilds()
     {
         childs.Clear();
     }
@@ -365,6 +363,18 @@ public abstract class UI : IDraw
         for(int i = 1; i < childs.Count; i++)
         {
             childs[i].SetPositionX(childs[i - 1].Right + margin);
+        }
+    }
+
+    public void FlexChildsVertical(int margin = 2)
+    {
+        if (childs.Count > 0)
+        {
+            childs[0].SetPositionY(this.ParentRect.Y, Align.Left);
+            for (int i = 1; i < childs.Count; i++)
+            {
+                childs[i].SetPositionY(childs[i - 1].Bottom + margin);
+            }
         }
     }
 
