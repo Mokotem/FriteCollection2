@@ -47,7 +47,13 @@ public abstract class UI : IDraw
             {
                 ApplyPosition(_lastPos, _lastx, _lasty);
             }
+
             _active = value;
+
+            foreach (UI c in childs)
+            {
+                c.Active = value;
+            }
         }
     }
 

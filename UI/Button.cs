@@ -85,27 +85,30 @@ public class Button : Text
 
     public virtual void Update(bool mouseHold, bool isMouseOn, bool active, KeyboardState kb, KeyboardState pkb)
     {
-        bgColor = new Color(0.9f, 0.9f, 0.9f);
-
-        if (Enabled)
+        if (this.Active)
         {
-            outlineThickness = 2;
+            bgColor = new Color(0.9f, 0.9f, 0.9f);
 
-            UpdateCtrl(out bool sh, out bool so, kb, pkb);
-
-            if (active && this.Active)
+            if (Enabled)
             {
-                if (active && (ctrl || InRange()))
+                outlineThickness = 2;
+
+                UpdateCtrl(out bool sh, out bool so, kb, pkb);
+
+                if (active)
                 {
-                    outlineThickness = 1;
-                    bgColor = new Color(0.9f, 0.95f, 1f);
-                    if (mouseHold || sh)
+                    if (active && (ctrl || InRange()))
                     {
-                        bgColor = new Color(0.8f, 0.9f, 1f);
-                    }
-                    else if (isMouseOn || so)
-                    {
-                        Function();
+                        outlineThickness = 1;
+                        bgColor = new Color(0.9f, 0.95f, 1f);
+                        if (mouseHold || sh)
+                        {
+                            bgColor = new Color(0.8f, 0.9f, 1f);
+                        }
+                        else if (isMouseOn || so)
+                        {
+                            Function();
+                        }
                     }
                 }
             }
