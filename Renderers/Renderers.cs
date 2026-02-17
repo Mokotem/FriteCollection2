@@ -142,7 +142,7 @@ public class TextureRenderer : Renderer
 
 public class StringRenderer : Renderer
 {
-    private static Color _defaultColor = Color.White;
+    private static new Color _defaultColor = Color.White;
     public new static void SetDefaultColor(Color value)
     {
         _defaultColor = value;
