@@ -78,7 +78,7 @@ public abstract class UI : IDraw
     private byte _parentCount;
     public byte ParentCount => _parentCount;
 
-    internal virtual Point GetMousePos()
+    public virtual Point GetMousePos()
     {
         return parent.GetMousePos();
     }
@@ -358,6 +358,12 @@ public abstract class UI : IDraw
         }
     }
 
+    public void AddBackMyChild(UI value)
+    {
+        if (value.parent == this)
+            this.childs.Add(value);
+    }
+
     public virtual void Draw(in SpriteBatch batch)
     {
         DrawChilds(in batch);
@@ -409,7 +415,7 @@ public class Screen : UI
         this.mousePos = mouse.Position;
     }
 
-    internal override Point GetMousePos()
+    public override Point GetMousePos()
     {
         return mousePos;
     }

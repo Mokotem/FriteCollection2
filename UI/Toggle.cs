@@ -41,33 +41,37 @@ public class Toggle : Button
     public override void Update(bool mouseHold, bool isMouseOn, bool active, KeyboardState kb, KeyboardState pkb)
     {
         this.SetColor(0.9f);
+
         outlineThickness = 2;
 
+        if (Enabled)
+        {
         UpdateCtrl(out bool sh, out bool so, kb, pkb);
 
-        if (active && this.Active)
-        {
-            if (active && (ctrl || InRange()))
+            if (active && this.Active)
             {
-                outlineThickness = 1;
-                this.SetColor(0.95f);
+                if (active && (ctrl || InRange()))
+                {
+                    outlineThickness = 1;
+                    this.SetColor(0.95f);
 
-                if (mouseHold || sh)
-                {
-                    this.SetColor(0.8f);
-                }
-                else if (isMouseOn || so)
-                {
-                    Function();
-                    if (_on)
+                    if (mouseHold || sh)
                     {
-                        _on = false;
-                        OnDisable();
+                        this.SetColor(0.8f);
                     }
-                    else
+                    else if (isMouseOn || so)
                     {
-                        _on = true;
-                        OnEnable();
+                        Function();
+                        if (_on)
+                        {
+                            _on = false;
+                            OnDisable();
+                        }
+                        else
+                        {
+                            _on = true;
+                            OnEnable();
+                        }
                     }
                 }
             }

@@ -18,6 +18,12 @@ public class Panel : UI
 
     public SamplerState sampler;
 
+    private int maxScrool;
+    public void SetMaxHeight(int value)
+    {
+        this.maxScrool = value - target.Height;
+    }
+
     public Panel(GraphicsDevice device, UI parent, Bounds pos, Extend ext, int height,
         int addWidth = 0, int addHeight = 0, int addx = 0, int addy = 0, float addLayer = 0)
         : base(parent, 0, 0)
@@ -40,6 +46,7 @@ public class Panel : UI
         int c = 255 - (ParentCount * 24);
         this.Renderer.Color = new Color(c, c, c, 255);
         sampler = SamplerState.LinearWrap;
+        this.SetMaxHeight(height);
     }
 
     public Panel(GraphicsDevice device, UI parent, Bounds pos, Extend ext,
@@ -58,7 +65,7 @@ public class Panel : UI
     protected internal override Rectangle ParentRect => rectForChilds;
     public override float Depth => Renderer._layer;
 
-    internal override Point GetMousePos()
+    public override Point GetMousePos()
     {
         Point result = parent.GetMousePos();
         result.X -= targetRect.X;
@@ -68,10 +75,10 @@ public class Panel : UI
 
     public void Update(int value)
     {
-        scrollValue += value;
-        if (scrollValue > scroolTarget.Height - target.Height)
+        scrollValue -= value;
+        if (scrollValue > maxScrool)
         {
-            scrollValue = scroolTarget.Height - target.Height;
+            scrollValue = maxScrool;
         }
         if (scrollValue < 0)
         {
@@ -102,7 +109,7 @@ public class Panel : UI
         batch.End();
     }
 
-    public void DrawTarget(GraphicsDevice device, in SpriteBatch batch)
+    public virtual void DrawTarget(GraphicsDevice device, in SpriteBatch batch)
     {
         if (Active)
         {

@@ -115,6 +115,8 @@ public class Button : Text
         }
     }
 
+    public Color OutlineColor = new Color(0f, 0.5f, 1f);
+
     public override void Draw(in SpriteBatch batch)
     {
         if (Active)
@@ -122,15 +124,19 @@ public class Button : Text
             if (Enabled)
             {
                 batch.Draw(TextureRenderer.Default,
-                    new Rectangle(rect.X + 3, rect.Y + 3, rect.Width - 6, rect.Height - 6), bgColor * BackColor);
-                batch.DrawRectangle(rect.ToRectangleF(), new Color(0f, 0.5f, 1f), outlineThickness, Renderer._layer);
+                    new Rectangle(rect.X + 3, rect.Y + 3, rect.Width - 6, rect.Height - 6),
+                    null,
+                    bgColor * BackColor,
+                    0f, Vector2.Zero, Renderer.effect, Renderer._layer + 0.001f);
+                batch.DrawRectangle(rect.ToRectangleF(), OutlineColor, outlineThickness, Renderer._layer + 0.001f);
                 base.Draw(in batch);
             }
             else
             {
                 batch.Draw(TextureRenderer.Default,
-                    new Rectangle(rect.X + 3, rect.Y + 3, rect.Width - 6, rect.Height - 6), bgColor * BackColor * 0.8f);
-                batch.DrawRectangle(rect.ToRectangleF(), new Color(0.5f, 0.5f, 0.5f), 1, Renderer._layer);
+                    new Rectangle(rect.X + 3, rect.Y + 3, rect.Width - 6, rect.Height - 6),
+                    null, bgColor * BackColor * 0.8f, 0f, Vector2.Zero, Renderer.effect, Renderer._layer + 0.001f);
+                batch.DrawRectangle(rect.ToRectangleF(), new Color(0.5f, 0.5f, 0.5f), 1, Renderer._layer + 0.001f);
                 base.Draw(in batch);
             }
         }
