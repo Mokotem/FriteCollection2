@@ -36,6 +36,17 @@ public class Button : Text
         }
     }
 
+    public void Destroy()
+    {
+        _buts.Remove(this);
+    }
+
+
+    public void Revive()
+    {
+        _buts.Add(this);
+    }
+
     public override int Left => rect.X;
     public override int Right => rect.Right;
 
