@@ -44,9 +44,9 @@ public class Toggle : Button
 
         outlineThickness = 2;
 
-        if (Enabled)
+        if (Enabled && base.AmIVisible())
         {
-        UpdateCtrl(out bool sh, out bool so, kb, pkb);
+            UpdateCtrl(out bool sh, out bool so, kb, pkb);
 
             if (active && this.Active)
             {

@@ -46,14 +46,10 @@ public abstract class UI : IDraw
             if (!_active && value)
             {
                 ApplyPosition(_lastPos, _lastx, _lasty);
+                this.OnIShouldUpdatePositionsOfMyChilds();
             }
 
             _active = value;
-
-            foreach (UI c in childs)
-            {
-                c.Active = value;
-            }
         }
     }
 
@@ -350,6 +346,20 @@ public abstract class UI : IDraw
 
     }
 
+    protected bool AmIVisible()
+    {
+        UI courrant = this;
+        while (courrant.parent is not null)
+        {
+            if (!courrant.parent.Active)
+            {
+                return false;
+            }
+            courrant = courrant.parent;
+        }
+        return true;
+    }
+
     public void DrawChilds(in SpriteBatch batch)
     {
         foreach (UI c in childs)
@@ -404,6 +414,7 @@ public class Screen : UI
     internal Screen(int width, int height) : base(width, height)
     {
         rect = new Rectangle(0, 0, width, height);
+        this.Active = true;
     }
 
     private Point mousePos;

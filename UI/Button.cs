@@ -96,7 +96,7 @@ public class Button : Text
 
     public virtual void Update(bool mouseHold, bool isMouseOn, bool active, KeyboardState kb, KeyboardState pkb)
     {
-        if (this.Active)
+        if (this.Active && base.AmIVisible())
         {
             bgColor = new Color(0.9f, 0.9f, 0.9f);
 

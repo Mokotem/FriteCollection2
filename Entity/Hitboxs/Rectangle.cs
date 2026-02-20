@@ -456,7 +456,7 @@ public abstract partial class Hitbox
         public override void Draw(in SpriteBatch batch)
         {
             batch.DrawRectangle(
-                new RectangleF(_left, _up, _width, _height), layers[layer].debugColor);
+                new RectangleF(_left + offset.X, _up + offset.Y, _width, _height), layers[layer].debugColor);
         }
 
         public Rectangle Copy()

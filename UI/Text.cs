@@ -6,6 +6,8 @@ namespace FriteCollection2.UI;
 
 public class Text : UI
 {
+    private const byte taille = 8;
+
     private Rectangle textRect;
     public StringRenderer Renderer;
 
@@ -17,7 +19,7 @@ public class Text : UI
 
     private Bounds textAlign;
 
-    public Text(UI parent, string value, Bounds textAlign, byte taille = 12) : base(parent, 0, 0)
+    public Text(UI parent, string value, Bounds textAlign, byte taille = taille) : base(parent, 0, 0)
     {
         textRect = new Rectangle(0, 0, 0, 0);
         this.textAlign = textAlign;
@@ -28,11 +30,11 @@ public class Text : UI
         Scale(Extend.None);
     }
 
-    public Text(string value, Bounds textAlign, byte taille = 12) : this(screen, value, textAlign, taille) { }
+    public Text(string value, Bounds textAlign, byte taille = taille) : this(screen, value, textAlign, taille) { }
 
-    public Text(UI parent, string value, byte taille = 12) : this(parent, value, Bounds.TopLeft, taille) { }
+    public Text(UI parent, string value, byte taille = taille) : this(parent, value, Bounds.TopLeft, taille) { }
 
-    public Text(string value, byte taille = 12) : this(screen, value, taille) { }
+    public Text(string value, byte taille = taille) : this(screen, value, taille) { }
 
     public override float Depth => Renderer._layer;
 
