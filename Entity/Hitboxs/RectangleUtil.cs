@@ -16,16 +16,14 @@ public abstract partial class Hitbox
 			return up1 && up2;
 		}
 
-        public static int GetMost(in CollisionData<Rectangle>[] rects, Critere crit)
+        public static int GetMost(in CollisionData<Rectangle>[] cols, Sides side, Critere crit)
         {
-            int max = 0;
-            float maxv = crit(rects[0].collider);
+			int max = 0;
 
-            for (int i = 1; i < rects.Length; i++)
+            for (int i = 1; i < cols.Length; i++)
             {
-                if (crit(rects[i].collider) > maxv)
+                if (cols[i].side == side && crit(cols[i].collider) > crit(cols[max].collider))
                 {
-                    maxv = crit(rects[i].collider);
                     max = i;
                 }
             }
@@ -33,42 +31,14 @@ public abstract partial class Hitbox
             return max;
         }
 
-        public static int GetMost(in Hitbox.Rectangle[] rects, Critere crit)
-		{
-			int max = 0;
-			float maxv = crit(rects[0]);
-
-			for (int i = 1; i < rects.Length; i++)
-			{
-				if (crit(rects[i]) > maxv)
-				{
-					maxv = crit(rects[i]);
-					max = i;
-				}
-			}
-
-			return max;
-		}
-
-        public static int ChoseTheBestFor(in Hitbox.Rectangle[] rects, Sides side)
-        {
-			return (side) switch
-			{
-				Sides.Up => GetMost(in rects, (Hitbox.Rectangle r) => r._down),
-                Sides.Left => GetMost(in rects, (Hitbox.Rectangle r) => r._right),
-                Sides.Right => GetMost(in rects, (Hitbox.Rectangle r) => -r._left),
-                _ => GetMost(in rects, (Hitbox.Rectangle r) => -r._up),
-            };
-        }
-
         public static int ChoseTheBestFor(in Hitbox.CollisionData<Rectangle>[] rects, Sides side)
         {
             return (side) switch
             {
-                Sides.Up => GetMost(in rects, (Hitbox.Rectangle r) => r._down),
-                Sides.Left => GetMost(in rects, (Hitbox.Rectangle r) => r._right),
-                Sides.Right => GetMost(in rects, (Hitbox.Rectangle r) => -r._left),
-                _ => GetMost(in rects, (Hitbox.Rectangle r) => -r._up),
+                Sides.Up => GetMost(in rects, Sides.Up, (Hitbox.Rectangle r) => r._down),
+                Sides.Left => GetMost(in rects, Sides.Left, (Hitbox.Rectangle r) => r._right),
+                Sides.Right => GetMost(in rects, Sides.Right, (Hitbox.Rectangle r) => -r._left),
+                _ => GetMost(in rects, Sides.Down, (Hitbox.Rectangle r) => -r._up),
             };
         }
 
@@ -91,46 +61,55 @@ public abstract partial class Hitbox
 			}
 		}
 
-		public static Vector2 ApplyCollition(in Space mec, Rectangle colider, Sides side, Vector2 vitesse)
+		public bool ApplyCollition(Rectangle colider, Sides side, Vector2 vitesse, in Vector2 input, out Vector2 pos)
 		{
-			Vector2 result = mec.Position;
+			pos = input;
 			switch (side)
 			{
 				case Sides.Right:
-					if (vitesse.X < 0)
-						return mec.Position;
+				if (vitesse.X < 0)
+					return false;
 
-					result.X = colider._left - mec.W;
-					return result;
+				pos.X = colider._left - _width - offset.X;
+
+                return true;
 				case Sides.Left:
-					if (vitesse.X > 0)
-						return mec.Position;
+				if (vitesse.X > 0)
+					return false;
 
-					result.X = colider._right;
-					return result;
+                pos.X = colider._right - offset.X;
+
+                return true;
 				case Sides.Up:
-					if (vitesse.Y > 0)
-						return mec.Position;
+				if (vitesse.Y > 0)
+					return false;
 
-					result.Y = colider._down;
-					return result;
+                pos.Y = colider._down - offset.Y;
+                return true;
+
 				default:
-					if (vitesse.Y < 0)
-						return mec.Position;
+				if (vitesse.Y < 0)
+					return false;
 
-					result.Y = colider._up - mec.H;
-					return result;
+                pos.Y = colider._up - _height - offset.Y;
+                return true;
 			}
 		}
 
-        public static void ApplyCollition(in Space mec, CollisionData<Rectangle> collision)
-		{
-			ApplyCollition(in mec, collision.collider, collision.side);
+		public bool ApplyCollition(CollisionData<Rectangle> col, Vector2 vitesse, in Vector2 input, out Vector2 colPos)
+        {
+			return ApplyCollition(col.collider, col.side, vitesse, in input, out colPos);
 		}
 
-        public static void ApplyCollition(in Space mec, CollisionData<Rectangle> collision, Vector2 vitesse)
+
+        public bool ApplyCollition(CollisionData<Rectangle> col, Vector2 vitesse)
         {
-            ApplyCollition(in mec, collision.collider, collision.side, vitesse);
+            return ApplyCollition(col.collider, col.side, vitesse, in _parent.Position, out _parent.Position);
+        }
+
+        public bool ApplyCollition(Rectangle collider, Sides side, Vector2 vitesse)
+        {
+            return ApplyCollition(collider, side, vitesse, in _parent.Position, out _parent.Position);
         }
     }
 }
