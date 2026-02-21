@@ -2,7 +2,6 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MonoGame.Extended.Collections;
 using System;
 
 namespace FriteCollection2.Entity.Hitboxs;
@@ -62,7 +61,10 @@ public abstract partial class Hitbox : IDraw, IDisposable
     }
 
     public readonly byte layer;
-    private readonly string[] tags;
+    private readonly string[] _tags;
+
+    public string[] Tags => _tags;
+
     protected readonly Space _parent;
 
     public Space Parent => _parent;
@@ -82,7 +84,7 @@ public abstract partial class Hitbox : IDraw, IDisposable
 #endif
         this.layer = layer;
         layers[layer].Add(this);
-        this.tags = tags;
+        this._tags = tags;
         this._parent = parent;
         active = true;
         isStatic = false;
@@ -100,7 +102,7 @@ public abstract partial class Hitbox : IDraw, IDisposable
 
     public bool IsTag(string tag)
     {
-        foreach (string t in this.tags)
+        foreach (string t in this._tags)
         {
             if (tag.Equals(t))
                 return true;
@@ -110,7 +112,7 @@ public abstract partial class Hitbox : IDraw, IDisposable
 
     public bool IsTag(char value, int index)
     {
-        foreach (string t in this.tags)
+        foreach (string t in this._tags)
         {
             if (t[0].Equals(value))
                 return true;
@@ -120,10 +122,10 @@ public abstract partial class Hitbox : IDraw, IDisposable
 
     public bool HasTagsOf(Hitbox other)
     {
-        if (tags.Length > other.tags.Length)
+        if (_tags.Length > other._tags.Length)
             return false;
 
-        foreach (string tag in tags)
+        foreach (string tag in _tags)
         {
             if (!other.IsTag(tag))
             {
@@ -135,7 +137,7 @@ public abstract partial class Hitbox : IDraw, IDisposable
 
     public bool HasExactSameTagsAs(Hitbox other)
     {
-        if (this.tags.Length < other.tags.Length)
+        if (this._tags.Length < other._tags.Length)
             return false;
 
         return HasTagsOf(other);

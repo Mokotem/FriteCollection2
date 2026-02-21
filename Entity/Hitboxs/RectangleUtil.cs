@@ -16,7 +16,63 @@ public abstract partial class Hitbox
 			return up1 && up2;
 		}
 
-		public static void ApplyCollition(in Space mec, Rectangle colider, Sides side)
+        public static int GetMost(in CollisionData<Rectangle>[] rects, Critere crit)
+        {
+            int max = 0;
+            float maxv = crit(rects[0].collider);
+
+            for (int i = 1; i < rects.Length; i++)
+            {
+                if (crit(rects[i].collider) > maxv)
+                {
+                    maxv = crit(rects[i].collider);
+                    max = i;
+                }
+            }
+
+            return max;
+        }
+
+        public static int GetMost(in Hitbox.Rectangle[] rects, Critere crit)
+		{
+			int max = 0;
+			float maxv = crit(rects[0]);
+
+			for (int i = 1; i < rects.Length; i++)
+			{
+				if (crit(rects[i]) > maxv)
+				{
+					maxv = crit(rects[i]);
+					max = i;
+				}
+			}
+
+			return max;
+		}
+
+        public static int ChoseTheBestFor(in Hitbox.Rectangle[] rects, Sides side)
+        {
+			return (side) switch
+			{
+				Sides.Up => GetMost(in rects, (Hitbox.Rectangle r) => r._down),
+                Sides.Left => GetMost(in rects, (Hitbox.Rectangle r) => r._right),
+                Sides.Right => GetMost(in rects, (Hitbox.Rectangle r) => -r._left),
+                _ => GetMost(in rects, (Hitbox.Rectangle r) => -r._up),
+            };
+        }
+
+        public static int ChoseTheBestFor(in Hitbox.CollisionData<Rectangle>[] rects, Sides side)
+        {
+            return (side) switch
+            {
+                Sides.Up => GetMost(in rects, (Hitbox.Rectangle r) => r._down),
+                Sides.Left => GetMost(in rects, (Hitbox.Rectangle r) => r._right),
+                Sides.Right => GetMost(in rects, (Hitbox.Rectangle r) => -r._left),
+                _ => GetMost(in rects, (Hitbox.Rectangle r) => -r._up),
+            };
+        }
+
+        public static void ApplyCollition(in Space mec, Rectangle colider, Sides side)
 		{
 			switch (side)
 			{
@@ -35,36 +91,37 @@ public abstract partial class Hitbox
 			}
 		}
 
-        public static void ApplyCollition(in Space mec, Rectangle colider, Sides side, Vector2 vitesse)
-        {
-            switch (side)
-            {
-                case Sides.Right:
+		public static Vector2 ApplyCollition(in Space mec, Rectangle colider, Sides side, Vector2 vitesse)
+		{
+			Vector2 result = mec.Position;
+			switch (side)
+			{
+				case Sides.Right:
 					if (vitesse.X < 0)
-						return;
+						return mec.Position;
 
-                    mec.X = colider._left - mec.W;
-                    return;
-                case Sides.Left:
+					result.X = colider._left - mec.W;
+					return result;
+				case Sides.Left:
 					if (vitesse.X > 0)
-						return;
+						return mec.Position;
 
-                    mec.X = colider._right;
-                    return;
-                case Sides.Up:
+					result.X = colider._right;
+					return result;
+				case Sides.Up:
 					if (vitesse.Y > 0)
-						return;
+						return mec.Position;
 
-                    mec.Y = colider._down;
-                    return;
-                case Sides.Down:
+					result.Y = colider._down;
+					return result;
+				default:
 					if (vitesse.Y < 0)
-						return;
+						return mec.Position;
 
-                    mec.Y = colider._up - mec.H;
-                    return;
-            }
-        }
+					result.Y = colider._up - mec.H;
+					return result;
+			}
+		}
 
         public static void ApplyCollition(in Space mec, CollisionData<Rectangle> collision)
 		{

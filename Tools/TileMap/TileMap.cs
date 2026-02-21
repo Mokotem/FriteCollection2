@@ -2,8 +2,10 @@
 using FriteCollection2.Entity.Hitboxs;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended;
 using System;
 using System.Collections.Generic;
+using System.IO.Pipelines;
 
 namespace FriteCollection2.Tools.TileMap;
 
@@ -12,7 +14,7 @@ public class TileMap : IDisposable, IDraw
     public class Settings
     {
         internal readonly Dictionary<string, TileSet> TileSets;
-        internal readonly Dictionary<char, Hitbox.Rectangle> hitboxesreplaces;
+        internal readonly Dictionary<char, Hitbox.Rectangle> hitModels;
         internal readonly float[] layers;
 
         public bool HasTileset(string value) => TileSets.ContainsKey(value) && TileSets[value] is not null; 
@@ -46,28 +48,38 @@ public class TileMap : IDisposable, IDraw
                 this.TileSets[key] = null;
             }
 
-            this.hitboxesreplaces = _hitReplaces;
+            this.hitModels = _hitReplaces;
         }
     }
 
     private const byte BlockLayerCount = 4;
 
-    private int xCount => _file.layers[0].gridCellsX;
-    private int yCount => _file.layers[0].gridCellsY;
+    private int CountX => _file.layers[0].gridCellsX;
+    private int CountY => _file.layers[0].gridCellsY;
 
     public delegate void DoAt(Point pos);
     public delegate void Entity(Point pos);
 
     public readonly int Width, Height;
-    private readonly Hitbox.Rectangle[,] _hitboxData;
 
     private readonly float[] _targetLayers;
     private readonly Point[] _breakPos;
     private readonly FriteCollection2.Entity.Object[] _breakableWalls;
     public FriteCollection2.Entity.Object[] BreakableWalls => _breakableWalls;
     public Point[] BreakableWallsPosition => _breakPos;
+    private Settings _settings;
 
-    public TileMap(IOgmoFileWithLayer file, Settings settings, int seed, in SpriteBatch batch, GraphicsDevice device)
+    private Space _space;
+    public Point Position
+    {
+        get => _space.Position.ToPoint();
+        set
+        {
+            _space.Position = value.ToVector2();
+        }
+    }
+
+    public TileMap(IOgmoFileWithLayer file, in Settings settings, int seed, in SpriteBatch batch, GraphicsDevice device)
     {
         System.Random rand = new System.Random(seed);
 
@@ -76,52 +88,37 @@ public class TileMap : IDisposable, IDraw
 
         this._targetLayers = settings.layers;
         _file = file;
+        this._settings = settings;
 
-
+        _space = new Space(file.width, file.height);
         _targets = new RenderTarget2D[BlockLayerCount];
 
         System.Random r = new System.Random();
 
-        _hitboxData = new Hitbox.Rectangle[xCount, yCount];
-
         for(byte layer_id = 0; layer_id < file.layers.Length; layer_id++)
         {
             OgmoLayer layer = file.layers[layer_id];
-            if (layer is OgmoLayerGrid)
-            {
-                OgmoLayerGrid grid = layer as OgmoLayerGrid;
-                for (ushort x = 0; x < xCount; x++)
-                {
-                    for (ushort y = 0; y < yCount; y++)
-                    {
-                        if (!grid.grid2D[y][x].Equals('0'))
-                        {
-                            _hitboxData[x, y] = settings.hitboxesreplaces[grid.grid2D[y][x]];
-                        }
-                    }
-                }
-            }
-            else if (layer is OgmoLayerBreakable)
+            if (layer is OgmoLayerBreakable)
             {
                 OgmoLayerBreakable l = layer as OgmoLayerBreakable;
                 List<FriteCollection2.Entity.Object> walls = new List<FriteCollection2.Entity.Object>();
                 List<Point> posb = new List<Point>();
-                bool[,] visited = new bool[xCount, yCount];
-                for (ushort y = 0; y < yCount; y++)
+                bool[,] visited = new bool[CountX, CountY];
+                for (ushort y = 0; y < CountY; y++)
                 {
-                    for (ushort x = 0; x < xCount; x++)
+                    for (ushort x = 0; x < CountX; x++)
                     {
                         if (l.data2D[y][x] >= 0 && !visited[x, y])
                         {
                             ushort startx = x, starty = y;
                             ushort width = 0, height = 0;
-                            while (x < xCount && l.data2D[y][x] >= 0 && !visited[x, y])
+                            while (x < CountX && l.data2D[y][x] >= 0 && !visited[x, y])
                             {
                                 x++;
                                 width++;
                             }
                             x = startx;
-                            while (y < yCount && l.data2D[y][x] >= 0 && !visited[x, y])
+                            while (y < CountY && l.data2D[y][x] >= 0 && !visited[x, y])
                             {
                                 y++;
                                 height++;
@@ -194,9 +191,9 @@ public class TileMap : IDisposable, IDraw
                 batch.Begin(samplerState: SamplerState.PointClamp);
 
                 OgmoLayerBlock data = layer as OgmoLayerBlock;
-                for (ushort x = 0; x < xCount; x++)
+                for (ushort x = 0; x < CountX; x++)
                 {
-                    for (ushort y = 0; y < yCount; y++)
+                    for (ushort y = 0; y < CountY; y++)
                     {
                         if (data.data2D[y][x] >= 0)
                         {
@@ -225,45 +222,126 @@ public class TileMap : IDisposable, IDraw
 
     private Hitbox.Rectangle[] savedHitboxes;
 
-    public void GenerateHitboxs(bool mergeHitBoxes = true)
+    private bool GetNextHole(in bool[,] done, char key, out Point pos)
     {
-        if (mergeHitBoxes)
-            savedHitboxes = MergeHitBoxes(in _hitboxData);
-        else
-            savedHitboxes = PlaceHitboxes(in _hitboxData, this._file.layers[0].gridCellsX, _file.layers[0].gridCellsY);
-    }
-
-    public void GenerateHitboxs(Point size, bool mergeHitBoxes = true)
-    {
-        if (mergeHitBoxes)
-            savedHitboxes = MergeHitBoxes(in _hitboxData);
-        else
-            savedHitboxes = PlaceHitboxes(in _hitboxData, size);
-    }
-
-    private Hitbox.Rectangle[] PlaceHitboxes(in Hitbox.Rectangle[,] _hitboxData, Point tileSize)
-    {
-        return PlaceHitboxes(in _hitboxData, tileSize.X, tileSize.Y);
-    }
-
-    private Hitbox.Rectangle[] PlaceHitboxes(in Hitbox.Rectangle[,] _hitboxData, int sx, int sy)
-    {
-        List<Hitbox.Rectangle> result = new List<Hitbox.Rectangle>();
-        for (int x = 0; x < xCount; ++x)
+        for(int x = 0; x < CountX; x++)
         {
-            for (int y = 0; y < yCount; ++y)
+            for (int y = 0; y < CountY; y++)
             {
-                if (_hitboxData[x, y] is not null)
+                if (!done[x, y] && ((OgmoLayerGrid)_file.layers[0]).grid2D[y][x].Equals(key))
                 {
-                    Hitbox.Rectangle hit = _hitboxData[x, y].Copy();
-                    hit.active = true;
-                    hit.offset.X += x * sx;
-                    hit.offset.Y += y * sy;
-                    result.Add(hit);
+                    pos = new Point(x, y);
+                    return true;
                 }
             }
         }
-        return result.ToArray();
+
+        pos = Point.Zero;
+        return false;
+    }
+
+    private bool IsFree(Rectangle r, char envi)
+    {
+        if (r.X < 0 || r.Y < 0 || r.Right > CountX || r.Bottom > CountY)
+        {
+            return false;
+        }
+
+        OgmoLayerGrid grid = (OgmoLayerGrid)_file.layers[0];
+
+        for (int x = r.Left; x < r.Right; x++)
+        {
+            for (int y = r.Top; y < r.Bottom; y++)
+            {
+                if (!grid.grid2D[y][x].Equals(envi))
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    private bool TryExpand(Rectangle r, char envi, Sides side, out Rectangle result)
+    {
+        Rectangle res = r;
+        Rectangle c;
+
+        switch (side)
+        {
+            case Sides.Up:
+            c = new Rectangle(r.X, r.Y - 1, r.Width, 1);
+            res.Y--;
+            res.Height++;
+            break;
+            case Sides.Left:
+            c = new Rectangle(r.X - 1, r.Y, 1, r.Height);
+            res.X--;
+            res.Width++;
+            break;
+            case Sides.Right:
+            c = new Rectangle(r.Right, r.Y, 1, r.Height);
+            res.Width++;
+            break;
+            default:
+            c = new Rectangle(r.X, r.Bottom, r.Width, 1);
+            res.Height++;
+            break;
+        };
+
+        if (IsFree(c, envi))
+        {
+            result = res;
+            return true;
+        }
+        else
+        {
+            result = r;
+            return false;
+        }
+    }
+
+    private Hitbox.Rectangle CreateHitboxAt(Hitbox.Rectangle model, char envi, Point pos, in bool[,] done)
+    {
+        Rectangle r = new Rectangle(pos.X, pos.Y, 1, 1);
+
+        while (
+            TryExpand(r, envi, Sides.Up, out r)
+            | TryExpand(r, envi, Sides.Down, out r)
+            | TryExpand(r, envi, Sides.Left, out r)
+            | TryExpand(r, envi, Sides.Right, out r))
+        {
+
+        }
+
+        for (int x = r.Left; x < r.Right; x++)
+        {
+            for (int y = r.Top; y < r.Bottom; y++)
+            {
+                done[x, y] = true;
+            }
+        }
+
+        Hitbox.Rectangle result = new Hitbox.Rectangle(this._space, model.Tags);
+        result.offset = ToMap(r.Location + model.offset);
+        result.SetScale(ToMap(r.Size) + model.Size);
+
+        return result;
+    }
+
+    public void CreateHitboxsMerge()
+    {
+        List<Hitbox.Rectangle> result = new List<Hitbox.Rectangle>();
+        bool[,] done;
+
+        foreach (char key in _settings.hitModels.Keys)
+        {
+            done = new bool[CountX, CountY];
+            while (GetNextHole(in done, key, out Point pos))
+            {
+                result.Add(CreateHitboxAt(_settings.hitModels[key], key, pos, in done));
+            }
+        }
+
+        savedHitboxes = result.ToArray();
     }
 
     public void ReactivateHitboxs()
@@ -274,100 +352,21 @@ public class TileMap : IDisposable, IDraw
         }
     }
 
-    /// <summary>
-    /// algo banger que j'ai fais pour éviter la redondance de hitboxes
-    /// </summary>
-    private Hitbox.Rectangle[] MergeHitBoxes(in Hitbox.Rectangle[,] lst)
-    {
-        List<Hitbox.Rectangle> result = new List<Hitbox.Rectangle>();
-        int i = -1;
-        while (i + 1 < xCount * yCount)
-        {
-            i++;
-            int x = i % xCount;
-            int y = i / xCount;
-
-            Hitbox.Rectangle hit1 = lst[x, y];
-
-            if (hit1 is not null)
-            {
-                int width = 1;
-                int height = 1;
-
-                while (x + width < xCount
-                    && lst[x + width, y] is not null
-                    && lst[x + width, y].HasExactSameTagsAs(hit1)
-                    && lst[x + width, y].layer == hit1.layer
-                    && lst[x + width, y].Width == hit1.Height)
-                {
-                    lst[x + width, y] = null;
-                    ++width;
-                }
-
-                bool Cond(in Hitbox.Rectangle[,] h)
-                {
-                    if (y + height >= yCount)
-                        return false;
-                    Hitbox.Rectangle h2 = hit1;
-                    for (int k = 0; k < width; k++)
-                    {
-                        Hitbox.Rectangle h1 = h[x + k, y + height];
-                        if (h1 is null
-                           || !h1.HasExactSameTagsAs(h2)
-                           || h1.layer != h2.layer
-                           || h1.Width != h2.Height)
-                        {
-                            return false;
-                        }
-                    }
-                    return true;
-                }
-                while (Cond(in lst))
-                {
-                    for (int k = 0; k < width; k++)
-                    {
-                        lst[x + k, y + height] = null;
-                    }
-                    height++;
-                }
-
-                Hitbox.Rectangle hit = hit1.Copy();
-                hit.active = true;
-                hit.offset.X += x * _file.layers[0].gridCellWidth + this.Position.X;
-                hit.offset.Y += y * _file.layers[0].gridCellHeight + this.Position.Y;
-                hit.SetScale(
-                    hit1.Width * width,
-                    hit1.Height * height);
-                hit.isStatic = true;
-
-                if (x == 0)
-                    hit.IsInfinitOnX = Align.Left;
-                else if (x + width >= xCount)
-                    hit.IsInfinitOnX = Align.Right;
-                if (y == 0)
-                    hit.IsInfinitOnY = Align.Left;
-                else if (y + height >= yCount)
-                    hit.IsInfinitOnY = Align.Right;
-
-
-                result.Add(hit);
-
-                lst[x, y] = null;
-
-                i = -1;
-            }
-        }
-
-        return result.ToArray();
-    }
-
     private readonly IOgmoFileWithLayer _file;
 
     private readonly RenderTarget2D[] _targets;
 
-    public Point Position;
-
     public Color Color { get; set; }
+
+    private Point ToMap(Point p)
+    {
+        return new Point(p.X * _file.layers[0].gridCellWidth, p.Y * _file.layers[0].gridCellHeight);
+    }
+
+    private Rectangle ToMap(Rectangle r)
+    {
+        return new Rectangle(ToMap(r.Location), ToMap(r.Size));
+    }
 
     public void Draw(byte i, in SpriteBatch batch)
     {
@@ -376,8 +375,8 @@ public class TileMap : IDisposable, IDraw
             _targets[i],
             new Rectangle
             (
-                (int)float.Round(Position.X - Space.Camera.X),
-                (int)float.Round(Position.Y - Space.Camera.Y),
+                (int)(_space.X - Space.Camera.X),
+                (int)(_space.Y - Space.Camera.Y),
                 _targets[i].Width,
                 _targets[i].Height
             ),
@@ -392,7 +391,7 @@ public class TileMap : IDisposable, IDraw
 
     public void Draw(in SpriteBatch batch)
     {
-        for (byte i = 0; i < 3; ++i)
+        for (byte i = 0; i < BlockLayerCount; ++i)
         {
             Draw(i, in batch);
         }

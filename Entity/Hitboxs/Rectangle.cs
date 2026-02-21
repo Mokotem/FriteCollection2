@@ -11,6 +11,8 @@ public abstract partial class Hitbox
 {
     public partial class Rectangle : Hitbox
     {
+        public delegate float Critere(Rectangle rect);
+
         private float _left, _right, _up, _down;
 
         private float _width, _height;
@@ -456,12 +458,13 @@ public abstract partial class Hitbox
         public override void Draw(in SpriteBatch batch)
         {
             batch.DrawRectangle(
-                new RectangleF(_left + offset.X, _up + offset.Y, _width, _height), layers[layer].debugColor);
+                new RectangleF(_left - Space.Camera.X, _up - Space.Camera.Y, _width, _height), layers[layer].debugColor,
+                layerDepth: 0);
         }
 
         public Rectangle Copy()
         {
-            Rectangle r = new Rectangle(in this._parent, tags);
+            Rectangle r = new Rectangle(in this._parent, _tags);
             r._left = this._left;
             r._up = this._up;
             r._down = this._down;
