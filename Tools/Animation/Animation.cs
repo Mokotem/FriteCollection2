@@ -1,5 +1,4 @@
-﻿using Microsoft.Xna.Framework.Graphics;
-
+﻿
 namespace FriteCollection2.Tools.Animation;
 
 public abstract class AnimationBase
@@ -42,7 +41,7 @@ public abstract class AnimationBase
         currentKey = -1;
     }
 
-    public virtual void Animate(float dt) { }
+    public abstract void Animate(float dt);
 }
 
 
@@ -74,10 +73,29 @@ public class Animation : AnimationBase
 
     public bool Active;
 
+    private float cropDelay;
+    public void CantAnimateDuring(float timer, float dt)
+    {
+        currentKey = 0;
+        this.cropDelay = timer + dt;
+    }
+
+    public void CantAnimateDuring(float timer)
+    {
+        currentKey = 0;
+        CantAnimateDuring(timer, Delay);
+    }
+
     public override void Animate(float timer)
     {
         if (Active)
         {
+            if (timer < cropDelay)
+            {
+                frames[0](0);
+                return;
+            }
+
             while (currentKey < frames.Length
                 && timer >= start + b)
             {
