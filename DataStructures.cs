@@ -93,7 +93,7 @@ public class Environment : IDraw, IHaveRectangle
 
 public interface IExecutable : IDraw
 {
-    public void Load(SpriteBatch batch, GraphicsDevice device) { }
+    public void Load(in SpriteBatch batch, GraphicsDevice device);
     public void Start();
     public void Update(float dt);
 }
