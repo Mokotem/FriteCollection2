@@ -13,13 +13,13 @@ namespace FriteCollection2;
 
 public interface IDraw
 {
-    public delegate void DrawFunction(in SpriteBatch batch);
-    public void Draw(in SpriteBatch batch);
+    public delegate void DrawFunction(SpriteBatch batch);
+    public void Draw(SpriteBatch batch);
 }
 
 public interface IDrawUI
 {
-    public void Draw(in SpriteBatch batch, int width, int height) { }
+    public void Draw(SpriteBatch batch, int width, int height) { }
 }
 
 public enum Align
@@ -64,17 +64,17 @@ public class Environment : IDraw, IHaveRectangle
         this.Target = target;
     }
 
-    public void Draw(in SpriteBatch batch)
+    public void Draw(SpriteBatch batch)
     {
         batch.Draw(Target, Rect, Color.White);
     }
 
-    public void Draw(in SpriteBatch batch, float depth)
+    public void Draw(SpriteBatch batch, float depth)
     {
         batch.Draw(Target, Rect, null, Color.White, 0, Vector2.Zero, SpriteEffects.None, depth);
     }
 
-    public void Draw(in SpriteBatch batch, int amount)
+    public void Draw(SpriteBatch batch, int amount)
     {
         batch.Draw(Target,
             new Rectangle(Rect.X, Rect.Y, Rect.Width, amount),
@@ -82,7 +82,7 @@ public class Environment : IDraw, IHaveRectangle
             Color.White);
     }
 
-    public void Draw(in SpriteBatch batch, int amount, float depth)
+    public void Draw(SpriteBatch batch, int amount, float depth)
     {
         batch.Draw(Target,
              new Rectangle(Rect.X, Rect.Y, Rect.Width, amount),
@@ -93,7 +93,7 @@ public class Environment : IDraw, IHaveRectangle
 
 public interface IExecutable : IDraw
 {
-    public void Load(in SpriteBatch batch, GraphicsDevice device);
+    public void Load(SpriteBatch batch, GraphicsDevice device);
     public void Start();
     public void Update(float dt);
 }
@@ -133,7 +133,7 @@ public abstract class AdvancedExecutable : IExecutable, IDrawUI, IDisposable
 
     public abstract void Start();
 
-    public abstract void Load(in SpriteBatch batch, GraphicsDevice gd);
+    public abstract void Load(SpriteBatch batch, GraphicsDevice gd);
     public virtual void AfterStart() { }
 
     public virtual void BeforeUpdate(float dt) { }
@@ -141,16 +141,16 @@ public abstract class AdvancedExecutable : IExecutable, IDrawUI, IDisposable
     public virtual void WhenPaused(float dt) { }
 
 
-    public virtual void DrawBackground(in SpriteBatch batch) { }
-    public virtual void DrawShader(in SpriteBatch batch, GraphicsDevice device) { }
-    public virtual void AfterDraw(in SpriteBatch batch) { }
-    public virtual void DrawUI(in SpriteBatch batch, int width, int height) { }
-    public virtual void DrawMain(in SpriteBatch batch) { }
+    public virtual void DrawBackground(SpriteBatch batch) { }
+    public virtual void DrawShader(SpriteBatch batch, GraphicsDevice device) { }
+    public virtual void AfterDraw(SpriteBatch batch) { }
+    public virtual void DrawUI(SpriteBatch batch, int width, int height) { }
+    public virtual void DrawMain(SpriteBatch batch) { }
 
 
     public abstract void Update(float dt);
 
-    public abstract void Draw(in SpriteBatch batch);
+    public abstract void Draw(SpriteBatch batch);
 
     public virtual void Dispose() { }
 }
@@ -168,7 +168,7 @@ public class Scene : AdvancedExecutable
         this.exes = new List<AdvancedExecutable>(exes);
     }
 
-    public override void Load(in SpriteBatch batch, GraphicsDevice gd)
+    public override void Load(SpriteBatch batch, GraphicsDevice gd)
     {
         for (byte i = 0; i < exes.Count; i++)
             exes[i].Load(batch, gd);
@@ -209,40 +209,40 @@ public class Scene : AdvancedExecutable
             exes[i].WhenPaused(dt);
     }
 
-    public override void Draw(in SpriteBatch batch)
+    public override void Draw(SpriteBatch batch)
     {
         for (byte i = 0; i < exes.Count; i++)
-            exes[i].Draw(in batch);
+            exes[i].Draw(batch);
     }
 
-    public override void DrawBackground(in SpriteBatch batch)
+    public override void DrawBackground(SpriteBatch batch)
     {
         for (byte i = 0; i < exes.Count; i++)
-            exes[i].DrawBackground(in batch);
+            exes[i].DrawBackground(batch);
     }
 
-    public override void DrawShader(in SpriteBatch batch, GraphicsDevice device)
+    public override void DrawShader(SpriteBatch batch, GraphicsDevice device)
     {
         for (byte i = 0; i < exes.Count; i++)
-            exes[i].DrawShader(in batch, device);
+            exes[i].DrawShader(batch, device);
     }
 
-    public override void AfterDraw(in SpriteBatch batch)
+    public override void AfterDraw(SpriteBatch batch)
     {
         for (byte i = 0; i < exes.Count; i++)
-            exes[i].AfterDraw(in batch);
+            exes[i].AfterDraw(batch);
     }
 
-    public override void DrawUI(in SpriteBatch batch, int width, int height)
+    public override void DrawUI(SpriteBatch batch, int width, int height)
     {
         for (byte i = 0; i < exes.Count; i++)
-            exes[i].DrawUI(in batch, width, height);
+            exes[i].DrawUI(batch, width, height);
     }
 
-    public override void DrawMain(in SpriteBatch batch)
+    public override void DrawMain(SpriteBatch batch)
     {
         for (byte i = 0; i < exes.Count; i++)
-            exes[i].DrawMain(in batch);
+            exes[i].DrawMain(batch);
     }
 
     public override void Dispose()
@@ -256,11 +256,11 @@ public class Clone : AdvancedExecutable
 {
     public bool IsDestroyed { get; protected set; }
 
-    public override void Draw(in SpriteBatch batch)
+    public override void Draw(SpriteBatch batch)
     {
     }
 
-    public override void Load(in SpriteBatch batch, GraphicsDevice gd)
+    public override void Load(SpriteBatch batch, GraphicsDevice gd)
     {
     }
 
@@ -294,11 +294,11 @@ public class CloneContainer : AdvancedExecutable
     }
 
 
-    public override void Load(in SpriteBatch batch, GraphicsDevice device)
+    public override void Load(SpriteBatch batch, GraphicsDevice device)
     {
         foreach (Clone c in clones)
         {
-            c.Load(in batch, device);
+            c.Load(batch, device);
         }
     }
 
@@ -351,27 +351,27 @@ public class CloneContainer : AdvancedExecutable
         }
     }
 
-    public override void Draw(in SpriteBatch batch)
+    public override void Draw(SpriteBatch batch)
     {
         foreach (Clone c in clones)
         {
-            c.Draw(in batch);
+            c.Draw(batch);
         }
     }
 
-    public override void AfterDraw(in SpriteBatch batch)
+    public override void AfterDraw(SpriteBatch batch)
     {
         foreach (Clone c in clones)
         {
-            c.AfterDraw(in batch);
+            c.AfterDraw(batch);
         }
     }
 
-    public override void DrawUI(in SpriteBatch batch, int w, int h)
+    public override void DrawUI(SpriteBatch batch, int w, int h)
     {
         foreach (Clone c in clones)
         {
-            c.DrawUI(in batch, w, h);
+            c.DrawUI(batch, w, h);
         }
     }
 }

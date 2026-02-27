@@ -100,16 +100,16 @@ public class Panel : UI
         targetRect.Y = rect.Y + padding;
     }
 
-    public void DrawChildsOnTarget(GraphicsDevice device, in SpriteBatch batch)
+    public void DrawChildsOnTarget(GraphicsDevice device, SpriteBatch batch)
     {
         device.SetRenderTarget(scroolTarget);
         device.Clear(Color.Transparent);
         batch.Begin(samplerState: sampler);
-        base.Draw(in batch);
+        base.Draw(batch);
         batch.End();
     }
 
-    public virtual void DrawTarget(GraphicsDevice device, in SpriteBatch batch)
+    public virtual void DrawTarget(GraphicsDevice device, SpriteBatch batch)
     {
         if (Active)
         {
@@ -118,7 +118,7 @@ public class Panel : UI
         }
     }
 
-    public void DrawScroll(GraphicsDevice device, in SpriteBatch batch)
+    public void DrawScroll(GraphicsDevice device, SpriteBatch batch)
     {
         device.SetRenderTarget(target);
         device.Clear(Color.Transparent);
@@ -127,11 +127,11 @@ public class Panel : UI
         batch.End();
     }
 
-    public override void Draw(in SpriteBatch batch)
+    public override void Draw(SpriteBatch batch)
     {
         if (Active)
         {
-            Renderer.Draw(in batch, rect);
+            Renderer.Draw(batch, rect);
             batch.Draw(target, targetRect, null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, Renderer._layer - 0.001f);
         }
     }

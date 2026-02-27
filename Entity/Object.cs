@@ -25,19 +25,19 @@ public class Object : Space, IDraw
         Renderer = new OutlineRenderer(0);
     }
 
-    public void DrawBody(in SpriteBatch batch)
+    public void DrawBody(SpriteBatch batch)
     {
-        Renderer.DrawBody(in batch, this.ToScreen());
+        Renderer.DrawBody(batch, this.ToScreen());
     }
 
-    public void DrawOutline(in SpriteBatch batch)
+    public void DrawOutline(SpriteBatch batch)
     {
-        Renderer.DrawOutline(in batch, this.ToScreen());
+        Renderer.DrawOutline(batch, this.ToScreen());
     }
 
-    public virtual void Draw(in SpriteBatch batch)
+    public virtual void Draw(SpriteBatch batch)
     {
-        Renderer.Draw(in batch, this.ToScreen());
+        Renderer.Draw(batch, this.ToScreen());
     }
 
     public override bool Equals(object obj)
@@ -70,8 +70,8 @@ public class RotatableObject : Object
     public RotatableObject(Texture2D texture) : base(texture) { }
     public RotatableObject(int width, int height) : base(width, height) { }
 
-    public override void Draw(in SpriteBatch batch)
+    public override void Draw(SpriteBatch batch)
     {
-        Renderer.Draw(in batch, ToScreen(), center, rotation);
+        Renderer.Draw(batch, ToScreen(), center, rotation);
     }
 }

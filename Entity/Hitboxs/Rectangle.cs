@@ -35,22 +35,22 @@ public abstract partial class Hitbox
 
         public Vector2 CenterPoint => new Vector2((_left + _right) / 2f, (_up + _down) / 2f);
 
-        public Rectangle(in Space parent, byte layer, params string[] tags)
-            : base(in parent, layer, tags)
+        public Rectangle(Space parent, byte layer, params string[] tags)
+            : base(parent, layer, tags)
         {
             offset = Point.Zero;
             SetScale(parent.W, parent.H);
         }
 
-        public Rectangle(in Space parent, string tag = "", byte layer = 0) : this(in parent, layer, tag)
+        public Rectangle(Space parent, string tag = "", byte layer = 0) : this(parent, layer, tag)
         {
 
         }
 
         public Rectangle() : this(Space.Zero, 0) { }
         public Rectangle(byte layer, params string[] tags) : this(Space.Zero, layer, tags) { }
-        public Rectangle(in Space parent) : this(in parent, 0) { }
-        public Rectangle(in Space parent, params string[] tags) : this(in parent, 0, tags) { }
+        public Rectangle(Space parent) : this(parent, 0) { }
+        public Rectangle(Space parent, params string[] tags) : this(parent, 0, tags) { }
 
         public void UpdateScale()
         {
@@ -163,7 +163,7 @@ public abstract partial class Hitbox
                     corners[2] |= touchLeft && touchDown;
                     corners[3] |= touchRight && touchDown;
 
-                    result.Add(new CollisionData<Rectangle>(in col, sideCol));
+                    result.Add(new CollisionData<Rectangle>(col, sideCol));
                 }
             }
 
@@ -455,7 +455,7 @@ public abstract partial class Hitbox
             }
         }
 
-        public override void Draw(in SpriteBatch batch)
+        public override void Draw(SpriteBatch batch)
         {
             batch.DrawRectangle(
                 new RectangleF(_left - Space.Camera.X, _up - Space.Camera.Y, _width, _height), layers[layer].debugColor,
@@ -464,7 +464,7 @@ public abstract partial class Hitbox
 
         public Rectangle Copy()
         {
-            Rectangle r = new Rectangle(in this._parent, _tags);
+            Rectangle r = new Rectangle(this._parent, _tags);
             r._left = this._left;
             r._up = this._up;
             r._down = this._down;

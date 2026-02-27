@@ -23,7 +23,7 @@ public abstract partial class Hitbox : IDraw, IDisposable
         public readonly T collider;
         public readonly Sides side;
 
-        public CollisionData(in T col, Sides side)
+        public CollisionData(T col, Sides side)
         {
             this.collider = col;
             this.side = side;
@@ -74,7 +74,7 @@ public abstract partial class Hitbox : IDraw, IDisposable
     public bool active;
     public bool isStatic;
 
-    protected Hitbox(in Space parent, byte layer, params string[] tags)
+    protected Hitbox(Space parent, byte layer, params string[] tags)
     {
 #if DEBUG
         if (layers is null)
@@ -92,8 +92,8 @@ public abstract partial class Hitbox : IDraw, IDisposable
 
     protected Hitbox() : this(Space.Zero, 0) { }
     protected Hitbox(byte layer, params string[] tags) : this(Space.Zero, layer, tags) { }
-    protected Hitbox(in Space parent) : this(in parent, 0) { }
-    protected Hitbox(in Space parent, params string[] tags) : this(in parent, 0, tags) { }
+    protected Hitbox(Space parent) : this(parent, 0) { }
+    protected Hitbox(Space parent, params string[] tags) : this(parent, 0, tags) { }
 
     public void AddToLayer(byte layer)
     {
@@ -180,13 +180,13 @@ public abstract partial class Hitbox : IDraw, IDisposable
         return Check(layer, SelectTag(tagToCheck));
     }
 
-    public abstract void Draw(in SpriteBatch batch);
+    public abstract void Draw(SpriteBatch batch);
 
-    public static void Debug(in SpriteBatch batch)
+    public static void Debug(SpriteBatch batch)
     {
         foreach(HitboxLayer l in layers)
         {
-            l.Draw(in batch);
+            l.Draw(batch);
         }
     }
 

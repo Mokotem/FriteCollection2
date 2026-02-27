@@ -13,8 +13,8 @@ public class State
     public State()
     {
         Start = () => { };
-        Draw = (in SpriteBatch batch) => { };
-        DrawAdditive = (in SpriteBatch batch) => { };
+        Draw = (SpriteBatch batch) => { };
+        DrawAdditive = (SpriteBatch batch) => { };
     }
 }
 
@@ -26,7 +26,7 @@ public class StateMachine : IDraw
     private readonly bool deltaMode, reset;
     private readonly State start;
 
-    public StateMachine(in State start, bool resetOnChange = true)
+    public StateMachine(State start, bool resetOnChange = true)
     {
         this.reset = resetOnChange;
         this.start = start;
@@ -36,7 +36,7 @@ public class StateMachine : IDraw
         timer = 0f;
     }
 
-    public StateMachine(in State start, float delta, bool resetOnChange = true)
+    public StateMachine(State start, float delta, bool resetOnChange = true)
     {
         this.reset = resetOnChange;
         this.start = start;
@@ -51,10 +51,10 @@ public class StateMachine : IDraw
         ForceState(start);
     }
 
-    public void Restart(in State state)
+    public void Restart(State state)
     {
         active = true;
-        ForceState(in state);
+        ForceState(state);
     }
 
     public void Update(float t)
@@ -123,7 +123,7 @@ public class StateMachine : IDraw
         delta = tim;
     }
 
-    public void ForceState(in State state)
+    public void ForceState(State state)
     {
         if (reset)
         {
@@ -133,19 +133,19 @@ public class StateMachine : IDraw
         state.Start();
     }
 
-    public void Draw(in SpriteBatch batch)
+    public void Draw(SpriteBatch batch)
     {
         if (active)
         {
-            current.Draw(in batch);
+            current.Draw(batch);
         }
     }
 
-    public void DrawAdditive(in SpriteBatch batch)
+    public void DrawAdditive(SpriteBatch batch)
     {
         if (active)
         {
-            current.DrawAdditive(in batch);
+            current.DrawAdditive(batch);
         }
     }
 }

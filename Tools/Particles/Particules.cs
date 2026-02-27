@@ -5,7 +5,7 @@ namespace FriteCollection2.Tools.Particles;
 
 public interface IParticle<Settings> : IDisposable, IDraw
 {
-    public void Initialize(in Settings settings);
+    public void Initialize(Settings settings);
     public void Update(float dt);
     public bool Alive { get; }
 }
@@ -27,7 +27,7 @@ public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle
 
     private Sets settings;
 
-    public ParticleGenerator(ushort capacity, ushort pps, in Sets settings)
+    public ParticleGenerator(ushort capacity, ushort pps, Sets settings)
     {
         this.delay = 1f / pps;
         _data = new P[capacity];
@@ -66,7 +66,7 @@ public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle
         if (!_data[index].Alive)
         {
             _timers[index] = 0f;
-            _data[index].Initialize(in settings);
+            _data[index].Initialize(settings);
             ++index;
             if (index >= _data.Length)
                 index = 0;
@@ -97,12 +97,12 @@ public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle
         }
     }
 
-    public void Draw(in SpriteBatch batch)
+    public void Draw(SpriteBatch batch)
     {
         for (ushort i = 0; i < _data.Length; ++i)
         {
             if (_data[i].Alive)
-                _data[i].Draw(in batch);
+                _data[i].Draw(batch);
         }
     }
 

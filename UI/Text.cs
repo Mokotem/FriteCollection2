@@ -86,11 +86,11 @@ public class Text : UI
         textRect.Y -= 2;
     }
 
-    public override void Draw(in SpriteBatch batch)
+    public override void Draw(SpriteBatch batch)
     {
         if (Active)
         {
-            Renderer.Draw(in batch, textRect.Location);
+            Renderer.Draw(batch, textRect.Location);
         }
     }
 }

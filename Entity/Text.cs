@@ -45,7 +45,7 @@ public class Text : Renderer, IDraw
         this._scale = StringRenderer.Evaluate(value);
     }
 
-    public void Draw(in SpriteBatch batch)
+    public void Draw(SpriteBatch batch)
     {
         if (!hide)
         {

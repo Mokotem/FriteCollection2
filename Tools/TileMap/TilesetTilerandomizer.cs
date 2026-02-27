@@ -25,7 +25,7 @@ public class TileSet : IDisposable
 
     internal readonly Settings settings;
 
-    public TileSet(Texture2D texture, in Settings sets)
+    public TileSet(Texture2D texture, Settings sets)
     {
         sheet = new Point(texture.Width, texture.Height);
         this.settings = sets;
@@ -70,7 +70,7 @@ public class TileSet : IDisposable
         );
     }
 
-    public virtual Rectangle GetRectangle(int index, in Random rand)
+    public virtual Rectangle GetRectangle(int index, Random rand)
     {
         return GetRectangle(index);
     }
@@ -86,7 +86,7 @@ public class TileSet : IDisposable
         );
     }
 
-    public virtual Rectangle GetRectangle(Point p, in Random rand)
+    public virtual Rectangle GetRectangle(Point p, Random rand)
     {
         return GetRectangle(p);
     }
@@ -103,33 +103,33 @@ public class TileSetRandomized : TileSet
 
 
     public TileSetRandomized
-        (Texture2D texture, in Settings sets, in TileRandomizer[] randomizer)
-        : base(texture, in sets)
+        (Texture2D texture, Settings sets, TileRandomizer[] randomizer)
+        : base(texture, sets)
     {
         this.randomizers = randomizer;
     }
 
-    public override Rectangle GetRectangle(int index, in Random rand)
+    public override Rectangle GetRectangle(int index, Random rand)
     {
         Point pos = new Point(index % Xlenght, index / Xlenght);
         foreach (TileRandomizer r in randomizers)
         {
             if (r.Has(pos))
             {
-                pos = r.GetTile(pos, in rand);
+                pos = r.GetTile(pos, rand);
                 return base.GetRectangle(pos);
             }
         }
         return base.GetRectangle(pos);
     }
 
-    public override Rectangle GetRectangle(Point p, in Random rand)
+    public override Rectangle GetRectangle(Point p, Random rand)
     {
         foreach (TileRandomizer r in randomizers)
         {
             if (r.Has(p))
             {
-                p = r.GetTile(p, in rand);
+                p = r.GetTile(p, rand);
                 return base.GetRectangle(p);
             }
         }
@@ -186,7 +186,7 @@ public class TileRandomizer
             return PointInRect(p, rect1);
     }
 
-    public Point GetTile(Point p, in Random rand)
+    public Point GetTile(Point p, Random rand)
     {
         if (twoRectangle)
         {

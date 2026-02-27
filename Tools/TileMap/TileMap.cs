@@ -32,7 +32,7 @@ public class TileMap : IDisposable, IDraw
         }
 
         public Settings(short back, short ground, short general, short fore,
-            string[] _tilesets, in Dictionary<char, Hitbox.Rectangle> _hitReplaces)
+            string[] _tilesets, Dictionary<char, Hitbox.Rectangle> _hitReplaces)
         {
             layers = new float[4]
             {
@@ -79,7 +79,7 @@ public class TileMap : IDisposable, IDraw
         }
     }
 
-    public TileMap(IOgmoFileWithLayer file, in Settings settings, int seed, in SpriteBatch batch, GraphicsDevice device)
+    public TileMap(IOgmoFileWithLayer file, Settings settings, int seed, SpriteBatch batch, GraphicsDevice device)
     {
         System.Random rand = new System.Random(seed);
 
@@ -145,7 +145,7 @@ public class TileMap : IDisposable, IDraw
                                             _refTileSet.settings.tileSize.X,
                                             _refTileSet.settings.tileSize.Y
                                         ),
-                                        _refTileSet.GetRectangle(l.data2D[y + starty][x + startx], in rand),
+                                        _refTileSet.GetRectangle(l.data2D[y + starty][x + startx], rand),
                                         Color.White);
                                     visited[x + startx, y + starty] = true;
                                 }
@@ -207,7 +207,7 @@ public class TileMap : IDisposable, IDraw
                                     _refTileSet.settings.tileSize.X,
                                     _refTileSet.settings.tileSize.Y
                                 ),
-                                _refTileSet.GetRectangle(data.data2D[y][x], in rand),
+                                _refTileSet.GetRectangle(data.data2D[y][x], rand),
                                 Color.White
                             );
                         }
@@ -222,7 +222,7 @@ public class TileMap : IDisposable, IDraw
 
     private Hitbox.Rectangle[] savedHitboxes;
 
-    private bool GetNextHole(in bool[,] done, char key, out Point pos)
+    private bool GetNextHole(bool[,] done, char key, out Point pos)
     {
         for(int x = 0; x < CountX; x++)
         {
@@ -299,7 +299,7 @@ public class TileMap : IDisposable, IDraw
         }
     }
 
-    private Hitbox.Rectangle CreateHitboxAt(Hitbox.Rectangle model, char envi, Point pos, in bool[,] done)
+    private Hitbox.Rectangle CreateHitboxAt(Hitbox.Rectangle model, char envi, Point pos, bool[,] done)
     {
         Rectangle r = new Rectangle(pos.X, pos.Y, 1, 1);
 
@@ -335,9 +335,9 @@ public class TileMap : IDisposable, IDraw
         foreach (char key in _settings.hitModels.Keys)
         {
             done = new bool[CountX, CountY];
-            while (GetNextHole(in done, key, out Point pos))
+            while (GetNextHole(done, key, out Point pos))
             {
-                result.Add(CreateHitboxAt(_settings.hitModels[key], key, pos, in done));
+                result.Add(CreateHitboxAt(_settings.hitModels[key], key, pos, done));
             }
         }
 
@@ -368,7 +368,7 @@ public class TileMap : IDisposable, IDraw
         return new Rectangle(ToMap(r.Location), ToMap(r.Size));
     }
 
-    public void Draw(byte i, in SpriteBatch batch)
+    public void Draw(byte i, SpriteBatch batch)
     {
         batch.Draw
         (
@@ -389,11 +389,11 @@ public class TileMap : IDisposable, IDraw
         );
     }
 
-    public void Draw(in SpriteBatch batch)
+    public void Draw(SpriteBatch batch)
     {
         for (byte i = 0; i < BlockLayerCount; ++i)
         {
-            Draw(i, in batch);
+            Draw(i, batch);
         }
     }
 

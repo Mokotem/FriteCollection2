@@ -360,11 +360,11 @@ public abstract class UI : IDraw
         return true;
     }
 
-    public void DrawChilds(in SpriteBatch batch)
+    public void DrawChilds(SpriteBatch batch)
     {
         foreach (UI c in childs)
         {
-            c.Draw(in batch);
+            c.Draw(batch);
         }
     }
 
@@ -374,9 +374,9 @@ public abstract class UI : IDraw
             this.childs.Add(value);
     }
 
-    public virtual void Draw(in SpriteBatch batch)
+    public virtual void Draw(SpriteBatch batch)
     {
-        DrawChilds(in batch);
+        DrawChilds(batch);
     }
 
     public void FlexChildsHorizontal(int margin = 2)
@@ -403,9 +403,9 @@ public abstract class UI : IDraw
     /// <summary>
     /// barbar
     /// </summary>
-    public static void DrawRoot(in SpriteBatch batch)
+    public static void DrawRoot(SpriteBatch batch)
     {
-        screen.Draw(in batch);
+        screen.Draw(batch);
     }
 }
 

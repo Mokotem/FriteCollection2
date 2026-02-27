@@ -10,7 +10,7 @@
 *.userosscache
 *.sln.docstates
 
-# User-specific files (MonoDevelop/Xamarin Studio)
+# User-specific files (MonoDevelop/XamarStudio)
 *.userprefs
 
 # Mono auto generated files
@@ -35,7 +35,7 @@ bld/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
-# Uncomment if you have tasks that create the project's static files in wwwroot
+# Uncomment if you have tasks that create the project's static files wwwroot
 #wwwroot/
 
 # Visual Studio 2017 auto generated files
@@ -182,14 +182,14 @@ publish/
 # Publish Web Output
 *.[Pp]ublish.xml
 *.azurePubxml
-# Note: Comment the next line if you want to checkin your web deploy settings,
+# Note: Comment the next line if you want to checkyour web deploy settings,
 # but database connection strings (with potential passwords) will be unencrypted
 *.pubxml
 *.publishproj
 
 # Microsoft Azure Web App publish settings. Comment the next line if you want to
-# checkin your Azure Web App publish settings, but sensitive information contained
-# in these scripts will be unencrypted
+# checkyour Azure Web App publish settings, but sensitive information contained
+# these scripts will be unencrypted
 PublishScripts/
 
 # NuGet Packages
@@ -224,9 +224,9 @@ _pkginfo.txt
 *.appxupload
 
 # Visual Studio cache files
-# files ending in .cache can be ignored
+# files ending .cache can be ignored
 *.[Cc]ache
-# but keep track of directories ending in .cache
+# but keep track of directories ending .cache
 !?*.[Cc]ache/
 
 # Others
@@ -278,7 +278,7 @@ ServiceFabricBackup/
 # Microsoft Fakes
 FakesAssemblies/
 
-# GhostDoc plugin setting file
+# GhostDoc plugsetting file
 *.GhostDoc.xml
 
 # Node.js Tools for Visual Studio
@@ -344,7 +344,7 @@ ASALocalRun/
 # NVidia Nsight GPU debugger configuration file
 *.nvuser
 
-# MFractors (Xamarin productivity tool) working folder
+# MFractors (Xamarproductivity tool) working folder
 .mfractor/
 
 # Local History for Visual Studio
@@ -353,7 +353,7 @@ ASALocalRun/
 # BeatPulse healthcheck temp database
 healthchecksdb
 
-# Backup folder for Package Reference Convert tool in Visual Studio 2017
+# Backup folder for Package Reference Convert tool Visual Studio 2017
 MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder

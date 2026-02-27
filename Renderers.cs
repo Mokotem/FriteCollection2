@@ -111,7 +111,7 @@ public class TextureRenderer : Renderer
 
     public TextureRenderer(UI.UI parent, Color color, Texture2D texture) : this(parent, texture, color) { }
 
-    public virtual void Draw(in SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation, Color c)
+    public virtual void Draw(SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation, Color c)
     {
         if (!hide)
         {
@@ -120,23 +120,23 @@ public class TextureRenderer : Renderer
     }
 
 
-    public void Draw(in SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation)
+    public void Draw(SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation)
     {
-        Draw(in batch, rectangle, centerPoint, rotation, Color);
+        Draw(batch, rectangle, centerPoint, rotation, Color);
     }
 
-    public void Draw(in SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint)
+    public void Draw(SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint)
     {
-        Draw(in batch, rectangle, centerPoint, 0f);
+        Draw(batch, rectangle, centerPoint, 0f);
     }
-    public void Draw(in SpriteBatch batch, Rectangle rectangle, Color c)
+    public void Draw(SpriteBatch batch, Rectangle rectangle, Color c)
     {
-        Draw(in batch, rectangle, Vector2.Zero, 0f, c);
+        Draw(batch, rectangle, Vector2.Zero, 0f, c);
     }
 
-    public void Draw(in SpriteBatch batch, Rectangle rectangle)
+    public void Draw(SpriteBatch batch, Rectangle rectangle)
     {
-        Draw(in batch, rectangle, Color);
+        Draw(batch, rectangle, Color);
     }
 }
 
@@ -406,7 +406,7 @@ public class StringRenderer : Renderer
         OutlineColor = OutlineRenderer._default;
     }
 
-    public void Draw(in SpriteBatch batch, Point pos, Vector2 centerPoint, float rotation, Color c, float layer)
+    public void Draw(SpriteBatch batch, Point pos, Vector2 centerPoint, float rotation, Color c, float layer)
     {
         if (!hide)
         {
@@ -422,34 +422,34 @@ public class StringRenderer : Renderer
         }
     }
 
-    public void Draw(in SpriteBatch batch, Point pos, Vector2 centerPoint, float rotation, Color c)
+    public void Draw(SpriteBatch batch, Point pos, Vector2 centerPoint, float rotation, Color c)
     {
         if (!hide)
             batch.DrawString(this.font, Text, pos.ToVector2(), c, rotation, centerPoint, _scalefactor, effect, _layer);
     }
 
-    public void Draw(in SpriteBatch batch, Point position, Vector2 centerPoint, float rotation)
+    public void Draw(SpriteBatch batch, Point position, Vector2 centerPoint, float rotation)
     {
-        Draw(in batch, position, centerPoint, rotation, Color, this._layer);
+        Draw(batch, position, centerPoint, rotation, Color, this._layer);
     }
 
-    public void Draw(in SpriteBatch batch, Point position, Vector2 centerPoint)
+    public void Draw(SpriteBatch batch, Point position, Vector2 centerPoint)
     {
-        Draw(in batch, position, centerPoint, 0f);
+        Draw(batch, position, centerPoint, 0f);
     }
 
-    public void Draw(in SpriteBatch batch, Point position, Color c)
+    public void Draw(SpriteBatch batch, Point position, Color c)
     {
-        Draw(in batch, position, Vector2.Zero, 0f, c, _layer);
+        Draw(batch, position, Vector2.Zero, 0f, c, _layer);
     }
 
-    public void Draw(in SpriteBatch batch, Point position, Color c, float layer)
+    public void Draw(SpriteBatch batch, Point position, Color c, float layer)
     {
-        Draw(in batch, position, Vector2.Zero, 0f, c, layer);
+        Draw(batch, position, Vector2.Zero, 0f, c, layer);
     }
 
-    public void Draw(in SpriteBatch batch, Point position)
+    public void Draw(SpriteBatch batch, Point position)
     {
-        Draw(in batch, position, Color);
+        Draw(batch, position, Color);
     }
 }

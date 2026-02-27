@@ -13,11 +13,11 @@ internal class HitboxLayer : List<Hitbox>, IDraw
         this.debugColor = debugColor;
     }
 
-    public void Draw(in SpriteBatch batch)
+    public void Draw(SpriteBatch batch)
     {
         foreach (Hitbox hit in this)
         {
-            hit.Draw(in batch);
+            hit.Draw(batch);
         }
     }
 }

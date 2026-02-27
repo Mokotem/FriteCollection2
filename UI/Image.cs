@@ -61,12 +61,12 @@ public class Image : UI
         this.Renderer.Texture = tex;
     }
 
-    public override void Draw(in SpriteBatch batch)
+    public override void Draw(SpriteBatch batch)
     {
         if (Active)
         {
-            Renderer.Draw(in batch, rect);
-            base.Draw(in batch);
+            Renderer.Draw(batch, rect);
+            base.Draw(batch);
         }
     }
 }

@@ -17,7 +17,7 @@ public class Space
     public static Point Camera = Point.Zero;
 
     internal static Rectangle parent;
-    public static void SetScreenResolution(in Environment env)
+    public static void SetScreenResolution(Environment env)
     {
         parent = env.TargetRect;
     }

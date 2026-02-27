@@ -81,7 +81,7 @@ public class OutlineRenderer : TextureRenderer
     public Color OutlineColor;
     public bool outline = true;
 
-    public void DrawOutline(in SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation, Color c, float layer)
+    public void DrawOutline(SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation, Color c, float layer)
     {
         foreach (Point p in outLinePositions)
         {
@@ -91,30 +91,30 @@ public class OutlineRenderer : TextureRenderer
         }
     }
 
-    public void DrawOutline(in SpriteBatch batch, Rectangle rectangle)
+    public void DrawOutline(SpriteBatch batch, Rectangle rectangle)
     {
-        this.DrawOutline(in batch, rectangle, Vector2.Zero, 0f, OutlineColor, _oolayer);
+        this.DrawOutline(batch, rectangle, Vector2.Zero, 0f, OutlineColor, _oolayer);
     }
 
-    public void DrawOutline(in SpriteBatch batch, Rectangle rectangle, Color c, float layer)
+    public void DrawOutline(SpriteBatch batch, Rectangle rectangle, Color c, float layer)
     {
-        this.DrawOutline(in batch, rectangle, Vector2.Zero, 0f, c, layer);
+        this.DrawOutline(batch, rectangle, Vector2.Zero, 0f, c, layer);
     }
 
-    public void DrawOutline(in SpriteBatch batch, Rectangle rectangle, Color c)
+    public void DrawOutline(SpriteBatch batch, Rectangle rectangle, Color c)
     {
-        this.DrawOutline(in batch, rectangle, Vector2.Zero, 0f, c, _layer);
+        this.DrawOutline(batch, rectangle, Vector2.Zero, 0f, c, _layer);
     }
 
-    public void DrawBody(in SpriteBatch batch, Rectangle rectangle)
+    public void DrawBody(SpriteBatch batch, Rectangle rectangle)
     {
         this.Draw(batch, rectangle, Vector2.Zero, 0f);
     }
 
-    public override void Draw(in SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation, Color c)
+    public override void Draw(SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation, Color c)
     {
         if (outline)
-            DrawOutline(in batch, rectangle, centerPoint, rotation, OutlineColor, _oolayer);
+            DrawOutline(batch, rectangle, centerPoint, rotation, OutlineColor, _oolayer);
         base.Draw(batch, rectangle, centerPoint, rotation, c);
     }
 }
