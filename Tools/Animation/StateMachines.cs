@@ -98,6 +98,13 @@ public class StateMachine : IDraw
 
     public void UpdateDelta(float dt)
     {
+#if DEBUG
+        if (!deltaMode)
+        {
+            throw new System.Exception("ooo éé pas delta mode");
+        }
+#endif
+
         if (active)
         {
             timer += dt;
