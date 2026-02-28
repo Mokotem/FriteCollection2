@@ -30,8 +30,7 @@ public abstract partial class Hitbox
             );
 
         public Point offset;
-        public Align IsInfinitOnX;
-        public Align IsInfinitOnY;
+        public bool infinitLeft, infinitRight, infinitUp, infinitDown;
 
         public Vector2 CenterPoint => new Vector2((_left + _right) / 2f, (_up + _down) / 2f);
 
@@ -79,8 +78,15 @@ public abstract partial class Hitbox
 
         private bool Intersect(Rectangle col)
         {
-            return !(_right < col._left || _left > col._right)  // truc de batard du prof de bdd
-                    && !(_down < col._up || _up > col._down);
+            if (!col.infinitRight && _left > col._right)
+                return false;
+            if (!col.infinitLeft && _right < col._left)
+                return false;
+            if (!col.infinitDown && _up > col._down)
+                return false;
+            if (!col.infinitUp && _down < col._up)
+                return false;
+            return true;
         }
 
         public bool Check(byte layer, ConditionToCheckCollision condition, out Rectangle collider)
@@ -138,9 +144,11 @@ public abstract partial class Hitbox
                     bool touchLeft, touchRight, touchUp, touchDown;
 
                     if (!MakeCollisionRange(this._left, this._right, col._left, col._right,
+                        col.infinitLeft, col.infinitRight,
                         out touchLeft, out touchRight,
                         out float dx, out isRight, out isfullx)
                      || !MakeCollisionRange(this._up, this._down, col._up, col._down,
+                        col.infinitUp, col.infinitDown,
                         out touchUp, out touchDown,
                         out float dy, out isDown, out isfully))
                     {
@@ -247,18 +255,29 @@ public abstract partial class Hitbox
         }
 
         private static bool MakeCollisionRange(float a, float b, float x, float y,
+            bool ileft, bool iright,
             out bool touchLeftCorner,
             out bool touchRightCorner,
             out float distance,
             out bool isRight,
             out bool both)
         {
+            if (ileft && iright)
+            {
+                distance = -1;
+                isRight = true;
+                both = true;
+                touchLeftCorner = true;
+                touchRightCorner = true;
+                return true;
+            }
+
             float dr = b - x;
             touchLeftCorner = false;
             touchRightCorner = false;
             both = false;
 
-            if (dr <= 0)
+            if (dr <= 0 && !ileft)
             {
                 distance = 0f;
                 isRight = false;
@@ -266,11 +285,19 @@ public abstract partial class Hitbox
             }
 
             float dl = y - a;
-            if (dl <= 0)
+            if (dl <= 0 && !iright)
             {
                 distance = 0f;
                 isRight = false;
                 return false;
+            }
+
+            if (dr < 0 || dl < 0)
+            {
+                both = true;
+                distance = -1f;
+                isRight = false;
+                return true;
             }
 
             if (dr < dl)
@@ -397,9 +424,11 @@ public abstract partial class Hitbox
             bool touchLeft, touchRight, touchUp, touchDown;
 
             if (!MakeCollisionRange(this._left, this._right, col._left, col._right,
+                col.infinitLeft, col.infinitRight,
                 out touchLeft, out touchRight,
                 out float dx, out isRight, out isfullx)
              || !MakeCollisionRange(this._up, this._down, col._up, col._down,
+                col.infinitUp, col.infinitDown,
                 out touchUp, out touchDown,
                 out float dy, out isDown, out isfully))
             {
@@ -445,6 +474,11 @@ public abstract partial class Hitbox
 
         private static bool DoIChoseTheSideX(bool isfullx, bool isfully, float dx, float dy)
         {
+            if (dx < 0)
+                return false;
+            if (dy < 0)
+                return true;
+
             if (isfullx == isfully)
             {
                 return dx < dy;
