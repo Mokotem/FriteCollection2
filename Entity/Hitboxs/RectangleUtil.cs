@@ -18,13 +18,15 @@ public abstract partial class Hitbox
 
         public static int GetMost(CollisionData<Rectangle>[] cols, Sides side, Critere crit)
         {
+			bool n = true;
 			int max = 0;
 
             for (int i = 1; i < cols.Length; i++)
             {
-                if (cols[i].side == side && crit(cols[i].collider) > crit(cols[max].collider))
+                if (cols[i].side == side && (n || crit(cols[i].collider) > crit(cols[max].collider)))
                 {
                     max = i;
+					n = false;
                 }
             }
 
@@ -38,7 +40,7 @@ public abstract partial class Hitbox
                 Sides.Up => GetMost(rects, Sides.Up, (Hitbox.Rectangle r) => r._down),
                 Sides.Left => GetMost(rects, Sides.Left, (Hitbox.Rectangle r) => r._right),
                 Sides.Right => GetMost(rects, Sides.Right, (Hitbox.Rectangle r) => -r._left),
-                _ => GetMost(rects, Sides.Down, (Hitbox.Rectangle r) => -r._up),
+                Sides.Down => GetMost(rects, Sides.Down, (Hitbox.Rectangle r) => -r._up),
             };
         }
 

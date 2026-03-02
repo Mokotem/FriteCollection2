@@ -322,11 +322,11 @@ public class TileMap : IDisposable, IDraw
 
         Hitbox.Rectangle result = new Hitbox.Rectangle(this._space, model.Tags);
 
-        if (r.X == 0)
+        if (r.X < 1)
             result.infinitLeft = true;
         if (r.Right >= CountX)
             result.infinitRight = true;
-        if (r.Y == 0)
+        if (r.Y < 1)
             result.infinitUp = true;
         if (r.Bottom >= CountY)
             result.infinitDown = true;

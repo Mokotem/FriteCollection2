@@ -288,7 +288,7 @@ public abstract partial class Hitbox
             if (dl <= 0 && !iright)
             {
                 distance = 0f;
-                isRight = false;
+                isRight = true;
                 return false;
             }
 
@@ -297,6 +297,22 @@ public abstract partial class Hitbox
                 both = true;
                 distance = -1f;
                 isRight = false;
+                return true;
+            }
+
+            if (ileft)
+            {
+                isRight = false;
+                touchRightCorner = true;
+                distance = dl;
+                return true;
+            }
+
+            if (iright)
+            {
+                isRight = true;
+                touchRightCorner = true;
+                distance = dr;
                 return true;
             }
 
@@ -310,6 +326,7 @@ public abstract partial class Hitbox
                 distance = dl;
                 isRight = false;
             }
+
 
             if (b <= y)
             {
