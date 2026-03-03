@@ -5,12 +5,13 @@ using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using System;
 using System.Collections.Generic;
-using System.IO.Pipelines;
 
 namespace FriteCollection2.Tools.TileMap;
 
 public class TileMap : IDisposable, IDraw
 {
+    private const byte gridLayer = 0;
+
     public class Settings
     {
         internal readonly Dictionary<string, TileSet> TileSets;
@@ -39,7 +40,7 @@ public class TileMap : IDisposable, IDraw
                 TextureRenderer.ToLayer(back),
                 TextureRenderer.ToLayer(ground),
                 TextureRenderer.ToLayer(general),
-                TextureRenderer.ToLayer(fore),
+                TextureRenderer.ToLayer(fore)
             };
 
             this.TileSets = new Dictionary<string, TileSet>();
@@ -79,6 +80,17 @@ public class TileMap : IDisposable, IDraw
         }
     }
 
+    private byte TayerToTarget(byte layer)
+    {
+        return (layer) switch
+        {
+            3 or 4 => 3,
+            5 or 6 => 2,
+            7 => 1,
+            _ => 0
+        };
+    }
+
     public TileMap(IOgmoFileWithLayer file, Settings settings, int seed, SpriteBatch batch, GraphicsDevice device)
     {
         System.Random rand = new System.Random(seed);
@@ -93,131 +105,142 @@ public class TileMap : IDisposable, IDraw
         _space = new Space(file.width, file.height);
         _targets = new RenderTarget2D[BlockLayerCount];
 
-        System.Random r = new System.Random();
-
-        for(byte layer_id = 0; layer_id < file.layers.Length; layer_id++)
+        OgmoLayerBreakable l = file.layers[2] as OgmoLayerBreakable;
+        List<FriteCollection2.Entity.Object> walls = new List<FriteCollection2.Entity.Object>();
+        List<Point> posb = new List<Point>();
+        bool[,] visited = new bool[CountX, CountY];
+        for (ushort y = 0; y < CountY; y++)
         {
-            OgmoLayer layer = file.layers[layer_id];
-            if (layer is OgmoLayerBreakable)
+            for (ushort x = 0; x < CountX; x++)
             {
-                OgmoLayerBreakable l = layer as OgmoLayerBreakable;
-                List<FriteCollection2.Entity.Object> walls = new List<FriteCollection2.Entity.Object>();
-                List<Point> posb = new List<Point>();
-                bool[,] visited = new bool[CountX, CountY];
-                for (ushort y = 0; y < CountY; y++)
+                if (l.data2D[y][x] >= 0 && !visited[x, y])
                 {
-                    for (ushort x = 0; x < CountX; x++)
+                    ushort startx = x, starty = y;
+                    ushort width = 0, height = 0;
+                    while (x < CountX && l.data2D[y][x] >= 0 && !visited[x, y])
                     {
-                        if (l.data2D[y][x] >= 0 && !visited[x, y])
-                        {
-                            ushort startx = x, starty = y;
-                            ushort width = 0, height = 0;
-                            while (x < CountX && l.data2D[y][x] >= 0 && !visited[x, y])
-                            {
-                                x++;
-                                width++;
-                            }
-                            x = startx;
-                            while (y < CountY && l.data2D[y][x] >= 0 && !visited[x, y])
-                            {
-                                y++;
-                                height++;
-                            }
-                            y = starty;
-
-                            TileSet _refTileSet = settings.TileSets[l.tileset];
-                            RenderTarget2D tex = new RenderTarget2D(device,
-                                width * _refTileSet.settings.tileSize.X,
-                                height * _refTileSet.settings.tileSize.Y);
-                            device.SetRenderTarget(tex);
-                            device.Clear(Color.Transparent);
-                            batch.Begin(samplerState: SamplerState.PointClamp);
-
-                            for (x = 0; x < width; x++)
-                            {
-                                for (y = 0; y < height; y++)
-                                {
-                                    batch.Draw(
-                                        _refTileSet.Texture,
-                                        new Rectangle(
-                                            x * _refTileSet.settings.tileSize.X,
-                                            y * _refTileSet.settings.tileSize.Y,
-                                            _refTileSet.settings.tileSize.X,
-                                            _refTileSet.settings.tileSize.Y
-                                        ),
-                                        _refTileSet.GetRectangle(l.data2D[y + starty][x + startx], rand),
-                                        Color.White);
-                                    visited[x + startx, y + starty] = true;
-                                }
-                            }
-
-                            batch.End();
-
-                            FriteCollection2.Entity.Object wall = new FriteCollection2.Entity.Object();
-                            wall.Renderer.Texture = tex;
-                            wall.Scale = new Vector2(
-                                width * _refTileSet.settings.tileSize.X,
-                                height * _refTileSet.settings.tileSize.Y);
-                            walls.Add(wall);
-                            posb.Add(new Point(startx, starty));
-
-                            x = (ushort)(startx + width);
-                        }
+                        x++;
+                        width++;
                     }
-                }
-
-                this._breakableWalls = walls.ToArray();
-                this._breakPos = posb.ToArray();
-                walls = null;
-            }
-            else if (layer is OgmoLayerBlock)
-            {
-                int target_id = layer_id - 2;
-                if (target_id > 1)
-                    target_id--;
-                target_id = BlockLayerCount - 1 - target_id;
-
-                _targets[target_id] = new RenderTarget2D
-                (
-                    device,
-                    file.width,
-                    file.height
-                );
-
-                TileSet _refTileSet = settings.TileSets[layer.tileset];
-
-                device.SetRenderTarget(_targets[target_id]);
-                device.Clear(Color.Transparent);
-                batch.Begin(samplerState: SamplerState.PointClamp);
-
-                OgmoLayerBlock data = layer as OgmoLayerBlock;
-                for (ushort x = 0; x < CountX; x++)
-                {
-                    for (ushort y = 0; y < CountY; y++)
+                    x = startx;
+                    while (y < CountY && l.data2D[y][x] >= 0 && !visited[x, y])
                     {
-                        if (data.data2D[y][x] >= 0)
+                        y++;
+                        height++;
+                    }
+                    y = starty;
+
+                    TileSet _refTileSet = settings.TileSets[l.tileset];
+                    RenderTarget2D tex = new RenderTarget2D(device,
+                        width * _refTileSet.settings.tileSize.X,
+                        height * _refTileSet.settings.tileSize.Y);
+                    device.SetRenderTarget(tex);
+                    device.Clear(Color.Transparent);
+                    batch.Begin(samplerState: SamplerState.PointClamp);
+
+                    for (x = 0; x < width; x++)
+                    {
+                        for (y = 0; y < height; y++)
                         {
-                            batch.Draw
-                            (
+                            batch.Draw(
                                 _refTileSet.Texture,
-                                new Rectangle
-                                (
+                                new Rectangle(
                                     x * _refTileSet.settings.tileSize.X,
                                     y * _refTileSet.settings.tileSize.Y,
                                     _refTileSet.settings.tileSize.X,
                                     _refTileSet.settings.tileSize.Y
                                 ),
-                                _refTileSet.GetRectangle(data.data2D[y][x], rand),
-                                Color.White
-                            );
+                                _refTileSet.GetRectangle(l.data2D[y + starty][x + startx], rand),
+                                Color.White);
+                            visited[x + startx, y + starty] = true;
                         }
                     }
+
+                    batch.End();
+
+                    FriteCollection2.Entity.Object wall = new FriteCollection2.Entity.Object();
+                    wall.Renderer.Texture = tex;
+                    wall.Scale = new Vector2(
+                        width * _refTileSet.settings.tileSize.X,
+                        height * _refTileSet.settings.tileSize.Y);
+                    walls.Add(wall);
+                    posb.Add(new Point(startx, starty));
+
+                    x = (ushort)(startx + width);
                 }
-                batch.End();
             }
         }
 
+        for (byte i = 0; i < BlockLayerCount; i++)
+        {
+            _targets[i] = new RenderTarget2D
+            (
+                device,
+                file.width,
+                file.height
+            );
+        }
+
+        device.SetRenderTarget(_targets[3]);
+        device.Clear(Color.Transparent);
+        batch.Begin(samplerState: SamplerState.PointClamp);
+        DrawLayer((OgmoLayerBlock)file.layers[3], settings, batch, rand);
+        DrawLayer((OgmoLayerBlock)file.layers[4], settings, batch, rand);
+        batch.End();
+
+        device.SetRenderTarget(_targets[2]);
+        device.Clear(Color.Transparent);
+        batch.Begin(samplerState: SamplerState.PointClamp);
+        DrawLayer((OgmoLayerBlock)file.layers[5], settings, batch, rand);
+        DrawLayer((OgmoLayerBlock)file.layers[6], settings, batch, rand);
+        batch.End();
+
+        device.SetRenderTarget(_targets[1]);
+        device.Clear(Color.Transparent);
+        batch.Begin(samplerState: SamplerState.PointClamp);
+        DrawLayer((OgmoLayerBlock)file.layers[7], settings, batch, rand);
+        batch.End();
+
+        device.SetRenderTarget(_targets[0]);
+        device.Clear(Color.Transparent);
+        batch.Begin(samplerState: SamplerState.PointClamp);
+        DrawLayer((OgmoLayerBlock)file.layers[8], settings, batch, rand);
+        DrawLayer((OgmoLayerBlock)file.layers[9], settings, batch, rand);
+        batch.End();
+
+        this._breakableWalls = walls.ToArray();
+        this._breakPos = posb.ToArray();
+        walls = null;
+
         Color = Color.White;
+    }
+
+    private void DrawLayer(OgmoLayerBlock layer, Settings settings, SpriteBatch batch, Random rand)
+    {
+        TileSet _refTileSet = settings.TileSets[layer.tileset];
+
+        for (ushort x = 0; x < CountX; x++)
+        {
+            for (ushort y = 0; y < CountY; y++)
+            {
+                if (layer.data2D[y][x] >= 0)
+                {
+                    batch.Draw
+                    (
+                        _refTileSet.Texture,
+                        new Rectangle
+                        (
+                            x * _refTileSet.settings.tileSize.X,
+                            y * _refTileSet.settings.tileSize.Y,
+                            _refTileSet.settings.tileSize.X,
+                            _refTileSet.settings.tileSize.Y
+                        ),
+                        _refTileSet.GetRectangle(layer.data2D[y][x], rand),
+                        Color.White
+                    );
+                }
+            }
+        }
     }
 
     private Hitbox.Rectangle[] savedHitboxes;
@@ -228,7 +251,7 @@ public class TileMap : IDisposable, IDraw
         {
             for (int y = 0; y < CountY; y++)
             {
-                if (!done[x, y] && ((OgmoLayerGrid)_file.layers[0]).grid2D[y][x].Equals(key))
+                if (!done[x, y] && ((OgmoLayerGrid)_file.layers[gridLayer]).grid2D[y][x].Equals(key))
                 {
                     pos = new Point(x, y);
                     return true;
@@ -247,7 +270,7 @@ public class TileMap : IDisposable, IDraw
             return false;
         }
 
-        OgmoLayerGrid grid = (OgmoLayerGrid)_file.layers[0];
+        OgmoLayerGrid grid = (OgmoLayerGrid)_file.layers[gridLayer];
 
         for (int x = r.Left; x < r.Right; x++)
         {
@@ -331,7 +354,7 @@ public class TileMap : IDisposable, IDraw
         if (r.Bottom >= CountY)
             result.infinitDown = true;
 
-        result.offset = ToMap(r.Location + model.offset);
+        result.offset = ToMap(r.Location) + model.offset;
         result.SetScale(ToMap(r.Size) + model.Size);
 
         return result;
@@ -401,7 +424,7 @@ public class TileMap : IDisposable, IDraw
 
     public void Draw(SpriteBatch batch)
     {
-        for (byte i = 0; i < BlockLayerCount; ++i)
+        for (byte i = 0; i < BlockLayerCount; i++)
         {
             Draw(i, batch);
         }

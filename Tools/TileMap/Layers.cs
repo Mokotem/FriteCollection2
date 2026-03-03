@@ -70,7 +70,7 @@ public class LayerTypeDiscriminator : DefaultJsonTypeInfoResolver
                     new JsonDerivedType(typeof(OgmoLayerGeneral), "general"),
                     new JsonDerivedType(typeof(OgmoLayerBackground), "background"),
                     new JsonDerivedType(typeof(OgmoLayerBreakable), "breakable"),
-                    new JsonDerivedType(typeof(OgmoLayerForeground), "foreground")
+                    new JsonDerivedType(typeof(OgmoLayerForeground), "foreground"),
                 }
                 };
             }
