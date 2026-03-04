@@ -256,13 +256,14 @@ public class StringRenderer : Renderer
                 }
                 else if (line > box.X)
                 {
-                    result += "\n" + words[i];
-                    line = taille;
+                    result += "\n" + words[i] + " ";
+                    line = (taille + 1) * fw;
                     lineNumber++;
                 }
                 else
                 {
                     result += words[i] + " ";
+                    line += fw;
                 }
 
                 if (line > textWidth)

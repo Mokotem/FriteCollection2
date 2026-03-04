@@ -173,6 +173,7 @@ public abstract class UI : IDraw
             _MakeSureIHaveNoChild();
 #endif
             rect.Height = height;
+            OnMyScaleChange();
         }
     }
 
@@ -184,21 +185,28 @@ public abstract class UI : IDraw
             _MakeSureIHaveNoChild();
 #endif
             rect.Width = width;
+            OnMyScaleChange();
         }
     }
 
     public void Scale(Extend ext, int width = 0, int height = 0)
     {
-        ScaleX(width);
-        ScaleY(height);
+#if DEBUG
+        _MakeSureIHaveNoChild();
+#endif
+        rect.Width = width;
+        rect.Height = height;
         _SetScale(ext);
         this.OnMyScaleChange();
     }
 
     public void Scale(int width, int height)
     {
-        ScaleX(width);
-        ScaleY(height);
+#if DEBUG
+        _MakeSureIHaveNoChild();
+#endif
+        rect.Width = width;
+        rect.Height = height;
         this.OnMyScaleChange();
     }
 
