@@ -146,7 +146,6 @@ public abstract class UI : IDraw
 #if DEBUG
     private void _MakeSureIHaveNoChild()
     {
-        
         foreach(UI c in childs)
         {
             if (c.Active)
@@ -165,6 +164,7 @@ public abstract class UI : IDraw
         rect.Height += dy;
         this.OnMyScaleChange();
     }
+
     public void ScaleY(int height)
     {
         if (height != rect.Height)

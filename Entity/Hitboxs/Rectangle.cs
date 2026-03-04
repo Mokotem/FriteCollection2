@@ -31,6 +31,28 @@ public abstract partial class Hitbox
 
         public Point offset;
         public bool infinitLeft, infinitRight, infinitUp, infinitDown;
+        public Sides alwaysCollideWidthSide;
+        public void SetAlwaysCollideBasedOnInfinit()
+        {
+            switch (infinitUp, infinitDown, infinitLeft, infinitRight)
+            {
+                case (true, true, true, false):
+                alwaysCollideWidthSide = Sides.Left;
+                return;
+
+                case (true, true, false, true):
+                alwaysCollideWidthSide = Sides.Right;
+                return;
+
+                case (true, false, true, true):
+                alwaysCollideWidthSide = Sides.Up;
+                return;
+
+                case (false, true, true, true):
+                alwaysCollideWidthSide = Sides.Down;
+                return;
+            }
+        }
 
         public Vector2 CenterPoint => new Vector2((_left + _right) / 2f, (_up + _down) / 2f);
 
@@ -38,6 +60,7 @@ public abstract partial class Hitbox
             : base(parent, layer, tags)
         {
             offset = Point.Zero;
+            alwaysCollideWidthSide = Sides.Center;
             SetScale(parent.W, parent.H);
         }
 
@@ -66,6 +89,7 @@ public abstract partial class Hitbox
         {
             SetScale(value.X, value.Y);
         }
+
 
         public override void UpdatePosition(float x, float y)
         {
@@ -155,21 +179,26 @@ public abstract partial class Hitbox
                         continue;
                     }
 
-                    Sides sideCol;
-
-                    if (DoIChoseTheSideX(isfullx, isfully, dx, dy))
-                    {
-                        sideCol = isRight ? Sides.Right : Sides.Left;
-                    }
-                    else
-                    {
-                        sideCol = isDown ? Sides.Down : Sides.Up;
-                    }
 
                     corners[0] |= touchLeft && touchUp;
                     corners[1] |= touchRight && touchUp;
                     corners[2] |= touchLeft && touchDown;
                     corners[3] |= touchRight && touchDown;
+
+                    Sides sideCol;
+                    if (col.alwaysCollideWidthSide == Sides.Center)
+                    {
+                        if (DoIChoseTheSideX(isfullx, isfully, dx, dy))
+                        {
+                            sideCol = isRight ? Sides.Right : Sides.Left;
+                        }
+                        else
+                        {
+                            sideCol = isDown ? Sides.Down : Sides.Up;
+                        }
+                    }
+                    else
+                        sideCol = col.alwaysCollideWidthSide;
 
                     result.Add(new CollisionData<Rectangle>(col, sideCol));
                 }
@@ -294,16 +323,30 @@ public abstract partial class Hitbox
 
             if (dr < 0 || dl < 0)
             {
-                both = true;
                 distance = -1f;
+                both = true;
                 isRight = false;
+                if (ileft && !iright)
+                {
+                    touchLeftCorner = true;
+                    touchRightCorner = false;
+                    isRight = false;
+                    both = false;
+                }
+                else if (iright && !ileft)
+                {
+                    touchRightCorner = true;
+                    touchLeftCorner = false;
+                    isRight = true;
+                    both = false;
+                }
                 return true;
             }
 
             if (ileft)
             {
                 isRight = false;
-                touchRightCorner = true;
+                touchLeftCorner = true;
                 distance = dl;
                 return true;
             }
@@ -492,9 +535,9 @@ public abstract partial class Hitbox
         private static bool DoIChoseTheSideX(bool isfullx, bool isfully, float dx, float dy)
         {
             if (dx < 0)
-                return false;
-            if (dy < 0)
                 return true;
+            if (dy < 0)
+                return false;
 
             if (isfullx == isfully)
             {
@@ -508,9 +551,12 @@ public abstract partial class Hitbox
 
         public override void Draw(SpriteBatch batch)
         {
-            batch.DrawRectangle(
-                new RectangleF(_left - Space.Camera.X, _up - Space.Camera.Y, _width, _height), layers[layer].debugColor,
-                layerDepth: 0);
+            if (active)
+            {
+                batch.DrawRectangle(
+                    new RectangleF(_left - Space.Camera.X, _up - Space.Camera.Y, _width, _height), layers[layer].debugColor,
+                    layerDepth: 0);
+            }
         }
 
         public Rectangle Copy()
@@ -523,6 +569,16 @@ public abstract partial class Hitbox
             r._width = this._width;
             r._height = this._height;
             return r;
+        }
+
+        public override string ToString()
+        {
+            return this.Tags[0] + " " + _width + " " + _height
+                + (isStatic ? " static" : "")
+                + (infinitUp ? " up" : "")
+                + (infinitDown ? " down" : "")
+                + (infinitLeft ? " left" : "")
+                + (infinitRight ? " right" : "");
         }
     }
 }

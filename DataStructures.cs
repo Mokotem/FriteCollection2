@@ -258,14 +258,17 @@ public class Clone : AdvancedExecutable
 
     public override void Draw(SpriteBatch batch)
     {
+
     }
 
     public override void Load(SpriteBatch batch, GraphicsDevice gd)
     {
+
     }
 
     public override void Start()
     {
+
     }
 
     public override void Update(float dt)

@@ -29,7 +29,7 @@ public class Text : Renderer, IDraw
     public float Width => _scale.X;
     public float Height => _scale.Y;
 
-    public bool outline = true;
+    public bool outline;
     public Color OutlineColor;
 
     public void SetPosition(Point pos, Bounds b)
@@ -43,6 +43,8 @@ public class Text : Renderer, IDraw
     {
         this.text = value;
         this._scale = StringRenderer.Evaluate(value);
+        outline = true;
+        OutlineColor = OutlineRenderer._defaultColor;
     }
 
     public void Draw(SpriteBatch batch)
@@ -50,9 +52,10 @@ public class Text : Renderer, IDraw
         if (!hide)
         {
             Point pos = Position - Space.Camera;
+            
             if (outline)
             {
-                batch.Draw(TextureRenderer.Default, new Rectangle(pos.X - 1, pos.Y + 1, _scale.X + 1, _scale.Y),
+                batch.Draw(TextureRenderer.Default, new Rectangle(pos.X - 1, pos.Y + 1, _scale.X + 2, _scale.Y + 2),
                     null,
                     OutlineColor, 0f, Vector2.Zero, effect, _layer + 0.0001f);
             }

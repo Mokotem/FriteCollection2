@@ -153,6 +153,16 @@ public abstract partial class Hitbox : IDraw, IDisposable
         }
     }
 
+    public void UpdatePosition(Point pos)
+    {
+        this.UpdatePosition(pos.X, pos.Y);
+    }
+
+    public void UpdatePosition(Vector2 pos)
+    {
+        this.UpdatePosition(pos.X, pos.Y);
+    }
+
     public abstract bool Check(byte layer, ConditionToCheckCollision condition);
 
     public bool Check()
