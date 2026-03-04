@@ -343,7 +343,8 @@ public abstract class UI : IDraw
 
     protected virtual void OnMyScaleChange()
     {
-
+        ApplyPosition(_lastPos, _lastCenter, _lastx, _lasty);
+        this.OnIShouldUpdatePositionsOfMyChilds();
     }
 
     protected bool AmIVisible()
