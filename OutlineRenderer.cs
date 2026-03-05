@@ -108,7 +108,7 @@ public class OutlineRenderer : TextureRenderer
 
     public void DrawBody(SpriteBatch batch, Rectangle rectangle)
     {
-        this.Draw(batch, rectangle, Vector2.Zero, 0f);
+        batch.Draw(base.Texture, rectangle, null, Color, 0f, Vector2.Zero, effect, _layer);
     }
 
     public override void Draw(SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation, Color c)

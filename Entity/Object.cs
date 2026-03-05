@@ -25,7 +25,7 @@ public class Object : Space, IDraw
         Renderer = new OutlineRenderer(0);
     }
 
-    public void DrawBody(SpriteBatch batch)
+    public virtual void DrawBody(SpriteBatch batch)
     {
         Renderer.DrawBody(batch, this.ToScreen());
     }
