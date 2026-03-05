@@ -142,6 +142,7 @@ public abstract class AdvancedExecutable : IExecutable, IDrawUI, IDisposable
 
 
     public virtual void DrawBackground(SpriteBatch batch) { }
+    public virtual void DrawShaderBefore(SpriteBatch batch, GraphicsDevice device) { }
     public virtual void DrawShader(SpriteBatch batch, GraphicsDevice device) { }
     public virtual void AfterDraw(SpriteBatch batch) { }
     public virtual void DrawUI(SpriteBatch batch, int width, int height) { }
@@ -375,6 +376,46 @@ public class CloneContainer : AdvancedExecutable
         foreach (Clone c in clones)
         {
             c.DrawUI(batch, w, h);
+        }
+    }
+
+    public override void DrawBackground(SpriteBatch batch)
+    {
+        foreach (Clone c in clones)
+        {
+            c.DrawBackground(batch);
+        }
+    }
+
+    public override void DrawMain(SpriteBatch batch)
+    {
+        foreach (Clone c in clones)
+        {
+            c.DrawMain(batch);
+        }
+    }
+
+    public override void DrawShader(SpriteBatch batch, GraphicsDevice device)
+    {
+        foreach (Clone c in clones)
+        {
+            c.DrawShader(batch, device);
+        }
+    }
+
+    public override void DrawShaderBefore(SpriteBatch batch, GraphicsDevice device)
+    {
+        foreach (Clone c in clones)
+        {
+            c.DrawShaderBefore(batch, device);
+        }
+    }
+
+    public override void WhenPaused(float dt)
+    {
+        foreach (Clone c in clones)
+        {
+            c.WhenPaused(dt);
         }
     }
 }
