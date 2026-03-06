@@ -40,9 +40,9 @@ public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle
         this.settings = settings;
     }
 
-    public void Charboner(float dt)
+    public void Charboner(float delta)
     {
-        timer += dt;
+        timer += delta;
         while (timer > delay)
         {
             timer -= delay;
