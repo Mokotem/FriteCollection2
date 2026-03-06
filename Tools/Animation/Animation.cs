@@ -150,20 +150,6 @@ public class AnimationSheet : AnimationBase
         Restart();
     }
 
-    public AnimationSheet(int frameCount, float[] durations, float startTime = 0f)
-    : base(startTime, durations)
-    {
-        this.frameCount = frameCount;
-        Restart();
-    }
-
-    public AnimationSheet(int frameCount, float delay, float startTime = 0f)
-        : base(startTime, delay)
-    {
-        this.frameCount = frameCount;
-        Restart();
-    }
-
     public override void Animate(float timer)
     {
         while (currentKey < frameCount
