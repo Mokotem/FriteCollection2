@@ -154,6 +154,7 @@ public class OgmoFile<LevelValues> : IOgmoFileWithLayer
 
 public class OgmoLayer
 {
+    [JsonIgnore]
     public string name { get; init; }
     //public string _eid { get; init; }
     //public int offsetX { get; init; }
