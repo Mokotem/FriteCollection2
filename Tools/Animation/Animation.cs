@@ -25,6 +25,11 @@ public abstract class AnimationBase
         this.durations = durations;
     }
 
+    public void ChangeDuration(byte id, float value)
+    {
+        this.durations[id] = value;
+    }
+
 
     protected float a, b;
 

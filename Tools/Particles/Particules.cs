@@ -67,6 +67,7 @@ public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle
         {
             _timers[index] = 0f;
             _data[index].Initialize(settings);
+            _data[index].Update(0f);
             ++index;
             if (index >= _data.Length)
                 index = 0;
