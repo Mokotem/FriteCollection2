@@ -13,7 +13,7 @@ public class Image : UI
     {
         this.Renderer = new OutlineRenderer(parent, texture);
         this.Renderer._layer = parent.Depth - 0.01f;
-        this.Renderer.Color = Color.White;
+        this.Renderer.Color = TextureRenderer._defaultColor;
     }
 
     public Image(UI parent, Texture2D texture) : this(parent, texture, texture.Width, texture.Height) { }
