@@ -167,7 +167,7 @@ public abstract partial class Hitbox : IDraw, IDisposable
 
     public bool Check()
     {
-        return Check(this.layer, (Hitbox hit) => true);
+        return Check(this.layer, SelectAllHitboxs);
     }
 
     public bool Check(string tagToCheck)

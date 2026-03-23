@@ -150,9 +150,9 @@ public abstract class AdvancedExecutable : IExecutable, IDrawUI, IDisposable
     public virtual void DrawMain(SpriteBatch batch) { }
 
 
-    public abstract void Update(float dt);
+    public virtual void Update(float dt) { }
 
-    public abstract void Draw(SpriteBatch batch);
+    public virtual void Draw(SpriteBatch batch) { }
 
     public virtual void Dispose() { }
 }
