@@ -287,6 +287,7 @@ public class Clone : AdvancedExecutable
 
     public override void Update(float dt)
     {
+
     }
 }
 
