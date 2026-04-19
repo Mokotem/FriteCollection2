@@ -83,11 +83,14 @@ public class OutlineRenderer : TextureRenderer
 
     public void DrawOutline(SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation, Color c, float layer)
     {
-        foreach (Point p in outLinePositions)
+        if (!hide)
         {
-            batch.Draw(Texture,
-                new Rectangle(rectangle.Location + p, rectangle.Size),
-                null, c, rotation, centerPoint, effect, layer);
+            foreach (Point p in outLinePositions)
+            {
+                batch.Draw(Texture,
+                    new Rectangle(rectangle.Location + p, rectangle.Size),
+                    null, c, rotation, centerPoint, effect, layer);
+            }
         }
     }
 
@@ -108,6 +111,7 @@ public class OutlineRenderer : TextureRenderer
 
     public void DrawBody(SpriteBatch batch, Rectangle rectangle)
     {
+        if (!hide)
         batch.Draw(base.Texture, rectangle, null, Color, 0f, Vector2.Zero, effect, _layer);
     }
 
