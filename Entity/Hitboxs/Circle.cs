@@ -14,7 +14,7 @@ public abstract partial class Hitbox
 
         public Circle(Space parent, byte layer, params string[] tags) : base(parent, layer, tags)
         {
-            circle = new CircleF();
+            circle = new CircleF(parent.CenterPoint, parent.W);
         }
 
         public Circle(Space parent, params string[] tags) : this(parent, 0, tags) { }
@@ -31,26 +31,20 @@ public abstract partial class Hitbox
             get => circle.Position;
             set => circle.Position = value;
         }
-        public float PositionX
-        {
-            get => circle.Position.X;
-            set => circle.Position.X = value;
-        }
-        public float PositionY
-        {
-            get => circle.Position.X;
-            set => circle.Position = value;
-        }
 
-        public bool Check(byte layer, ConditionToCheckCollision condition, out Hitbox.Circle collider, out float marge)
+        public bool Check(byte layer, ConditionToCheckCollision condition, out Hitbox collider, out float marge)
         {
+            base.UpdatePosition();
+
             foreach (Hitbox hit in layers[layer])
             {
-                if (condition(hit))
+                if (hit != this && condition(hit))
                 {
                     if (hit is Circle)
                     {
                         Circle c = (Circle)hit;
+                        c.UpdatePosition();
+
                         marge = c.circle.Radius + this.circle.Radius
                             - Vector2.Distance(c.circle.Center, this.circle.Center);
 
@@ -60,14 +54,25 @@ public abstract partial class Hitbox
                             return true;
                         }
                     }
+                    else if (hit is Line)
+                    {
+                        Line l = (Line)hit;
+
+                        if (l.CheckWith(this, out marge))
+                        {
+                            collider = l;
+                            return true;
+                        }
+                    }
                 }
             }
+
             collider = null;
             marge = -1;
             return false;
         }
 
-        public bool Check(byte layer, ConditionToCheckCollision condition, out Hitbox.Circle collider)
+        public bool Check(byte layer, ConditionToCheckCollision condition, out Hitbox collider)
         {
             return this.Check(layer, condition, out collider, out _);
         }
