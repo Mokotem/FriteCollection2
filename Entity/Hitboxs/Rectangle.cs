@@ -30,7 +30,7 @@ public abstract partial class Hitbox
             (int)float.Round(_height)
             );
 
-        public Point offset;
+        public Point offset = Point.Zero;
         public bool infinitLeft, infinitRight, infinitUp, infinitDown;
         public Sides alwaysCollideWidthSide;
         public void SetAlwaysCollideBasedOnInfinit()
@@ -60,7 +60,6 @@ public abstract partial class Hitbox
         public Rectangle(Space parent, byte layer, params string[] tags)
             : base(parent, layer, tags)
         {
-            offset = Point.Zero;
             alwaysCollideWidthSide = Sides.Center;
             SetScale(parent.W, parent.H);
         }
