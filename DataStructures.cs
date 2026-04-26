@@ -66,12 +66,12 @@ public class Environment : IDraw, IHaveRectangle
 
     public void Draw(SpriteBatch batch)
     {
-        batch.Draw(Target, Rect, Color.White);
+        batch.Draw(Target, Rect, TextureRenderer._defaultColor);
     }
 
     public void Draw(SpriteBatch batch, float depth)
     {
-        batch.Draw(Target, Rect, null, Color.White, 0, Vector2.Zero, SpriteEffects.None, depth);
+        batch.Draw(Target, Rect, null, TextureRenderer._defaultColor, 0, Vector2.Zero, SpriteEffects.None, depth);
     }
 
     public void Draw(SpriteBatch batch, int amount)
@@ -86,7 +86,7 @@ public class Environment : IDraw, IHaveRectangle
     {
         batch.Draw(Target,
              new Rectangle(Rect.X, Rect.Y, Rect.Width, amount),
-             new Rectangle(0, 0, Target.Width, amount), Color.White, 0, Vector2.Zero, SpriteEffects.None,
+             new Rectangle(0, 0, Target.Width, amount), TextureRenderer._defaultColor, 0, Vector2.Zero, SpriteEffects.None,
              depth);
     }
 }

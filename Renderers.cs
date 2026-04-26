@@ -79,6 +79,11 @@ public class TextureRenderer : Renderer
         _defaultTexture = TextureCreator.Create(device, 2, 2, color);
     }
 
+    public static void Draw(SpriteBatch batch, Texture2D tex, Rectangle rect)
+    {
+        batch.Draw(tex, rect, _defaultColor);
+    }
+
     public Texture2D Texture { get; set; }
 
     public int Width => Texture.Width;
