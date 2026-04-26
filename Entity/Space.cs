@@ -52,18 +52,23 @@ public class Space
 
     public RectangleF ToRectangleF() => new RectangleF(Position, Scale);
     public Rectangle ToRectangle() => new Rectangle(
-        (int)float.Round(Position.X),
-        (int)float.Round(Position.Y),
+        ToScreenX(),
+        ToScreenY(),
         (int)float.Round(Scale.X),
         (int)float.Round(Scale.Y)
     );
 
     public Rectangle ToScreen() => new Rectangle(
-        (int)float.Round(Position.X) - Camera.X,
-        (int)float.Round(Position.Y) - Camera.Y,
+        ToScreenX(),
+        ToScreenY(),
         (int)float.Round(Scale.X),
         (int)float.Round(Scale.Y)
     );
+
+    public static int ToScreenX(float posX) => (int)float.Round(posX) - Camera.X;
+
+    public int ToScreenX() => (int)float.Round(Position.X) - Camera.X;
+    public int ToScreenY() => (int)float.Round(Position.Y) - Camera.Y;
 
     public void SetPosition(Vector2 pos, Bounds centerPoint)
     {
