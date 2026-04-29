@@ -66,27 +66,44 @@ public class Environment : IDraw, IHaveRectangle
 
     public void Draw(SpriteBatch batch)
     {
-        batch.Draw(Target, Rect, TextureRenderer._defaultColor);
+        batch.Draw(Target, Rect, Color.White);
+    }
+
+    public void Draw(SpriteBatch batch, Color c)
+    {
+        batch.Draw(Target, Rect, c);
     }
 
     public void Draw(SpriteBatch batch, float depth)
     {
-        batch.Draw(Target, Rect, null, TextureRenderer._defaultColor, 0, Vector2.Zero, SpriteEffects.None, depth);
+        this.Draw(batch, Rect.Height, depth);
     }
 
     public void Draw(SpriteBatch batch, int amount)
     {
-        batch.Draw(Target,
-            new Rectangle(Rect.X, Rect.Y, Rect.Width, amount),
-            new Rectangle(0, 0, Target.Width, amount),
-            Color.White);
+        this.Draw(batch, amount, Depth);
+    }
+
+    public void Draw(SpriteBatch batch, int amount, Color c)
+    {
+        this.Draw(batch, amount, Depth, c);
+    }
+
+    public void Draw(SpriteBatch batch, float depth, Color c)
+    {
+        this.Draw(batch, Rect.Height, depth, c);
     }
 
     public void Draw(SpriteBatch batch, int amount, float depth)
     {
+        this.Draw(batch, amount, depth, Color.White);
+    }
+
+    public void Draw(SpriteBatch batch, int amount, float depth, Color c)
+    {
         batch.Draw(Target,
              new Rectangle(Rect.X, Rect.Y, Rect.Width, amount),
-             new Rectangle(0, 0, Target.Width, amount), TextureRenderer._defaultColor, 0, Vector2.Zero, SpriteEffects.None,
+             new Rectangle(0, 0, Target.Width, amount), c, 0, Vector2.Zero, SpriteEffects.None,
              depth);
     }
 }

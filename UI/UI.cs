@@ -381,6 +381,8 @@ public abstract class UI : IDraw
     {
         if (value.parent == this)
             this.childs.Add(value);
+        else
+            throw new System.Exception("");
     }
 
     public virtual void Draw(SpriteBatch batch)

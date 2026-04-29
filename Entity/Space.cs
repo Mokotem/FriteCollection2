@@ -70,6 +70,11 @@ public class Space
     public int ToScreenX() => (int)float.Round(Position.X) - Camera.X;
     public int ToScreenY() => (int)float.Round(Position.Y) - Camera.Y;
 
+    public static Vector2 FromScreen(Point p)
+    {
+        return new Vector2(p.X + Camera.X, p.Y + Camera.Y);
+    }
+
     public void SetPosition(Vector2 pos, Bounds centerPoint)
     {
         Position = pos - BoundFunc.BoundToVector(centerPoint, Scale.X, Scale.Y);
