@@ -75,12 +75,12 @@ public class Space
         return new Vector2(p.X + Camera.X, p.Y + Camera.Y);
     }
 
-    public void SetPosition(Vector2 pos, Bounds centerPoint)
+    public virtual void SetPosition(Vector2 pos, Bounds centerPoint)
     {
         Position = pos - BoundFunc.BoundToVector(centerPoint, Scale.X, Scale.Y);
     }
 
-    public void SetPosition(Vector2 pos, Bounds centerPoint, Bounds origin)
+    public virtual void SetPosition(Vector2 pos, Bounds centerPoint, Bounds origin)
     {
         Position = pos - BoundFunc.BoundToVector(centerPoint, Scale.X, Scale.Y)
                        + BoundFunc.BoundToPoint(origin, parent.Width, parent.Height).ToVector2();

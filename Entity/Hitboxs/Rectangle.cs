@@ -119,8 +119,17 @@ public abstract partial class Hitbox
             {
                 this.UpdatePosition();
 
-                foreach (Rectangle col in layers[layer])
+                Rectangle col;
+
+                foreach (Hitbox hit in layers[layer])
                 {
+                    if (hit is Rectangle)
+                    {
+                        col = (Rectangle)hit;
+                    }
+                    else
+                        continue;
+
                     if (col.active && (col != this) && condition(col))
                     {
                         col.UpdatePosition();
@@ -163,8 +172,17 @@ public abstract partial class Hitbox
 
                 List<CollisionData<Rectangle>> result = new List<CollisionData<Rectangle>>();
 
-                foreach (Rectangle col in layers[layer])
+                Rectangle col;
+
+                foreach (Hitbox hit in layers[layer])
                 {
+                    if (hit is Rectangle)
+                    {
+                        col = (Rectangle)hit;
+                    }
+                    else
+                        continue;
+
                     if (col.active && (col != this) && condition(col))
                     {
                         col.UpdatePosition();

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System.Collections;
 
 namespace FriteCollection2;
 
@@ -63,6 +64,22 @@ public static class BoundFunc
             Bounds.BottomRight => new Point(width, height),
 
             _ => throw new System.Exception("aaaaaa")
+        };
+    }
+
+    public static Bounds Mirror(Bounds b)
+    {
+        return (b) switch
+        {
+            Bounds.TopLeft => Bounds.BottomLeft,
+            Bounds.Top => Bounds.Bottom,
+            Bounds.TopRight => Bounds.BottomRight,
+
+            Bounds.BottomLeft => Bounds.TopLeft,
+            Bounds.Bottom => Bounds.Top,
+            Bounds.BottomRight => Bounds.TopRight,
+
+            _ => b
         };
     }
 

@@ -357,10 +357,8 @@ public class CloneContainer : AdvancedExecutable
     {
         for (int i = 0; i < clones.Count; i++)
         {
-            if (clones[i].IsDestroyed)
-                clones.RemoveAt(i);
-            else
-                clones[i].BeforeUpdate(dt);
+            clones[i].BeforeUpdate(dt);
+            CheckRemoveAt(i);
         }
     }
 
@@ -368,10 +366,8 @@ public class CloneContainer : AdvancedExecutable
     {
         for (int i = 0; i < clones.Count; i++)
         {
-            if (clones[i].IsDestroyed)
-                clones.RemoveAt(i);
-            else
-                clones[i].Update(dt);
+            clones[i].Update(dt);
+            CheckRemoveAt(i);
         }
     }
 
@@ -379,10 +375,17 @@ public class CloneContainer : AdvancedExecutable
     {
         for (int i = 0; i < clones.Count; i++)
         {
-            if (clones[i].IsDestroyed)
-                clones.RemoveAt(i);
-            else
-                clones[i].AfterUpdate(dt);
+            clones[i].AfterUpdate(dt);
+            CheckRemoveAt(i);
+        }
+    }
+
+    private void CheckRemoveAt(int i)
+    {
+        if (clones[i].IsDestroyed)
+        {
+            clones[i].Dispose();
+            clones.RemoveAt(i);
         }
     }
 

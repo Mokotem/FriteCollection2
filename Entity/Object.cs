@@ -60,18 +60,33 @@ public class RotatableObject : Object
 {
     public float rotation;
     public Vector2 center;
+    private readonly Bounds centerBound;
 
-    public void SetCenterPoint(Bounds bound)
+    public required Bounds RotationCenterPoint
     {
-        center = BoundFunc.BoundToVector(bound, Renderer.Width, Renderer.Height);
+        init
+        {
+            this.centerBound = value;
+            this.center = BoundFunc.BoundToVector(value, Renderer.Texture.Width, Renderer.Texture.Height);
+        }
     }
 
     public RotatableObject() : base() { }
     public RotatableObject(Texture2D texture) : base(texture) { }
     public RotatableObject(int width, int height) : base(width, height) { }
 
+    public void UpdateCenterPoint()
+    {
+        this.center = BoundFunc.BoundToVector(centerBound, Renderer.Texture.Width, Renderer.Texture.Height);
+    }
+
     public override void Draw(SpriteBatch batch)
     {
         Renderer.Draw(batch, ToScreen(), center, rotation);
+    }
+
+    public override void SetPosition(Vector2 pos, Bounds centerPoint)
+    {
+        base.SetPosition(pos, centerPoint);
     }
 }
