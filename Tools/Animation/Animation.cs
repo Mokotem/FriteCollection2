@@ -136,6 +136,7 @@ public class AnimationSheet : AnimationBase
     public delegate void SetTexture(int index);
     private readonly int frameCount;
     protected SetTexture _OnTexture;
+    private bool reverse;
 
     public override bool Done => currentKey >= frameCount;
 
@@ -144,6 +145,7 @@ public class AnimationSheet : AnimationBase
     {
         this._OnTexture = OnTexture;
         this.frameCount = frameCount;
+        reverse = false;
         Restart();
     }
 
@@ -152,7 +154,18 @@ public class AnimationSheet : AnimationBase
     {
         this._OnTexture = OnTexture;
         this.frameCount = frameCount;
+        reverse = false;
         Restart();
+    }
+
+    public void Reverse()
+    {
+        reverse = true;
+    }
+
+    public void UnReverse()
+    {
+        reverse = false;
     }
 
     public override void Animate(float timer)
@@ -164,7 +177,7 @@ public class AnimationSheet : AnimationBase
             currentKey += 1;
             if (!Done)
             {
-                _OnTexture(currentKey);
+                _OnTexture(reverse ? frameCount - currentKey - 1 : currentKey);
                 b += Delay;
             }
         }

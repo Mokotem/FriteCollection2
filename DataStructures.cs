@@ -460,3 +460,60 @@ public class CloneContainer : AdvancedExecutable
         }
     }
 }
+
+public static class Helper
+{
+    extension(int i)
+    {
+        public static int Round(float value)
+        {
+            return (int)float.Round(value);
+        }
+
+        public static int RoundEven(float value)
+        {
+            if (value < 2f)
+                return 2;
+            return (int)(float.Round(value / 2f) * 2);
+        }
+
+        public static int RoundOdd(float value)
+        {
+            if (value < 1f)
+                return 1;
+            return (int)((float.Round((value - 1f) / 2f) * 2) + 1);
+        }
+    }
+
+    extension(Point p)
+    {
+        public static Point Round(Vector2 value)
+        {
+            return new Point(int.Round(value.X), int.Round(value.Y));
+        }
+
+        public static Point Avg(Vector2 v1, Vector2 v2)
+        {
+            return new Point((int)float.Round((v1.X + v2.X) / 2f), (int)float.Round((v1.Y + v2.Y) / 2f));
+        }
+    }
+
+    extension(Vector2 v)
+    {
+        public float ToAngle()
+        {
+            if (v.X < 0)
+            {
+                return float.Atan(v.Y / v.X) + float.Pi;
+            }
+
+            return float.Atan(v.Y / v.X);
+        }
+
+        public static float ToAngle(Vector2 v1, Vector2 v2)
+        {
+            Vector2 vv = v2 - v1;
+            return vv.ToAngle();
+        }
+    }
+}
