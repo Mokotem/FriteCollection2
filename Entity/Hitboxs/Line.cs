@@ -25,6 +25,13 @@ public abstract partial class Hitbox
 
         public bool Check(byte layer, ConditionToCheckCollision condition, out Circle collider, out float distance)
         {
+            if (!this.active)
+            {
+                collider = null;
+                distance = -1;
+                return false;
+            }
+
             base.UpdatePosition();
 
             float angleNorme = angle + (float.Pi / 2f);
@@ -33,7 +40,7 @@ public abstract partial class Hitbox
 
             foreach (Hitbox hit in layers[layer])
             {
-                if (hit != this && condition(hit))
+                if (hit.active && hit != this && condition(hit))
                 {
                     if (hit is Circle)
                     {
@@ -53,6 +60,7 @@ public abstract partial class Hitbox
                     }
                 }
             }
+
             collider = null;
             distance = -1;
             return false;
@@ -95,6 +103,12 @@ public abstract partial class Hitbox
 
         public bool CheckWith(Circle c, out float distance)
         {
+            if (!this.active || !c.active)
+            {
+                distance = -1;
+                return false;
+            }
+
             this.UpdatePosition();
 
             float angleNorme = angle + (float.Pi / 2f);

@@ -163,127 +163,131 @@ public abstract partial class Hitbox
 
         public bool Check(byte layer, ConditionToCheckCollision condition, out Sides globalSide, out CollisionData<Rectangle>[] coliders)
         {
-            if (this.active)
+            if (!this.active)
             {
-                this.UpdatePosition();
-
                 globalSide = Sides.Center;
-                bool[] corners = new bool[4];
+                coliders = null;
+                return false;
+            }
 
-                List<CollisionData<Rectangle>> result = new List<CollisionData<Rectangle>>();
+            this.UpdatePosition();
 
-                Rectangle col;
+            globalSide = Sides.Center;
+            bool[] corners = new bool[4];
 
-                foreach (Hitbox hit in layers[layer])
+            List<CollisionData<Rectangle>> result = new List<CollisionData<Rectangle>>();
+
+            Rectangle col;
+
+            foreach (Hitbox hit in layers[layer])
+            {
+                if (hit is Rectangle)
                 {
-                    if (hit is Rectangle)
+                    col = (Rectangle)hit;
+                }
+                else
+                    continue;
+
+                if (col.active && (col != this) && condition(col))
+                {
+                    col.UpdatePosition();
+
+                    bool isRight, isDown, isfullx, isfully;
+                    bool touchLeft, touchRight, touchUp, touchDown;
+
+                    if (!MakeCollisionRange(this._left, this._right, col._left, col._right,
+                        col.infinitLeft, col.infinitRight,
+                        out touchLeft, out touchRight,
+                        out float dx, out isRight, out isfullx)
+                     || !MakeCollisionRange(this._up, this._down, col._up, col._down,
+                        col.infinitUp, col.infinitDown,
+                        out touchUp, out touchDown,
+                        out float dy, out isDown, out isfully))
                     {
-                        col = (Rectangle)hit;
-                    }
-                    else
                         continue;
+                    }
 
-                    if (col.active && (col != this) && condition(col))
+
+                    corners[0] |= touchLeft && touchUp;
+                    corners[1] |= touchRight && touchUp;
+                    corners[2] |= touchLeft && touchDown;
+                    corners[3] |= touchRight && touchDown;
+
+                    Sides sideCol;
+                    if (col.alwaysCollideWidthSide == Sides.Center)
                     {
-                        col.UpdatePosition();
-
-                        bool isRight, isDown, isfullx, isfully;
-                        bool touchLeft, touchRight, touchUp, touchDown;
-
-                        if (!MakeCollisionRange(this._left, this._right, col._left, col._right,
-                            col.infinitLeft, col.infinitRight,
-                            out touchLeft, out touchRight,
-                            out float dx, out isRight, out isfullx)
-                         || !MakeCollisionRange(this._up, this._down, col._up, col._down,
-                            col.infinitUp, col.infinitDown,
-                            out touchUp, out touchDown,
-                            out float dy, out isDown, out isfully))
+                        if (DoIChoseTheSideX(isfullx, isfully, dx, dy))
                         {
-                            continue;
-                        }
-
-
-                        corners[0] |= touchLeft && touchUp;
-                        corners[1] |= touchRight && touchUp;
-                        corners[2] |= touchLeft && touchDown;
-                        corners[3] |= touchRight && touchDown;
-
-                        Sides sideCol;
-                        if (col.alwaysCollideWidthSide == Sides.Center)
-                        {
-                            if (DoIChoseTheSideX(isfullx, isfully, dx, dy))
-                            {
-                                sideCol = isRight ? Sides.Right : Sides.Left;
-                            }
-                            else
-                            {
-                                sideCol = isDown ? Sides.Down : Sides.Up;
-                            }
+                            sideCol = isRight ? Sides.Right : Sides.Left;
                         }
                         else
-                            sideCol = col.alwaysCollideWidthSide;
-
-                        result.Add(new CollisionData<Rectangle>(col, sideCol));
+                        {
+                            sideCol = isDown ? Sides.Down : Sides.Up;
+                        }
                     }
+                    else
+                        sideCol = col.alwaysCollideWidthSide;
+
+                    result.Add(new CollisionData<Rectangle>(col, sideCol));
+                }
+            }
+
+            coliders = result.ToArray();
+
+            if (result.Count > 0)
+            {
+                switch (corners[0], corners[1], corners[2], corners[3])
+                {
+                    case (true, true, false, false):
+                    globalSide = Sides.Up;
+                    return true;
+                    case (false, false, true, true):
+                    globalSide = Sides.Down;
+                    return true;
+                    case (true, false, true, false):
+                    globalSide = Sides.Left;
+                    return true;
+                    case (false, true, false, true):
+                    globalSide = Sides.Right;
+                    return true;
                 }
 
-                coliders = result.ToArray();
-
-                if (result.Count > 0)
+                if (result.Count > 1)
                 {
-                    switch (corners[0], corners[1], corners[2], corners[3])
+                    if (CheckIfIsSameSide(coliders[0], coliders[1],
+                        (Rectangle r) => r._down,
+                        Sides.Up))
                     {
-                        case (true, true, false, false):
                         globalSide = Sides.Up;
                         return true;
-                        case (false, false, true, true):
+                    }
+
+                    if (CheckIfIsSameSide(coliders[0], coliders[1],
+                        (Rectangle r) => r._up,
+                        Sides.Down))
+                    {
                         globalSide = Sides.Down;
                         return true;
-                        case (true, false, true, false):
+                    }
+
+                    if (CheckIfIsSameSide(coliders[0], coliders[1],
+                        (Rectangle r) => r._right,
+                        Sides.Left))
+                    {
                         globalSide = Sides.Left;
                         return true;
-                        case (false, true, false, true):
+                    }
+
+                    if (CheckIfIsSameSide(coliders[0], coliders[1],
+                        (Rectangle r) => r._left,
+                        Sides.Right))
+                    {
                         globalSide = Sides.Right;
                         return true;
                     }
-
-                    if (result.Count > 1)
-                    {
-                        if (CheckIfIsSameSide(coliders[0], coliders[1],
-                            (Rectangle r) => r._down,
-                            Sides.Up))
-                        {
-                            globalSide = Sides.Up;
-                            return true;
-                        }
-
-                        if (CheckIfIsSameSide(coliders[0], coliders[1],
-                            (Rectangle r) => r._up,
-                            Sides.Down))
-                        {
-                            globalSide = Sides.Down;
-                            return true;
-                        }
-
-                        if (CheckIfIsSameSide(coliders[0], coliders[1],
-                            (Rectangle r) => r._right,
-                            Sides.Left))
-                        {
-                            globalSide = Sides.Left;
-                            return true;
-                        }
-
-                        if (CheckIfIsSameSide(coliders[0], coliders[1],
-                            (Rectangle r) => r._left,
-                            Sides.Right))
-                        {
-                            globalSide = Sides.Right;
-                            return true;
-                        }
-                    }
-
-                    return true;
                 }
+
+                return true;
             }
 
             globalSide = Sides.Center;
@@ -440,15 +444,16 @@ public abstract partial class Hitbox
 
         public static bool Check(byte layer, Vector2 point, ConditionToCheckCollision condition, out Rectangle collider)
         {
-            foreach(Rectangle rect in layers[layer])
+            foreach(Hitbox rect in layers[layer])
             {
-                if (condition(rect))
+                if (rect.active && rect is Rectangle && condition(rect))
                 {
+                    Rectangle r = (Rectangle)rect;
                     rect.UpdatePosition();
-                    if (point.X > rect._left && point.X < rect._right
-                        && point.Y > rect._up && point.Y < rect._down)
+                    if (point.X > r._left && point.X < r._right
+                        && point.Y > r._up && point.Y < r._down)
                     {
-                        collider = rect;
+                        collider = r;
                         return true;
                     }
                 }
@@ -501,6 +506,12 @@ public abstract partial class Hitbox
 
         public Sides CheckWith(Rectangle col, out bool[] corners)
         {
+            if (!this.active || !col.active)
+            {
+                corners = null;
+                return Sides.Center;
+            }
+
             corners = new bool[4];
 
             this.UpdatePosition();
@@ -542,6 +553,11 @@ public abstract partial class Hitbox
 
         public bool CheckWith(Rectangle col)
         {
+            if (!this.active || !col.active)
+            {
+                return false;
+            }
+
             this.UpdatePosition();
             col.UpdatePosition();
 

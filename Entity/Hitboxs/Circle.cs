@@ -34,11 +34,18 @@ public abstract partial class Hitbox
 
         public bool Check(byte layer, ConditionToCheckCollision condition, out Hitbox collider, out float marge)
         {
+            if (!this.active)
+            {
+                collider = null;
+                marge = -1f;
+                return false;
+            }
+
             base.UpdatePosition();
 
             foreach (Hitbox hit in layers[layer])
             {
-                if (hit != this && condition(hit))
+                if (hit != this && hit.active && condition(hit))
                 {
                     if (hit is Circle)
                     {
@@ -82,6 +89,26 @@ public abstract partial class Hitbox
             return this.Check(layer, condition, out _, out _);
         }
 
+        public bool CheckWidth(Hitbox.Circle c)
+        {
+            return this.CheckWidth(c, out _);
+        }
+
+        public bool CheckWidth(Hitbox.Circle c, out float marge)
+        {
+            if (!c.active || !this.active)
+            {
+                marge = -1;
+                return false;
+            }
+
+            c.UpdatePosition();
+
+            marge = c.circle.Radius + this.circle.Radius
+                - Vector2.Distance(c.circle.Center, this.circle.Center);
+
+            return marge > 0;
+        }
 
         public override void UpdatePosition(float x, float y)
         {
