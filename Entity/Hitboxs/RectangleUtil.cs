@@ -44,7 +44,7 @@ public abstract partial class Hitbox
             };
         }
 
-        public static void ApplyCollition(Space mec, Rectangle colider, Sides side)
+        public static void ApplyCollision(Space mec, Rectangle colider, Sides side)
 		{
 			switch (side)
 			{
@@ -63,7 +63,7 @@ public abstract partial class Hitbox
 			}
 		}
 
-		public bool ApplyCollition(Rectangle colider, Sides side, Vector2 vitesse, Vector2 input, out Vector2 pos)
+		public bool ApplyCollision(Rectangle colider, Sides side, Vector2 vitesse, Vector2 input, out Vector2 pos)
 		{
 			pos = input;
 			switch (side)
@@ -98,20 +98,20 @@ public abstract partial class Hitbox
 			}
 		}
 
-		public bool ApplyCollition(CollisionData<Rectangle> col, Vector2 vitesse, Vector2 input, out Vector2 colPos)
+		public bool ApplyCollision(CollisionData<Rectangle> col, Vector2 vitesse, Vector2 input, out Vector2 colPos)
         {
-			return ApplyCollition(col.collider, col.side, vitesse, input, out colPos);
+			return ApplyCollision(col.collider, col.side, vitesse, input, out colPos);
 		}
 
 
-        public bool ApplyCollition(CollisionData<Rectangle> col, Vector2 vitesse)
+        public bool ApplyCollision(CollisionData<Rectangle> col, Vector2 vitesse)
         {
-            return ApplyCollition(col.collider, col.side, vitesse, _parent.Position, out _parent.Position);
+            return ApplyCollision(col.collider, col.side, vitesse, _parent.Position, out _parent.Position);
         }
 
-        public bool ApplyCollition(Rectangle collider, Sides side, Vector2 vitesse)
+        public bool ApplyCollision(Rectangle collider, Sides side, Vector2 vitesse)
         {
-            return ApplyCollition(collider, side, vitesse, _parent.Position, out _parent.Position);
+            return ApplyCollision(collider, side, vitesse, _parent.Position, out _parent.Position);
         }
     }
 }
