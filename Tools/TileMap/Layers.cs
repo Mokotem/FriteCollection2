@@ -84,15 +84,7 @@ public class OgmoFile<LevelValues> : IOgmoFileWithLayer
 {
     public static OgmoFile<LevelValues> Open(string path)
     {
-        string file;
-        using (StreamReader sr = new StreamReader(System.Environment.CurrentDirectory + "/" + path))
-            file = sr.ReadToEnd();
-
-        JsonSerializerOptions options = new()
-        {
-            TypeInfoResolver = new LayerTypeDiscriminator()
-        };
-        return JsonSerializer.Deserialize<OgmoFile<LevelValues>>(file, options);
+        return OpenPath(System.Environment.CurrentDirectory + "/" + path);
     }
 
     public static OgmoFile<LevelValues> OpenPath(string path)
@@ -128,8 +120,12 @@ public class OgmoFile<LevelValues> : IOgmoFileWithLayer
 
     public static ImmutableArray<OgmoLayer> Open(string path, JsonDerivedType entities)
     {
+        return OpenPath(System.Environment.CurrentDirectory + "/" + path, entities);
+    }
+    public static ImmutableArray<OgmoLayer> OpenPath(string path, JsonDerivedType entities)
+    {
         string file;
-        using (StreamReader sr = new StreamReader(System.Environment.CurrentDirectory + "/" + path))
+        using (StreamReader sr = new StreamReader(path))
             file = sr.ReadToEnd();
 
         JsonSerializerOptions options = new()

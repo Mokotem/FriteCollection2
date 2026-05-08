@@ -1,12 +1,18 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
+using System.Runtime.CompilerServices;
 
 
 namespace FriteCollection2.UI;
 
 public class Text : UI
 {
-    private const byte taille = 8;
+    private static byte defaultSize = 8;
+
+    public static void SetDefaultSize(byte value)
+    {
+        Text.defaultSize = value;
+    }
 
     private Rectangle textRect;
     public StringRenderer Renderer;
@@ -19,21 +25,28 @@ public class Text : UI
 
     private Bounds textAlign;
 
-    public Text(UI parent, string value, Bounds textAlign, byte taille = taille) : base(parent, 0, 0)
+    public Text(UI parent, string value, Bounds textAlign, byte taille = byte.MaxValue) : base(parent, 0, 0)
     {
         textRect = new Rectangle(0, 0, 0, 0);
         this.textAlign = textAlign;
         this.Renderer = new StringRenderer(parent, value);
-        this.Renderer.SetSize(taille);
+
+        if (taille > 254)
+        {
+            this.Renderer.SetSize(defaultSize);
+        }
+        else
+            this.Renderer.SetSize(taille);
+
         this.ChangeText(value);
         this.Renderer._layer = parent.Depth - 0.01f;
     }
 
-    public Text(string value, Bounds textAlign, byte taille = taille) : this(screen, value, textAlign, taille) { }
+    public Text(string value, Bounds textAlign, byte taille = byte.MaxValue) : this(screen, value, textAlign, taille) { }
 
-    public Text(UI parent, string value, byte taille = taille) : this(parent, value, Bounds.TopLeft, taille) { }
+    public Text(UI parent, string value, byte taille = byte.MaxValue) : this(parent, value, Bounds.TopLeft, taille) { }
 
-    public Text(string value, byte taille = taille) : this(screen, value, taille) { }
+    public Text(string value, byte taille = byte.MaxValue) : this(screen, value, taille) { }
 
     public override float Depth => Renderer._layer;
 
