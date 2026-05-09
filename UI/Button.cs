@@ -53,7 +53,7 @@ public class Button : Text
     public override int Top => rect.Y;
     public override int Bottom => rect.Bottom;
 
-    public Button(UI parent, string name, Action func, int width = 256, int height = 32) : base(parent, name, Bounds.Center, 12)
+    public Button(UI parent, string name, Action func, int width = 256, int height = 32) : base(parent, name, Bounds.Center)
     {
         _buts.Add(this);
         rect = new Rectangle(0, 0, width, height);
