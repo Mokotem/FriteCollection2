@@ -354,8 +354,6 @@ public class TileMap : IDisposable, IDraw
         if (r.Bottom >= CountY)
             result.infinitDown = true;
 
-        result.SetAlwaysCollideBasedOnInfinit();
-
         result.isStatic = true;
         result.SetScale(ToMap(r.Size) + model.Size);
         result.UpdatePosition(ToMap(r.Location) + model.offset + this.Position);

@@ -31,7 +31,56 @@ public abstract partial class Hitbox
             );
 
         public Point offset = Point.Zero;
-        public bool infinitLeft, infinitRight, infinitUp, infinitDown;
+
+        public bool infinitLeft
+        {
+            get;
+            set
+            {
+                field = value;
+                if (value)
+                {
+                    SetAlwaysCollideBasedOnInfinit();
+                }
+            }
+        }
+        public bool infinitRight
+        {
+            get;
+            set
+            {
+                field = value;
+                if (value)
+                {
+                    SetAlwaysCollideBasedOnInfinit();
+                }
+            }
+        }
+        public bool infinitUp
+        {
+            get;
+            set
+            {
+                field = value;
+                if (value)
+                {
+                    SetAlwaysCollideBasedOnInfinit();
+                }
+            }
+        }
+        public bool infinitDown
+        {
+            get;
+            set
+            {
+                field = value;
+                if (value)
+                {
+                    SetAlwaysCollideBasedOnInfinit();
+                }
+            }
+        }
+
         public Sides alwaysCollideWidthSide;
         public void SetAlwaysCollideBasedOnInfinit()
         {
