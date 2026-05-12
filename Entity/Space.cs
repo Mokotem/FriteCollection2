@@ -155,10 +155,6 @@ public class Space
     }
 }
 
-public class SpaceDirection : Space
-{
-    public float direction = 0f;
-}
 
 public interface ILayer
 {
