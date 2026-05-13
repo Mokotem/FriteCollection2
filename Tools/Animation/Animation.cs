@@ -146,7 +146,6 @@ public class AnimationSheet : AnimationBase
         this._OnTexture = OnTexture;
         this.frameCount = frameCount;
         reverse = false;
-        Loop = true;
         Restart();
     }
 
@@ -156,7 +155,6 @@ public class AnimationSheet : AnimationBase
         this._OnTexture = OnTexture;
         this.frameCount = frameCount;
         reverse = false;
-        Loop = true;
         Restart();
     }
 
