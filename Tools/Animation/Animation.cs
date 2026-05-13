@@ -174,7 +174,7 @@ public class AnimationSheet : AnimationBase
             && timer >= start + b)
         {
             a = b;
-            currentKey += 1;
+            currentKey++;
             if (!Done)
             {
                 _OnTexture(reverse ? frameCount - currentKey - 1 : currentKey);
