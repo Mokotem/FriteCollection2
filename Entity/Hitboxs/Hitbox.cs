@@ -30,7 +30,7 @@ public abstract partial class Hitbox : IDraw, IDisposable
         }
     }
 
-    public delegate bool HitboxMessage(short value);
+    public delegate bool HitboxMessage(Hitbox colider, int value);
 
     public static void CreateLayers(params Color[] debugColors)
     {
@@ -94,6 +94,8 @@ public abstract partial class Hitbox : IDraw, IDisposable
     protected Hitbox(byte layer, params string[] tags) : this(Space.Zero, layer, tags) { }
     protected Hitbox(Space parent) : this(parent, 0) { }
     protected Hitbox(Space parent, params string[] tags) : this(parent, 0, tags) { }
+
+    public abstract Vector2 CenterPoint { get; }
 
     public bool IsTag(string tag)
     {

@@ -2,13 +2,9 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
-using System.Collections;
 
 namespace FriteCollection2.Entity;
 
-/// <summary>
-/// Boxing de rectangle
-/// </summary>
 public class Space
 {
     private static readonly Space spacezero = new Space(0, 0);
@@ -17,18 +13,6 @@ public class Space
     public static Point Camera = Point.Zero;
 
     internal static Rectangle parent;
-    public static void SetScreenResolution(Environment env)
-    {
-        parent = env.TargetRect;
-    }
-    public static void SetScreenResolution(Rectangle env)
-    {
-        parent = env;
-    }
-    public static void SetScreenResolution(int width, int height)
-    {
-        parent = new Rectangle(0, 0, width, height);
-    }
 
     public Vector2 Position;
     public Vector2 Scale;

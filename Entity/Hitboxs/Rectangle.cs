@@ -25,6 +25,7 @@ public abstract partial class Hitbox
         public float Up => _up;
         public float Down => _down;
 
+
         public Point Size => new Point(
             (int)float.Round(_width),
             (int)float.Round(_height)
@@ -104,7 +105,7 @@ public abstract partial class Hitbox
             }
         }
 
-        public Vector2 CenterPoint => new Vector2((_left + _right) / 2f, (_up + _down) / 2f);
+        public override Vector2 CenterPoint => new Vector2((_left + _right) / 2f, (_up + _down) / 2f);
 
         public Rectangle(Space parent, byte layer, params string[] tags)
             : base(parent, layer, tags)

@@ -32,6 +32,8 @@ public abstract partial class Hitbox
             set => circle.Position = value;
         }
 
+        public override Vector2 CenterPoint => circle.Center;
+
         public bool Check(byte layer, ConditionToCheckCollision condition, out Hitbox collider, out float marge)
         {
             if (!this.active)
