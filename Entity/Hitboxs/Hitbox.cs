@@ -95,11 +95,6 @@ public abstract partial class Hitbox : IDraw, IDisposable
     protected Hitbox(Space parent) : this(parent, 0) { }
     protected Hitbox(Space parent, params string[] tags) : this(parent, 0, tags) { }
 
-    public void AddToLayer(byte layer)
-    {
-        layers[layer].Add(this);
-    }
-
     public bool IsTag(string tag)
     {
         foreach (string t in this._tags)
