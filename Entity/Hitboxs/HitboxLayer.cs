@@ -17,7 +17,8 @@ internal class HitboxLayer : List<Hitbox>, IDraw
     {
         foreach (Hitbox hit in this)
         {
-            hit.Draw(batch);
+            if (hit.active)
+                hit.Draw(batch);
         }
     }
 }

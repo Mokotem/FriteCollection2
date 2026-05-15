@@ -25,12 +25,15 @@ public abstract partial class Hitbox
 
         public override Vector2 CenterPoint => pos;
 
-        public bool Check(byte layer, ConditionToCheckCollision condition, out Circle collider, out float distance)
+        public bool Check(byte layer, ConditionToCheckCollision condition, out Circle collider, out float distance,
+            out float dx, out float dy)
         {
             if (!this.active)
             {
                 collider = null;
                 distance = -1;
+                dx = 0;
+                dy = 0;
                 return false;
             }
 
@@ -49,6 +52,9 @@ public abstract partial class Hitbox
                         Circle c = (Circle)hit;
                         c.UpdatePosition();
 
+                        if (!IsInRange(c.CenterPoint))
+                            continue;
+
                         Vector2 cToThis = this.pos - c.Position;
 
                         d = Vector2.Dot(cToThis, norme);
@@ -57,6 +63,25 @@ public abstract partial class Hitbox
                         {
                             collider = c;
                             distance = c.Radius + thickness - d;
+
+                            if (float.Cos(angle) > 0)
+                            {
+                                dx = distance;
+                            }
+                            else
+                            {
+                                dx = -distance;
+                            }
+
+                            if (float.Sin(angle) > 0)
+                            {
+                                dy = distance;
+                            }
+                            else
+                            {
+                                dy = -distance;
+                            }
+
                             return true;
                         }
                     }
@@ -65,46 +90,51 @@ public abstract partial class Hitbox
 
             collider = null;
             distance = -1;
+            dx = 0;
+            dy = 0;
             return false;
         }
 
         public bool Check(byte layer, ConditionToCheckCollision condition, out Circle collider)
         {
-            return this.Check(layer, condition, out collider, out _);
+            return this.Check(layer, condition, out collider, out _, out _, out _);
         }
 
         public bool Check(byte layer, out Circle collider)
         {
-            return this.Check(layer, Hitbox.SelectAllHitboxs, out collider, out _);
+            return this.Check(layer, Hitbox.SelectAllHitboxs, out collider, out _, out _, out _);
         }
 
         public bool Check(byte layer, string tag, out Circle collider)
         {
-            return this.Check(layer, Hitbox.SelectTag(tag), out collider, out _);
+            return this.Check(layer, Hitbox.SelectTag(tag), out collider, out _, out _, out _);
         }
 
         public bool Check(out Circle collider)
         {
-            return this.Check(this.layer, Hitbox.SelectAllHitboxs, out collider, out _);
+            return this.Check(this.layer, Hitbox.SelectAllHitboxs, out collider, out _, out _, out _);
         }
 
         public bool Check(out Circle collider, out float distance)
         {
-            return this.Check(this.layer, Hitbox.SelectAllHitboxs, out collider, out distance);
+            return this.Check(this.layer, Hitbox.SelectAllHitboxs, out collider, out distance, out _, out _);
         }
 
         public bool Check(string tag, out Circle collider)
         {
-            return this.Check(this.layer, Hitbox.SelectTag(tag), out collider, out _);
+            return this.Check(this.layer, Hitbox.SelectTag(tag), out collider, out _, out _, out _);
         }
 
         public override bool Check(byte layer, ConditionToCheckCollision condition)
         {
-            return this.Check(layer, condition, out _, out _);
+            return this.Check(layer, condition, out _, out _, out _, out _);
         }
 
-        public bool CheckWith(Circle c, out float distance)
+        public bool CheckWith(Circle c, out float distance, out float dx, out float dy)
         {
+            dx = 0;
+            dy = 0;
+
             if (!this.active || !c.active)
             {
                 distance = -1;
@@ -112,6 +142,13 @@ public abstract partial class Hitbox
             }
 
             this.UpdatePosition();
+            c.UpdatePosition();
+
+            if (!IsInRange(c.CenterPoint))
+            {
+                distance = -1;
+                return false;
+            }
 
             float angleNorme = angle + (float.Pi / 2f);
             Vector2 norme = new Vector2(float.Cos(angleNorme), float.Sin(angleNorme));
@@ -122,6 +159,25 @@ public abstract partial class Hitbox
             if (d < c.Radius + thickness)
             {
                 distance = c.Radius + thickness - d;
+
+                if (float.Cos(angle) > 0)
+                {
+                    dx = distance;
+                }
+                else
+                {
+                    dx = -distance;
+                }
+
+                if (float.Sin(angle) > 0)
+                {
+                    dy = distance;
+                }
+                else
+                {
+                    dy = -distance;
+                }
+
                 return true;
             }
 
@@ -131,7 +187,46 @@ public abstract partial class Hitbox
 
         public bool CheckWith(Circle c)
         {
-            return this.CheckWith(c, out _);
+            return this.CheckWith(c, out _, out _, out _);
+        }
+
+        public bool CheckWith(Circle c, out float distance)
+        {
+            return this.CheckWith(c, out distance, out _, out _);
+        }
+
+        public bool CheckWith(Circle c, out float dx, out float dy)
+        {
+            return this.CheckWith(c, out _, out dx, out dy);
+        }
+
+        private bool IsInRange(Vector2 point)
+        {
+            float dx = float.Cos(angle);
+            float dy = float.Sin(angle);
+
+            if (float.Abs(dy) > float.Abs(dy))
+            {
+                if (dy > 0)
+                {
+                    return point.Y < pos.Y;
+                }
+                else
+                {
+                    return point.Y > pos.Y;
+                }
+            }
+            else
+            {
+                if (dx > 0)
+                {
+                    return point.X > pos.X;
+                }
+                else
+                {
+                    return point.X < pos.X;
+                }
+            }
         }
 
         public override void UpdatePosition(float x, float y)
@@ -144,8 +239,8 @@ public abstract partial class Hitbox
         public override void Draw(SpriteBatch batch)
         {
             Vector2 dir = new Vector2(float.Cos(angle), float.Sin(angle));
-            Vector2 p1 = pos + (dir * 180);
-            Vector2 p2 = pos - (dir * 180);
+            Vector2 p1 = pos + (dir * 180) - Space.Camera.ToVector2();
+            Vector2 p2 = pos - (dir * 180) - Space.Camera.ToVector2();
             float t = thickness;
             if (t < 1)
                 t = 1;
