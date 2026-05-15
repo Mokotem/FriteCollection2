@@ -159,9 +159,9 @@ public abstract class AdvancedExecutable : IExecutable, IDrawUI, IDisposable
 
 
     public virtual void DrawBackground(SpriteBatch batch) { }
-    public virtual void DrawShaderBefore(SpriteBatch batch, GraphicsDevice device) { }
-    public virtual void DrawShaderAfter(SpriteBatch batch, GraphicsDevice device) { }
-    public virtual void DrawShader(SpriteBatch batch, GraphicsDevice device) { }
+    public virtual void DrawTargetBefore(SpriteBatch batch, GraphicsDevice device) { }
+    public virtual void DrawShaderAfter(SpriteBatch batch) { }
+    public virtual void DrawShader(SpriteBatch batch) { }
     public virtual void AfterDraw(SpriteBatch batch) { }
     public virtual void DrawUI(SpriteBatch batch, int width, int height) { }
     public virtual void DrawMain(SpriteBatch batch) { }
@@ -240,22 +240,22 @@ public class Scene : AdvancedExecutable
             exes[i].DrawBackground(batch);
     }
 
-    public override void DrawShader(SpriteBatch batch, GraphicsDevice device)
+    public override void DrawShader(SpriteBatch batch)
     {
         for (byte i = 0; i < exes.Count; i++)
-            exes[i].DrawShader(batch, device);
+            exes[i].DrawShader(batch);
     }
 
-    public override void DrawShaderBefore(SpriteBatch batch, GraphicsDevice device)
+    public override void DrawTargetBefore(SpriteBatch batch, GraphicsDevice device)
     {
         for (byte i = 0; i < exes.Count; i++)
-            exes[i].DrawShaderBefore(batch, device);
+            exes[i].DrawTargetBefore(batch, device);
     }
 
-    public override void DrawShaderAfter(SpriteBatch batch, GraphicsDevice device)
+    public override void DrawShaderAfter(SpriteBatch batch)
     {
         for (byte i = 0; i < exes.Count; i++)
-            exes[i].DrawShaderAfter(batch, device);
+            exes[i].DrawShaderAfter(batch);
     }
 
     public override void AfterDraw(SpriteBatch batch)
@@ -429,26 +429,26 @@ public class CloneContainer : AdvancedExecutable
         }
     }
 
-    public override void DrawShader(SpriteBatch batch, GraphicsDevice device)
+    public override void DrawShader(SpriteBatch batch)
     {
         foreach (Clone c in clones)
         {
-            c.DrawShader(batch, device);
+            c.DrawShader(batch);
         }
     }
 
-    public override void DrawShaderBefore(SpriteBatch batch, GraphicsDevice device)
+    public override void DrawTargetBefore(SpriteBatch batch, GraphicsDevice device)
     {
         foreach (Clone c in clones)
         {
-            c.DrawShaderBefore(batch, device);
+            c.DrawTargetBefore(batch, device);
         }
     }
-    public override void DrawShaderAfter(SpriteBatch batch, GraphicsDevice device)
+    public override void DrawShaderAfter(SpriteBatch batch)
     {
         foreach (Clone c in clones)
         {
-            c.DrawShaderAfter(batch, device);
+            c.DrawShaderAfter(batch);
         }
     }
 

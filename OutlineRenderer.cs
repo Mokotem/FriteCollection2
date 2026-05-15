@@ -36,10 +36,16 @@ public class OutlineRenderer : TextureRenderer
 
     private float _oolayer;
     public float OutlineDepth => _oolayer;
+    private bool hasComonLayer = true;
+
     public short OutlineLayer
     {
         get => FromLayer(_oolayer);
-        set => _oolayer = ToLayer(value);
+        set
+        {
+            _oolayer = ToLayer(value);
+            hasComonLayer = false;
+        }
     }
 
     public void StickOutline()
@@ -85,6 +91,9 @@ public class OutlineRenderer : TextureRenderer
     {
         if (!hide)
         {
+            if (hasComonLayer)
+                layer = _defaultolayer;
+
             foreach (Point p in outLinePositions)
             {
                 batch.Draw(Texture,

@@ -7,9 +7,6 @@ public class Object : Space, IDraw
 {
     public OutlineRenderer Renderer;
 
-    public static float outlineLayer = 0.55f;
-    public float outLayer = Object.outlineLayer;
-
     public Object() : base()
     {
         Renderer = new OutlineRenderer(0);
@@ -48,6 +45,11 @@ public class Object : Space, IDraw
                 && Renderer.Equals(((Object)obj).Renderer);
         }
         return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return Position.GetHashCode();
     }
 
     public override string ToString()

@@ -69,7 +69,7 @@ public abstract partial class Hitbox : IDraw, IDisposable
 
     public Space Parent => _parent;
 
-    public HitboxMessage SendMessage { get; init; }
+    public HitboxMessage SendMessage;
 
     public bool active;
     public bool isStatic;
