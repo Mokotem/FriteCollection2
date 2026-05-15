@@ -30,7 +30,7 @@ public abstract partial class Hitbox : IDraw, IDisposable
         }
     }
 
-    public delegate bool HitboxMessage(Hitbox colider, int value);
+    public delegate bool HitboxMessage(Object colider, int value);
 
     public static void CreateLayers(params Color[] debugColors)
     {

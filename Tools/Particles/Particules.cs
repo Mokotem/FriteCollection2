@@ -10,7 +10,7 @@ public interface IParticle<Settings> : IDisposable, IDraw
     public bool Alive { get; }
 }
 
-public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle<Sets>, new()
+public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle<Sets>, new() where Sets: new()
 {
     private float delay;
     private P[] _data;
@@ -25,9 +25,9 @@ public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle
     private bool _isEmpty;
     public bool IsEmpty => _isEmpty;
 
-    private Sets settings;
+    public readonly Sets sets;
 
-    public ParticleGenerator(ushort capacity, ushort pps, Sets settings)
+    public ParticleGenerator(ushort capacity, ushort pps = 0)
     {
         this.delay = 1f / pps;
         _data = new P[capacity];
@@ -37,7 +37,7 @@ public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle
         index = 0;
         timer = delay;
         _isEmpty = true;
-        this.settings = settings;
+        this.sets = new Sets();
     }
 
     public void Charboner(float delta)
@@ -66,7 +66,7 @@ public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle
         if (!_data[index].Alive)
         {
             _timers[index] = 0f;
-            _data[index].Initialize(settings);
+            _data[index].Initialize(sets);
             _data[index].Update(0f);
             ++index;
             if (index >= _data.Length)

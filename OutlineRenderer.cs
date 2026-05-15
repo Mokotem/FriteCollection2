@@ -28,6 +28,7 @@ public class OutlineRenderer : TextureRenderer
         get => FromLayer(_defaultolayer);
         set => _defaultolayer = ToLayer(value);
     }
+    public static float DefaultOutlineDepth => _defaultolayer;
 
     public static void SetDefault(Color value)
     {
