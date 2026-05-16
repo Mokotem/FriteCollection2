@@ -14,6 +14,8 @@ public class Image : UI
         this.Renderer = new OutlineRenderer(parent, texture);
         this.Renderer._layer = parent.Depth - 0.01f;
         this.Renderer.Color = TextureRenderer._defaultColor;
+        this.Renderer.StickOutline();
+        Renderer.outline = false;
     }
 
     public Image(UI parent, Texture2D texture) : this(parent, texture, texture.Width, texture.Height) { }
@@ -22,6 +24,7 @@ public class Image : UI
     public Image(UI parent) : this(parent, TextureRenderer.Default, 0, 0) { }
     public Image(Texture2D texture, int width, int height) : this(screen, texture, width, height) { }
     public Image(int width, int height) : this(screen, TextureRenderer.Default, width, height) { }
+    public Image(UI parent, int width, int height) : this(parent, TextureRenderer.Default, width, height) { }
 
     public void ApplyOriginalSize(Rectangle parent)
     {

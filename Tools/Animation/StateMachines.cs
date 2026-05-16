@@ -23,7 +23,7 @@ public class StateMachine : IDraw
     private float timer, delta;
     private State current;
     public bool active;
-    private readonly bool deltaMode, reset;
+    private readonly bool reset;
     private readonly State start;
 
     public StateMachine(State start, bool resetOnChange = true)
@@ -31,18 +31,8 @@ public class StateMachine : IDraw
         this.reset = resetOnChange;
         this.start = start;
         active = false;
-        deltaMode = false;
         delta = 0f;
         timer = 0f;
-    }
-
-    public StateMachine(State start, float delta, bool resetOnChange = true)
-    {
-        this.reset = resetOnChange;
-        this.start = start;
-        active = false;
-        this.delta = delta;
-        deltaMode = true;
     }
 
     public void Restart()
@@ -59,10 +49,6 @@ public class StateMachine : IDraw
 
     public void Update(float t)
     {
-#if DEBUG
-        if (deltaMode)
-            throw new System.Exception("aaaa");
-#endif
         if (active)
         {
             timer = t;
@@ -74,11 +60,6 @@ public class StateMachine : IDraw
 
     public void UpdateRaw(float t)
     {
-
-#if DEBUG
-        if (deltaMode)
-            throw new System.Exception("aaaa");
-#endif
         if (active)
         {
             State newState = current.Update(t);
@@ -87,24 +68,8 @@ public class StateMachine : IDraw
         }
     }
 
-    public void Update()
-    {
-#if DEBUG
-        if (!deltaMode)
-            throw new System.Exception("la machine est bloqué !!!");
-#endif
-        UpdateDelta(delta);
-    }
-
     public void UpdateDelta(float dt)
     {
-#if DEBUG
-        if (!deltaMode)
-        {
-            throw new System.Exception("ooo éé pas delta mode");
-        }
-#endif
-
         if (active)
         {
             timer += dt;
@@ -116,14 +81,8 @@ public class StateMachine : IDraw
 
     public void ResetTimer()
     {
-        if (deltaMode)
-            timer = 0f;
-        else
-        {
-            delta = timer;
-        }
+        delta = 0f;
     }
-
 
     public void ResetTimer(float tim)
     {

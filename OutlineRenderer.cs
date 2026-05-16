@@ -52,6 +52,7 @@ public class OutlineRenderer : TextureRenderer
     public void StickOutline()
     {
         this._oolayer = _layer + 0.0001f;
+        hasComonLayer = false;
     }
 
     public OutlineRenderer(UI.UI parent) : base(parent)
@@ -85,7 +86,15 @@ public class OutlineRenderer : TextureRenderer
         _oolayer = _defaultolayer;
     }
 
-    public Color OutlineColor;
+    public Color OutlineColor
+    {
+        get => field;
+        set
+        {
+            field = value;
+            outline = true;
+        }
+    }
     public bool outline = true;
 
     public void DrawOutline(SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation, Color c, float layer)
