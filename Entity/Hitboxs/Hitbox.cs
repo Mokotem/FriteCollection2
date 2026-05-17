@@ -30,7 +30,7 @@ public abstract partial class Hitbox : IDraw, IDisposable
         }
     }
 
-    public delegate bool HitboxMessage(Object colider, int value);
+    public delegate bool HitboxMessage(Vector2 from, float dx, int value);
 
     public static void CreateLayers(params Color[] debugColors)
     {
@@ -69,7 +69,43 @@ public abstract partial class Hitbox : IDraw, IDisposable
 
     public Space Parent => _parent;
 
-    public HitboxMessage SendMessage;
+    private HitboxMessage OnMessage;
+
+    public bool HasMailBox => OnMessage is not null;
+
+    public void SetOnMessage(HitboxMessage mes)
+    {
+        this.OnMessage = mes;
+    }
+
+    public bool SendMessage(int value)
+    {
+        return OnMessage(Vector2.Zero, 0f, value);
+    }
+
+    public bool SendMessage(Vector2 from, int value)
+    {
+        return OnMessage(from, Parent.CenterPointX - from.X, value);
+    }
+
+    public bool SendMessage(Point from, int value)
+    {
+        return OnMessage(from.ToVector2(), Parent.CenterPointX - from.X, value);
+    }
+    public bool SendMessage(float dx, int value)
+    {
+        return OnMessage(Vector2.Zero, dx, value);
+    }
+
+    public bool SendMessage(Vector2 from, float dx, int value)
+    {
+        return OnMessage(from, dx, value);
+    }
+
+    public bool SendMessage(Point from, float dx, int value)
+    {
+        return OnMessage(from.ToVector2(), dx, value);
+    }
 
     public bool active;
     public bool isStatic;
@@ -90,7 +126,7 @@ public abstract partial class Hitbox : IDraw, IDisposable
         isStatic = false;
     }
 
-    protected Hitbox() : this(Space.Zero, 0) { }
+    protected Hitbox() : this(Space.Zero, 0) {  }
     protected Hitbox(byte layer, params string[] tags) : this(Space.Zero, layer, tags) { }
     protected Hitbox(Space parent) : this(parent, 0) { }
     protected Hitbox(Space parent, params string[] tags) : this(parent, 0, tags) { }

@@ -86,6 +86,11 @@ public abstract partial class Hitbox
             return this.Check(layer, condition, out collider, out _);
         }
 
+        public bool Check(string tagToCheck, out Hitbox collider)
+        {
+            return this.Check(layer, SelectTag(tagToCheck), out collider, out _);
+        }
+
         public override bool Check(byte layer, ConditionToCheckCollision condition)
         {
             return this.Check(layer, condition, out _, out _);

@@ -82,6 +82,7 @@ public class StateMachine : IDraw
     public void ResetTimer()
     {
         delta = 0f;
+        timer = 0f;
     }
 
     public void ResetTimer(float tim)

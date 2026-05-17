@@ -173,6 +173,9 @@ public abstract partial class Hitbox
 
                 foreach (Hitbox hit in layers[layer])
                 {
+                    if (!hit.active)
+                        continue;
+
                     if (hit is Rectangle)
                     {
                         col = (Rectangle)hit;
@@ -180,7 +183,7 @@ public abstract partial class Hitbox
                     else
                         continue;
 
-                    if (col.active && (col != this) && condition(col))
+                    if ((col != this) && condition(col))
                     {
                         col.UpdatePosition();
                         if (Intersect(col))
@@ -492,6 +495,11 @@ public abstract partial class Hitbox
             return Check(this.layer, SelectAllHitboxs, out globalSide, out coliders);
         }
 
+        public bool Check(string tagToCheck, out Hitbox.Rectangle col)
+        {
+            return Check(this.layer, SelectTag(tagToCheck), out col);
+        }
+
         public static bool Check(byte layer, Vector2 point, ConditionToCheckCollision condition, out Rectangle collider)
         {
             foreach(Hitbox rect in layers[layer])
@@ -671,6 +679,14 @@ public abstract partial class Hitbox
                 + (infinitDown ? " down" : "")
                 + (infinitLeft ? " left" : "")
                 + (infinitRight ? " right" : "");
+        }
+
+        public Space ToSpace()
+        {
+            Space result = new Space();
+            result.Scale = new Vector2(_width, _height);
+            result.Position = new Vector2(_left, _up);
+            return result;
         }
     }
 }
