@@ -57,7 +57,7 @@ public abstract partial class Hitbox
 
                         Vector2 cToThis = this.pos - c.Position;
 
-                        d = Vector2.Dot(cToThis, norme);
+                        d = float.Abs(Vector2.Dot(cToThis, norme));
 
                         if (d < c.Radius + thickness)
                         {
