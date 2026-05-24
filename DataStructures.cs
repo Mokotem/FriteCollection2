@@ -163,7 +163,7 @@ public abstract class AdvancedExecutable : IExecutable, IDrawUI, IDisposable
     public virtual void DrawShaderAfter(SpriteBatch batch) { }
     public virtual void DrawShader(SpriteBatch batch) { }
     public virtual void AfterDraw(SpriteBatch batch) { }
-    public virtual void DrawUI(SpriteBatch batch, int width, int height) { }
+    public virtual void DrawUI(SpriteBatch batch) { }
     public virtual void DrawMain(SpriteBatch batch) { }
 
 
@@ -264,10 +264,10 @@ public class Scene : AdvancedExecutable
             exes[i].AfterDraw(batch);
     }
 
-    public override void DrawUI(SpriteBatch batch, int width, int height)
+    public override void DrawUI(SpriteBatch batch)
     {
         for (byte i = 0; i < exes.Count; i++)
-            exes[i].DrawUI(batch, width, height);
+            exes[i].DrawUI(batch);
     }
 
     public override void DrawMain(SpriteBatch batch)
@@ -405,11 +405,11 @@ public class CloneContainer : AdvancedExecutable
         }
     }
 
-    public override void DrawUI(SpriteBatch batch, int w, int h)
+    public override void DrawUI(SpriteBatch batch)
     {
         foreach (Clone c in clones)
         {
-            c.DrawUI(batch, w, h);
+            c.DrawUI(batch);
         }
     }
 

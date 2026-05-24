@@ -10,7 +10,33 @@ public class Space
     private static readonly Space spacezero = new Space(0, 0);
     public static Space Zero => spacezero;
 
-    public static Point Camera = Point.Zero;
+    private static Vector2 camera = Vector2.Zero;
+    private static Point camsnaped;
+
+    public static Point Camera => camsnaped;
+    public static Vector2 CameraUnsnaped => camera;
+    public static void SetCamera(Vector2 value)
+    {
+        camera = value;
+        camsnaped = new Point(int.Round(value.X), int.Round(value.Y));
+    }
+
+    public static void SetCameraX(float value)
+    {
+        camera.X = value;
+        camsnaped.X = int.Round(value);
+    }
+
+    public static void SetCameraY(float value)
+    {
+        camera.Y = value;
+        camsnaped.Y = int.Round(value);
+    }
+
+    public static Vector2 GetCameraSnap()
+    {
+        return new Vector2(camsnaped.X - camera.X, camsnaped.Y - camera.Y);
+    }
 
     internal static Rectangle parent;
 
