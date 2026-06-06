@@ -166,7 +166,7 @@ public class OgmoLayer
 
 public class OgmoLayerBlock : OgmoLayer
 {
-    public int[][] data2D { get; init; }
+    public sbyte[][] data2D { get; init; }
 }
 
 public class OgmoLayerGround : OgmoLayerBlock { }

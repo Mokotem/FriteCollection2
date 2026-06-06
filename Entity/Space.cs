@@ -10,33 +10,9 @@ public class Space
     private static readonly Space spacezero = new Space(0, 0);
     public static Space Zero => spacezero;
 
-    private static Vector2 camera = Vector2.Zero;
     private static Point camsnaped;
 
-    public static Point Camera => camsnaped;
-    public static Vector2 CameraUnsnaped => camera;
-    public static void SetCamera(Vector2 value)
-    {
-        camera = value;
-        camsnaped = new Point(int.Round(value.X), int.Round(value.Y));
-    }
-
-    public static void SetCameraX(float value)
-    {
-        camera.X = value;
-        camsnaped.X = int.Round(value);
-    }
-
-    public static void SetCameraY(float value)
-    {
-        camera.Y = value;
-        camsnaped.Y = int.Round(value);
-    }
-
-    public static Vector2 GetCameraSnap()
-    {
-        return new Vector2(camsnaped.X - camera.X, camsnaped.Y - camera.Y);
-    }
+    public static Point Camera;
 
     internal static Rectangle parent;
 
@@ -76,14 +52,19 @@ public class Space
     );
 
     public static int ToScreenX(float posX) => (int)float.Round(posX) - Camera.X;
+    public static int ToScreenY(float posY) => (int)float.Round(posY) - Camera.Y;
+    public static Point ToScreen(Vector2 pos) =>
+        new Point(ToScreenX(pos.X), ToScreenY(pos.Y));
+
+    public static float FromScreenX(int posX) => posX + Camera.X;
+    public static float FromScreenY(int posY) => posY + Camera.Y;
+    public static Vector2 FromScreen(Point pos) =>
+        new Vector2(FromScreenX(pos.X), FromScreenY(pos.Y));
+    public static Vector2 FromScreen(Point pos, int div) =>
+        new Vector2(FromScreenX(pos.X / div), FromScreenY(pos.Y / div));
 
     public int ToScreenX() => (int)float.Round(Position.X) - Camera.X;
     public int ToScreenY() => (int)float.Round(Position.Y) - Camera.Y;
-
-    public static Vector2 FromScreen(Point p)
-    {
-        return new Vector2(p.X + Camera.X, p.Y + Camera.Y);
-    }
 
     public virtual void SetPosition(Vector2 pos, Bounds centerPoint)
     {
