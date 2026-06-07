@@ -515,5 +515,15 @@ public static class Helper
             Vector2 vv = v2 - v1;
             return vv.ToAngle();
         }
+
+        public static Vector2 FromAngle(float a, float d)
+        {
+            return new Vector2(float.Cos(a) * d, float.Sin(a) * d);
+        }
+
+        public static Vector2 FromAngle(float a)
+        {
+            return FromAngle(a, 1f);
+        }
     }
 }
