@@ -325,6 +325,8 @@ public class CloneContainer : AdvancedExecutable
 
     public void Clear()
     {
+        foreach (Clone c in clones)
+            c.Dispose();
         clones.Clear();
     }
 

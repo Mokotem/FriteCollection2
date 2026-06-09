@@ -8,6 +8,7 @@ namespace FriteCollection2.Entity.Hitboxs;
 
 public abstract partial class Hitbox : IDraw, IDisposable
 {
+    private static int currentid = 0;
     public delegate bool ConditionToCheckCollision(Hitbox hit);
 
     protected static bool SelectAllHitboxs(Hitbox hit) => true;
@@ -109,9 +110,12 @@ public abstract partial class Hitbox : IDraw, IDisposable
 
     public bool active;
     public bool isStatic;
+    private readonly int id;
 
     protected Hitbox(Space parent, byte layer, params string[] tags)
     {
+        this.id = currentid;
+        currentid++;
 #if DEBUG
         if (layers is null)
             throw new Exception("'Hitbox.CreateLayers(params Color[])' doit etre appelé avant de créer des hiboxs.");
@@ -236,6 +240,21 @@ public abstract partial class Hitbox : IDraw, IDisposable
     public virtual void Dispose()
     {
         layers[layer].Remove(this);
+    }
+
+    public override int GetHashCode()
+    {
+        return id;
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is Hitbox)
+        {
+            Hitbox o = (Hitbox)obj;
+            return this._tags[0].Equals(o._tags[0]) && o.id == this.id;
+        }
+        return false;
     }
 
     public void Destroy()

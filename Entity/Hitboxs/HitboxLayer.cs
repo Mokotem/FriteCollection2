@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace FriteCollection2.Entity.Hitboxs;
 
-internal class HitboxLayer : List<Hitbox>, IDraw
+internal class HitboxLayer : HashSet<Hitbox>, IDraw
 {
     public readonly Color debugColor;
 

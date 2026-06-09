@@ -433,9 +433,12 @@ public class TileMap : IDisposable, IDraw
 
     public void DestroyHitboxs()
     {
-        foreach (Hitbox.Rectangle hit in this.savedHitboxes)
+        if (savedHitboxes is not null)
         {
-            hit.Dispose();
+            foreach (Hitbox.Rectangle hit in this.savedHitboxes)
+            {
+                hit.Dispose();
+            }
         }
     }
 
@@ -443,6 +446,7 @@ public class TileMap : IDisposable, IDraw
     {
         foreach (RenderTarget2D t in _targets)
             t.Dispose();
+        DestroyHitboxs();
         this.savedHitboxes = null;
     }
 }
