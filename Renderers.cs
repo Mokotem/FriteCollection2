@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using System;
+using System.IO;
 
 namespace FriteCollection2;
 
@@ -70,6 +71,8 @@ public class TextureRenderer : Renderer
     internal static Texture2D _defaultTexture;
     public static Texture2D Default => _defaultTexture;
 
+
+
     public static void CreateDefaultTexture(GraphicsDevice device)
     {
         _defaultTexture = TextureCreator.Create(device, 2, 2);
@@ -84,6 +87,7 @@ public class TextureRenderer : Renderer
         batch.Draw(tex, rect, _defaultColor);
     }
 
+    public Rectangle offset = Rectangle.Empty;
     public Texture2D Texture { get; set; }
 
     public int Width => Texture.Width;
@@ -116,14 +120,22 @@ public class TextureRenderer : Renderer
 
     public TextureRenderer(UI.UI parent, Color color, Texture2D texture) : this(parent, texture, color) { }
 
-    public virtual void Draw(SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation, Color c)
+    public virtual void Draw(SpriteBatch batch, Rectangle rectangle, Rectangle? sub, Vector2 centerPoint, float rotation, Color c)
     {
         if (!hide)
         {
-            batch.Draw(Texture, rectangle, null, c, rotation, centerPoint, effect, _layer);
+            batch.Draw(Texture, new Rectangle(
+                rectangle.X + offset.X,
+                rectangle.Y + offset.Y,
+                rectangle.Width + offset.Width,
+                rectangle.Height + offset.Height), null, c, rotation, centerPoint, effect, _layer);
         }
     }
 
+    public virtual void Draw(SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation, Color c)
+    {
+        Draw(batch, rectangle, null, centerPoint, rotation, c);
+    }
 
     public void Draw(SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation)
     {
@@ -142,6 +154,11 @@ public class TextureRenderer : Renderer
     public void Draw(SpriteBatch batch, Rectangle rectangle)
     {
         Draw(batch, rectangle, Color);
+    }
+
+    public void Draw(SpriteBatch batch, Rectangle rectangle, Rectangle sub)
+    {
+        Draw(batch, rectangle, sub, Vector2.Zero, 0f, Color);
     }
 }
 

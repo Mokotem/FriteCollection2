@@ -4,6 +4,11 @@ namespace FriteCollection2.Tools.Animation;
 
 public class State
 {
+    public static readonly State Empty = new State()
+    {
+        Update = (float dt) => { return null; }
+    };
+
     public delegate State UpdateState(float timer);
     public System.Action Start { get; init; }
     public required UpdateState Update { get; init; }

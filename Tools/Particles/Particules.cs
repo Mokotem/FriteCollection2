@@ -7,7 +7,7 @@ public interface IParticle<Settings> : IDisposable, IDraw
 {
     public void Initialize(Settings settings);
     public void Update(float dt);
-    public bool Alive { get; }
+    public bool Alive { get; set; }
 }
 
 public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle<Sets>, new() where Sets: new()
@@ -66,6 +66,7 @@ public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle
         if (!_data[index].Alive)
         {
             _timers[index] = 0f;
+            _data[index].Alive = true;
             _data[index].Initialize(sets);
             _data[index].Update(0f);
             ++index;
@@ -96,6 +97,18 @@ public class ParticleGenerator<P, Sets> : IDraw, IDisposable where P : IParticle
                     _isEmpty = false;
             }
         }
+    }
+
+    public void Clear()
+    {
+        for (ushort i = 0; i < _data.Length; ++i)
+        {
+            if (_data[i].Alive)
+            {
+                _data[i].Alive = false;
+            }
+        }
+        _isEmpty = true;
     }
 
     public void Draw(SpriteBatch batch)

@@ -107,7 +107,7 @@ public class OutlineRenderer : TextureRenderer
             foreach (Point p in outLinePositions)
             {
                 batch.Draw(Texture,
-                    new Rectangle(rectangle.Location + p, rectangle.Size),
+                    new Rectangle(rectangle.Location + p + offset.Location, rectangle.Size + offset.Size),
                     null, c, rotation, centerPoint, effect, layer);
             }
         }
