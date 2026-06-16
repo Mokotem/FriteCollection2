@@ -88,7 +88,16 @@ public class TextureRenderer : Renderer
     }
 
     public Rectangle offset = Rectangle.Empty;
-    public Texture2D Texture { get; set; }
+    private Rectangle sub;
+    public Texture2D Texture
+    {
+        get;
+        set
+        {
+            field = value;
+            sub = new Rectangle(0, 0, value.Width, value.Height);
+        }
+    }
 
     public int Width => Texture.Width;
     public int Height => Texture.Height;
@@ -128,7 +137,7 @@ public class TextureRenderer : Renderer
                 rectangle.X + offset.X,
                 rectangle.Y + offset.Y,
                 rectangle.Width + offset.Width,
-                rectangle.Height + offset.Height), null, c, rotation, centerPoint, effect, _layer);
+                rectangle.Height + offset.Height), sub, c, rotation, centerPoint, effect, _layer);
         }
     }
 
@@ -158,7 +167,7 @@ public class TextureRenderer : Renderer
 
     public void Draw(SpriteBatch batch, Rectangle rectangle, Rectangle sub)
     {
-        Draw(batch, rectangle, sub, Vector2.Zero, 0f, Color);
+        Draw(batch, rectangle, sub, Vector2.Zero, 0f, Color); 
     }
 }
 
@@ -177,7 +186,6 @@ public class StringRenderer : Renderer
     private static byte fw, fh;
     public static Point Aspect => new Point(fw, fh);
 
-    private static int ofx, ofy;
     private static float baseScale;
 
     public Color OutlineColor;
@@ -196,15 +204,6 @@ public class StringRenderer : Renderer
         fw = fontWidth;
         fh = fontHeight;
         baseScale = scale;
-    }
-    public static void SetOffset(int x, int y)
-    {
-        ofx = x;
-        ofy = y;
-    }
-    public static void SetOffset(Point offset)
-    {
-        SetOffset(offset.X, offset.Y);
     }
 
     public static Point Evaluate(string value, char[] echaps, float _scale)
@@ -381,6 +380,13 @@ public class StringRenderer : Renderer
         Text = string.Empty;
         font = _font;
         OutlineColor = OutlineRenderer._default;
+    }
+    public StringRenderer(string text) : base(0)
+    {
+        Text = text;
+        font = _font;
+        OutlineColor = OutlineRenderer._default;
+        Color = _defaultColor;
     }
 
     public StringRenderer(UI.UI parent, string text) : this(parent)

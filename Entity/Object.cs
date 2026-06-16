@@ -5,7 +5,8 @@ namespace FriteCollection2.Entity;
 
 public class Object : Space, IDraw
 {
-    public OutlineRenderer Renderer;
+    public readonly OutlineRenderer Renderer;
+    private Rectangle sub;
 
     public Object() : base()
     {

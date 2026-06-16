@@ -51,7 +51,7 @@ public class OutlineRenderer : TextureRenderer
 
     public void StickOutline()
     {
-        this._oolayer = _layer + 0.0001f;
+        this._oolayer = _layer + 0.001f;
         hasComonLayer = false;
     }
 
@@ -113,6 +113,22 @@ public class OutlineRenderer : TextureRenderer
         }
     }
 
+    public void DrawOutline(SpriteBatch batch, Rectangle rectangle, Rectangle sub, Vector2 centerPoint, float rotation, Color c, float layer)
+    {
+        if (!hide)
+        {
+            if (hasComonLayer)
+                layer = _defaultolayer;
+
+            foreach (Point p in outLinePositions)
+            {
+                batch.Draw(Texture,
+                    new Rectangle(rectangle.Location + p + offset.Location, rectangle.Size + offset.Size),
+                    sub, c, rotation, centerPoint, effect, layer);
+            }
+        }
+    }
+
     public void DrawOutline(SpriteBatch batch, Rectangle rectangle)
     {
         this.DrawOutline(batch, rectangle, Vector2.Zero, 0f, OutlineColor, _oolayer);
@@ -126,6 +142,11 @@ public class OutlineRenderer : TextureRenderer
     public void DrawOutline(SpriteBatch batch, Rectangle rectangle, Color c)
     {
         this.DrawOutline(batch, rectangle, Vector2.Zero, 0f, c, _layer);
+    }
+
+    public void DrawOutline(SpriteBatch batch, Rectangle rectangle, Rectangle sub)
+    {
+        this.DrawOutline(batch, rectangle, sub, Vector2.Zero, 0f, OutlineColor, _oolayer);
     }
 
     public void DrawBody(SpriteBatch batch, Rectangle rectangle)
