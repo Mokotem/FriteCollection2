@@ -8,14 +8,17 @@ namespace FriteCollection2.UI;
 public class Image : UI
 {
     public OutlineRenderer Renderer;
+    private Rectangle? sub;
+    public int SpriteCountX => Renderer.Texture.Width / sub.Value.Width;
+    public int SpriteCountY => Renderer.Texture.Height / sub.Value.Height;
 
     public Image(UI parent, Texture2D texture, int width, int height) : base(parent, width, height)
     {
         this.Renderer = new OutlineRenderer(parent, texture);
-        this.Renderer._layer = parent.Depth - 0.01f;
         this.Renderer.Color = TextureRenderer._defaultColor;
         this.Renderer.StickOutline();
         Renderer.outline = false;
+        sub = null;
     }
 
     public Image(UI parent, Texture2D texture) : this(parent, texture, texture.Width, texture.Height) { }
@@ -59,16 +62,30 @@ public class Image : UI
 
     public override float Depth => Renderer._layer;
 
-    public void ChangeTexture(Texture2D tex)
+    public void SetSprite(int x, int y)
     {
-        this.Renderer.Texture = tex;
+        this.sub = new Rectangle(
+            x * rect.Width,
+            y * rect.Height,
+            rect.Width,
+            rect.Height);
+    }
+
+    public void SetSprite(Point index)
+    {
+        this.SetSprite(index.X, index.Y);
+    }
+
+    public void SetSprite(int index)
+    {
+        this.SetSprite(index % SpriteCountX, index / SpriteCountX);
     }
 
     public override void Draw(SpriteBatch batch)
     {
         if (Active)
         {
-            Renderer.Draw(batch, rect);
+            Renderer.Draw(batch, rect, sub);
             base.Draw(batch);
         }
     }

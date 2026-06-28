@@ -73,7 +73,7 @@ public class StateMachine : IDraw
         }
     }
 
-    public void UpdateDelta(float dt)
+    public float UpdateDelta(float dt)
     {
         if (active)
         {
@@ -81,7 +81,9 @@ public class StateMachine : IDraw
             State newState = current.Update(timer);
             if (newState is not null)
                 ForceState(newState);
+            return timer;
         }
+        return -1f;
     }
 
     public void ResetTimer()

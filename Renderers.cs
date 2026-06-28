@@ -56,13 +56,13 @@ public abstract class Renderer
     public Renderer(UI.UI parent)
     {
         Color = _defaultColor;
-        this._layer = parent.Depth - 0.001f;
+        this._layer = parent.Depth - 0.02f;
     }
 
     public Renderer(UI.UI parent, Color color)
     {
         this.Color = color;
-        this._layer = parent.Depth - 0.001f;
+        this._layer = parent.Depth - 0.02f;
     }
 }
 
@@ -165,7 +165,7 @@ public class TextureRenderer : Renderer
         Draw(batch, rectangle, Color);
     }
 
-    public void Draw(SpriteBatch batch, Rectangle rectangle, Rectangle sub)
+    public void Draw(SpriteBatch batch, Rectangle rectangle, Rectangle? sub)
     {
         Draw(batch, rectangle, sub, Vector2.Zero, 0f, Color); 
     }
