@@ -10,8 +10,6 @@ public class Space
     private static readonly Space spacezero = new Space(0, 0);
     public static Space Zero => spacezero;
 
-    private static Point camsnaped;
-
     public static Point Camera;
 
     internal static Rectangle parent;

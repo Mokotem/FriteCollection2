@@ -15,12 +15,15 @@ public class Object : Space, IDraw
 
     public Object(Texture2D texture) : base(texture)
     {
-        Renderer.Texture = texture;
+        Renderer = new OutlineRenderer(texture);
     }
 
-    public Object(int width, int height) : base(width, height)
+    public Object(int width, int height) : base(width, height) { }
+
+    public Object(Texture2D renderer, int width, int height) : base(width, height)
     {
-        Renderer = new OutlineRenderer(0);
+        Renderer = new OutlineRenderer(renderer);
+        Renderer.SetSubSize(width, height);
     }
 
     public virtual void DrawBody(SpriteBatch batch)
@@ -70,7 +73,7 @@ public class RotatableObject : Object
         init
         {
             this.centerBound = value;
-            this.center = BoundFunc.BoundToVector(value, Renderer.Texture.Width, Renderer.Texture.Height);
+            this.center = BoundFunc.BoundToVector(value, Renderer.Width, Renderer.Height);
         }
     }
 
@@ -80,7 +83,7 @@ public class RotatableObject : Object
 
     public void UpdateCenterPoint()
     {
-        this.center = BoundFunc.BoundToVector(centerBound, Renderer.Texture.Width, Renderer.Texture.Height);
+        this.center = BoundFunc.BoundToVector(centerBound, Renderer.Width, Renderer.Height);
     }
 
     public override void Draw(SpriteBatch batch)

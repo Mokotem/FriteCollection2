@@ -6,15 +6,17 @@ namespace FriteCollection2.UI;
 
 public class Panel : UI
 {
-    private const int padding = 4, padding2 = padding * 2;
-    private readonly RenderTarget2D target, scroolTarget;
+    private const int padding = 2, padding2 = padding * 2;
+    protected readonly RenderTarget2D target, scroolTarget;
 
     public RenderTarget2D Target => scroolTarget;
 
-    private Rectangle targetRect;
+    public int WindowHeight => target.Height;
+
+    protected Rectangle targetRect;
     private readonly Rectangle rectForChilds;
-    public readonly TextureRenderer Renderer;
-    private int scrollValue;
+    public readonly OutlineRenderer Renderer;
+    protected int scrollValue;
 
     public SamplerState sampler;
 
@@ -28,7 +30,8 @@ public class Panel : UI
         int addWidth = 0, int addHeight = 0, int addx = 0, int addy = 0, float addLayer = 0)
         : base(parent, 0, 0)
     {
-        this.Renderer = new TextureRenderer(parent);
+        this.Renderer = new OutlineRenderer(parent);
+        this.Renderer.StickOutline();
         base.Scale(ext);
         AddScale(addWidth, addHeight);
         if (height < 2)
@@ -86,6 +89,12 @@ public class Panel : UI
         }
     }
 
+    public int Scroll
+    {
+        get => scrollValue;
+        set => scrollValue = value;
+    }
+
     protected override void OnIShouldUpdatePositionsOfMyChilds()
     {
         base.OnIShouldUpdatePositionsOfMyChilds();
@@ -100,12 +109,21 @@ public class Panel : UI
         targetRect.Y = rect.Y + padding;
     }
 
-    public void DrawChildsOnTarget(GraphicsDevice device, SpriteBatch batch)
+    protected virtual void DrawChildsOnTarget(GraphicsDevice device, SpriteBatch batch)
     {
         device.SetRenderTarget(scroolTarget);
         device.Clear(Color.Transparent);
         batch.Begin(samplerState: sampler);
         base.Draw(batch);
+        batch.End();
+    }
+
+    protected virtual void DrawScroll(GraphicsDevice device, SpriteBatch batch)
+    {
+        device.SetRenderTarget(target);
+        device.Clear(Color.Transparent);
+        batch.Begin(samplerState: sampler);
+        batch.Draw(scroolTarget, new Rectangle(0, -scrollValue, scroolTarget.Width, scroolTarget.Height), Color.White);
         batch.End();
     }
 
@@ -116,15 +134,6 @@ public class Panel : UI
             DrawChildsOnTarget(device, batch);
             DrawScroll(device, batch);
         }
-    }
-
-    public void DrawScroll(GraphicsDevice device, SpriteBatch batch)
-    {
-        device.SetRenderTarget(target);
-        device.Clear(Color.Transparent);
-        batch.Begin(samplerState: sampler);
-        batch.Draw(scroolTarget, new Rectangle(0, -scrollValue, scroolTarget.Width, scroolTarget.Height), Color.White);
-        batch.End();
     }
 
     public override void Draw(SpriteBatch batch)

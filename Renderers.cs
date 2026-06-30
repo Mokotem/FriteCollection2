@@ -47,17 +47,15 @@ public abstract class Renderer
         set => _layer = ToLayer(value);
     }
 
-    public Renderer(short layer)
+    public Renderer() : this(0, _defaultColor) { }
+    public Renderer(short layer) : this(layer, _defaultColor) { }
+    public Renderer(short layer, Color c)
     {
-        Color = _defaultColor;
+        Color = c;
         this._layer = ToLayer(layer);
     }
 
-    public Renderer(UI.UI parent)
-    {
-        Color = _defaultColor;
-        this._layer = parent.Depth - 0.02f;
-    }
+    public Renderer(UI.UI parent) : this(parent, _defaultColor) { }
 
     public Renderer(UI.UI parent, Color color)
     {
@@ -66,12 +64,10 @@ public abstract class Renderer
     }
 }
 
-public class TextureRenderer : Renderer
+public class TextureRenderer : Renderer, IDisposable
 {
     internal static Texture2D _defaultTexture;
     public static Texture2D Default => _defaultTexture;
-
-
 
     public static void CreateDefaultTexture(GraphicsDevice device)
     {
@@ -89,51 +85,79 @@ public class TextureRenderer : Renderer
 
     public Rectangle offset = Rectangle.Empty;
     private Rectangle sub;
-    public Texture2D Texture
+    protected Rectangle SubRect => sub;
+
+    private protected Texture2D _texture;
+
+    public void SetRenderTarget(RenderTarget2D target)
     {
-        get;
+        _texture = target;
+        sub = new Rectangle(0, 0, target.Width, target.Height);
+    }
+
+    internal Texture2D Texture
+    {
+        get => _texture;
         set
         {
-            field = value;
+            _texture = value;
             sub = new Rectangle(0, 0, value.Width, value.Height);
         }
     }
 
-    public int Width => Texture.Width;
-    public int Height => Texture.Height;
+    public int Width => _texture.Width;
+    public int Height => _texture.Height;
 
-    public TextureRenderer(UI.UI parent) : base(parent)
-    {
-        Texture = _defaultTexture;
-    }
-
-    public TextureRenderer(short layer) : base(layer)
-    {
-        Texture = _defaultTexture;
-    }
-
-    public TextureRenderer(UI.UI parent, Texture2D texture) : base(parent)
-    {
-        Texture = texture;
-    }
-
-    public TextureRenderer(UI.UI parent, Color color) : base(parent, color)
-    {
-        Texture = _defaultTexture;
-    }
+    public TextureRenderer() : this(0, _defaultTexture, _defaultColor) { }
+    public TextureRenderer(short layer) : this(layer, _defaultTexture, _defaultColor) { }
+    public TextureRenderer(Texture2D texture) : this(0, texture, _defaultColor) { }
+    public TextureRenderer(Color color) : this(0, _defaultTexture, color) { }
+    public TextureRenderer(Texture2D texture, Color color) : base(0, color) { }
+    public TextureRenderer(UI.UI parent) : this(parent, _defaultTexture, _defaultColor) { }
+    public TextureRenderer(UI.UI parent, Texture2D texture) : this(parent, texture, _defaultColor) { }
+    public TextureRenderer(UI.UI parent, Color color) : this(parent, _defaultTexture, color) { }
 
     public TextureRenderer(UI.UI parent, Texture2D texture, Color color) : base(parent, color)
     {
-        Texture = texture;
+        this._texture = texture;
+        sub = new Rectangle(0, 0, texture.Width, texture.Height);
+    }
+    public TextureRenderer(short layer, Texture2D texture, Color color) : base(layer, color)
+    {
+        this._texture = texture;
+        sub = new Rectangle(0, 0, texture.Width, texture.Height);
     }
 
-    public TextureRenderer(UI.UI parent, Color color, Texture2D texture) : this(parent, texture, color) { }
+    public int SubWidth => sub.Width;
+    public int SubHeight => sub.Height;
 
-    public virtual void Draw(SpriteBatch batch, Rectangle rectangle, Rectangle? sub, Vector2 centerPoint, float rotation, Color c)
+    public void SetSubSize(int size)
+    {
+        SetSubSize(size, size);
+    }
+
+    public void SetSubSize(int width, int height)
+    {
+        sub.Width = width;
+        sub.Height = height;
+    }
+
+    public void SetSprite(int x, int y)
+    {
+        this.sub.X = x * sub.Width;
+        this.sub.Y = y * sub.Height;
+    }
+
+    public void SetSprite(Point index)
+    {
+        this.SetSprite(index.X, index.Y);
+    }
+
+    public virtual void Draw(SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation, Color c)
     {
         if (!hide)
         {
-            batch.Draw(Texture, new Rectangle(
+            batch.Draw(_texture, new Rectangle(
                 rectangle.X + offset.X,
                 rectangle.Y + offset.Y,
                 rectangle.Width + offset.Width,
@@ -141,20 +165,11 @@ public class TextureRenderer : Renderer
         }
     }
 
-    public virtual void Draw(SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation, Color c)
-    {
-        Draw(batch, rectangle, null, centerPoint, rotation, c);
-    }
-
-    public void Draw(SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation)
-    {
-        Draw(batch, rectangle, centerPoint, rotation, Color);
-    }
-
     public void Draw(SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint)
     {
-        Draw(batch, rectangle, centerPoint, 0f);
+        Draw(batch, rectangle, centerPoint, 0f, Color);
     }
+
     public void Draw(SpriteBatch batch, Rectangle rectangle, Color c)
     {
         Draw(batch, rectangle, Vector2.Zero, 0f, c);
@@ -165,9 +180,9 @@ public class TextureRenderer : Renderer
         Draw(batch, rectangle, Color);
     }
 
-    public void Draw(SpriteBatch batch, Rectangle rectangle, Rectangle? sub)
+    public void Dispose()
     {
-        Draw(batch, rectangle, sub, Vector2.Zero, 0f, Color); 
+        _texture.Dispose();
     }
 }
 

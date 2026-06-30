@@ -158,8 +158,7 @@ public class TileMap : IDisposable, IDraw
 
                     batch.End();
 
-                    FriteCollection2.Entity.Object wall = new FriteCollection2.Entity.Object();
-                    wall.Renderer.Texture = tex;
+                    FriteCollection2.Entity.Object wall = new FriteCollection2.Entity.Object(tex);
                     wall.Scale = new Vector2(
                         width * _refTileSet.settings.tileSize.X,
                         height * _refTileSet.settings.tileSize.Y);

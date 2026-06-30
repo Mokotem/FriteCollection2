@@ -14,6 +14,7 @@ namespace FriteCollection2;
 public interface IDraw
 {
     public delegate void DrawFunction(SpriteBatch batch);
+    public delegate void DrawFunctionTraget(SpriteBatch batch, GraphicsDevice device);
     public void Draw(SpriteBatch batch);
 }
 

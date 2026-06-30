@@ -54,37 +54,20 @@ public class OutlineRenderer : TextureRenderer
         this._oolayer = _layer + 0.001f;
         hasComonLayer = false;
     }
+    public OutlineRenderer() : this(0, _defaultTexture, _defaultColor) { }
+    public OutlineRenderer(short layer) : this(layer, _defaultTexture, _defaultColor) { }
+    public OutlineRenderer(Texture2D texture) : this(0, texture, _defaultColor) { }
+    public OutlineRenderer(Color color) : this(0, _defaultTexture, color) { }
+    public OutlineRenderer(UI.UI parent) : this(parent, _defaultTexture, _defaultColor) { }
+    public OutlineRenderer(UI.UI parent, Texture2D texture) : this(parent, texture, _defaultColor) { }
+    public OutlineRenderer(UI.UI parent, Color color) : this(parent, _defaultTexture, color) { }
 
-    public OutlineRenderer(UI.UI parent) : base(parent)
-    {
-        _oolayer = _defaultolayer;
-        this.OutlineColor = _default;
-    }
-
-
-    public OutlineRenderer(short layer) : base(layer)
-    {
-        _oolayer = _defaultolayer;
-        this.OutlineColor = _default;
-    }
-
-    public OutlineRenderer(UI.UI parent, Texture2D texture, Color outline) : base(parent)
-    {
-        this.OutlineColor = outline;
-        _oolayer = _defaultolayer;
-    }
-
-    public OutlineRenderer(UI.UI parent, Texture2D texture) : base(parent, texture)
-    {
-        this.OutlineColor = _default;
-        _oolayer = _defaultolayer;
-    }
-
-    public OutlineRenderer(UI.UI parent, Color color) : base(parent, color)
-    {
-        this.OutlineColor = _default;
-        _oolayer = _defaultolayer;
-    }
+    public OutlineRenderer(Texture2D texture, Color color) : base(texture, color)
+    { OutlineColor = _default; }
+    public OutlineRenderer(UI.UI parent, Texture2D texture, Color color) : base(parent, texture, color)
+    { OutlineColor = _default; }
+    public OutlineRenderer(short layer, Texture2D texture, Color color) : base(layer, texture, color)
+    { OutlineColor = _default; }
 
     public Color OutlineColor
     {
@@ -106,14 +89,14 @@ public class OutlineRenderer : TextureRenderer
 
             foreach (Point p in outLinePositions)
             {
-                batch.Draw(Texture,
+                batch.Draw(_texture,
                     new Rectangle(rectangle.Location + p + offset.Location, rectangle.Size + offset.Size),
                     sub, c, rotation, centerPoint, effect, layer);
             }
         }
     }
 
-    public void DrawOutline(SpriteBatch batch, Rectangle rectangle, Rectangle sub, Vector2 centerPoint, float rotation, Color c, float layer)
+    public void DrawOutline(SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation, Color c, float layer)
     {
         if (!hide)
         {
@@ -122,43 +105,43 @@ public class OutlineRenderer : TextureRenderer
 
             foreach (Point p in outLinePositions)
             {
-                batch.Draw(Texture,
+                batch.Draw(_texture,
                     new Rectangle(rectangle.Location + p + offset.Location, rectangle.Size + offset.Size),
-                    sub, c, rotation, centerPoint, effect, layer);
+                    SubRect, c, rotation, centerPoint, effect, layer);
             }
         }
     }
 
     public void DrawOutline(SpriteBatch batch, Rectangle rectangle)
     {
-        this.DrawOutline(batch, rectangle, null, Vector2.Zero, 0f, OutlineColor, _oolayer);
+        this.DrawOutline(batch, rectangle, Vector2.Zero, 0f, OutlineColor, _oolayer);
     }
 
     public void DrawOutline(SpriteBatch batch, Rectangle rectangle, Color c, float layer)
     {
-        this.DrawOutline(batch, rectangle, null, Vector2.Zero, 0f, c, layer);
+        this.DrawOutline(batch, rectangle, Vector2.Zero, 0f, c, layer);
     }
 
     public void DrawOutline(SpriteBatch batch, Rectangle rectangle, Color c)
     {
-        this.DrawOutline(batch, rectangle, null, Vector2.Zero, 0f, c, _oolayer);
-    }
-
-    public void DrawOutline(SpriteBatch batch, Rectangle rectangle, Rectangle sub)
-    {
-        this.DrawOutline(batch, rectangle, sub, Vector2.Zero, 0f, OutlineColor, _oolayer);
+        this.DrawOutline(batch, rectangle, Vector2.Zero, 0f, c, _oolayer);
     }
 
     public void DrawBody(SpriteBatch batch, Rectangle rectangle)
     {
         if (!hide)
-        batch.Draw(base.Texture, rectangle, null, Color, 0f, Vector2.Zero, effect, _layer);
+            batch.Draw(base._texture, rectangle, SubRect, Color, 0f, Vector2.Zero, effect, _layer);
     }
 
-    public override void Draw(SpriteBatch batch, Rectangle rectangle, Rectangle? sub, Vector2 centerPoint, float rotation, Color c)
+    public void Draw(SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation)
+    {
+        this.Draw(batch, rectangle, centerPoint, rotation, Color);
+    }
+
+    public override void Draw(SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation, Color c)
     {
         if (outline)
-            DrawOutline(batch, rectangle, sub, centerPoint, rotation, OutlineColor, _oolayer);
-        base.Draw(batch, rectangle, sub, centerPoint, rotation, c);
+            DrawOutline(batch, rectangle, centerPoint, rotation, OutlineColor, _oolayer);
+        base.Draw(batch, rectangle, centerPoint, rotation, c);
     }
 }

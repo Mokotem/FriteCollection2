@@ -13,13 +13,13 @@ public class State
     public System.Action Start { get; init; }
     public required UpdateState Update { get; init; }
     public IDraw.DrawFunction Draw { get; init; }
-    public IDraw.DrawFunction DrawAdditive { get; init; }
+    public IDraw.DrawFunctionTraget DrawAdditive { get; init; }
 
     public State()
     {
         Start = () => { };
         Draw = (SpriteBatch batch) => { };
-        DrawAdditive = (SpriteBatch batch) => { };
+        DrawAdditive = (SpriteBatch batch, GraphicsDevice device) => { };
     }
 }
 
@@ -115,11 +115,11 @@ public class StateMachine : IDraw
         }
     }
 
-    public void DrawAdditive(SpriteBatch batch)
+    public void DrawAdditive(SpriteBatch batch, GraphicsDevice device)
     {
         if (active)
         {
-            current.DrawAdditive(batch);
+            current.DrawAdditive(batch, device);
         }
     }
 }
