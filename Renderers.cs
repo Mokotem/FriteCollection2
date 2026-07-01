@@ -419,6 +419,7 @@ public class StringRenderer : Renderer
     public StringRenderer(UI.UI parent, string text, Color color) : this(parent, color)
     {
         Text = text;
+
     }
 
     public StringRenderer(UI.UI parent, Color color, string text) : this(parent, text, color) { }

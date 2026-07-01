@@ -38,6 +38,7 @@ public class Text : UI
 
         this.ChangeText(value);
         this.Renderer._layer = parent.Depth - 0.01f;
+        Scale(Extend.Full);
     }
 
     public Text(string value, Bounds textAlign, byte taille = byte.MaxValue) : this(screen, value, textAlign, taille) { }

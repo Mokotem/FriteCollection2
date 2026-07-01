@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿
+/*
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 
 
@@ -8,6 +10,9 @@ public class Panel : UI
 {
     private const int padding = 2, padding2 = padding * 2;
     protected readonly RenderTarget2D target, scroolTarget;
+
+    public static Color ClearColor = Color.Transparent;
+    public static Color Color = Color.White;
 
     public RenderTarget2D Target => scroolTarget;
 
@@ -112,7 +117,7 @@ public class Panel : UI
     protected virtual void DrawChildsOnTarget(GraphicsDevice device, SpriteBatch batch)
     {
         device.SetRenderTarget(scroolTarget);
-        device.Clear(Color.Transparent);
+        device.Clear(ClearColor);
         batch.Begin(samplerState: sampler);
         base.Draw(batch);
         batch.End();
@@ -121,9 +126,9 @@ public class Panel : UI
     protected virtual void DrawScroll(GraphicsDevice device, SpriteBatch batch)
     {
         device.SetRenderTarget(target);
-        device.Clear(Color.Transparent);
+        device.Clear(ClearColor);
         batch.Begin(samplerState: sampler);
-        batch.Draw(scroolTarget, new Rectangle(0, -scrollValue, scroolTarget.Width, scroolTarget.Height), Color.White);
+        batch.Draw(scroolTarget, new Rectangle(0, -scrollValue, scroolTarget.Width, scroolTarget.Height), Color);
         batch.End();
     }
 
@@ -141,7 +146,8 @@ public class Panel : UI
         if (Active)
         {
             Renderer.Draw(batch, rect);
-            batch.Draw(target, targetRect, null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, Renderer._layer - 0.001f);
+            batch.Draw(target, targetRect, null, Color, 0f, Vector2.Zero, SpriteEffects.None, Renderer._layer - 0.001f);
         }
     }
 }
+*/
