@@ -52,7 +52,13 @@ public class LayerTypeDiscriminator : DefaultJsonTypeInfoResolver
                     TypeDiscriminatorPropertyName = "name",
                     DerivedTypes =
                 {
-                    entities
+                    entities,
+                    new JsonDerivedType(typeof(OgmoLayerGrid), "hitboxs"),
+                    new JsonDerivedType(typeof(OgmoLayerGround), "ground"),
+                    new JsonDerivedType(typeof(OgmoLayerGeneral), "general"),
+                    new JsonDerivedType(typeof(OgmoLayerBackground), "background"),
+                    new JsonDerivedType(typeof(OgmoLayerBreakable), "breakable"),
+                    new JsonDerivedType(typeof(OgmoLayerForeground), "foreground")
                 }
                 };
             }
@@ -70,7 +76,7 @@ public class LayerTypeDiscriminator : DefaultJsonTypeInfoResolver
                     new JsonDerivedType(typeof(OgmoLayerGeneral), "general"),
                     new JsonDerivedType(typeof(OgmoLayerBackground), "background"),
                     new JsonDerivedType(typeof(OgmoLayerBreakable), "breakable"),
-                    new JsonDerivedType(typeof(OgmoLayerForeground), "foreground"),
+                    new JsonDerivedType(typeof(OgmoLayerForeground), "foreground")
                 }
                 };
             }
@@ -118,11 +124,11 @@ public class OgmoFile<LevelValues> : IOgmoFileWithLayer
         return JsonSerializer.Deserialize<OgmoFile<LevelValues>>(file, options).layers;
     }
 
-    public static ImmutableArray<OgmoLayer> Open(string path, JsonDerivedType entities)
+    public static OgmoFile<LevelValues> Open(string path, JsonDerivedType entities)
     {
         return OpenPath(System.Environment.CurrentDirectory + "/" + path, entities);
     }
-    public static ImmutableArray<OgmoLayer> OpenPath(string path, JsonDerivedType entities)
+    public static OgmoFile<LevelValues> OpenPath(string path, JsonDerivedType entities)
     {
         string file;
         using (StreamReader sr = new StreamReader(path))
@@ -132,7 +138,7 @@ public class OgmoFile<LevelValues> : IOgmoFileWithLayer
         {
             TypeInfoResolver = new LayerTypeDiscriminator(entities)
         };
-        return JsonSerializer.Deserialize<OgmoFile<LevelValues>>(file, options).layers;
+        return JsonSerializer.Deserialize<OgmoFile<LevelValues>>(file, options);
     }
 
     public string ogmoVersion { get; init; }

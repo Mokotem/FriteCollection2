@@ -142,6 +142,7 @@ public class TileRandomizer
     private readonly bool twoRectangle;
     private readonly Rectangle rect1, rect2;
     private readonly Point offset;
+    private readonly bool halfmode;
 
     public TileRandomizer(Point p1, Point p2)
     {
@@ -172,6 +173,13 @@ public class TileRandomizer
         rect1 = r1;
         twoRectangle = false;
     }
+    public TileRandomizer(Rectangle r1, Point r2)
+    {
+        rect1 = r1;
+        rect2 = new Rectangle(r2.X, r2.Y, 1, 1);
+        twoRectangle = true;
+        halfmode = true;
+    }
 
     private static bool PointInRect(Point p, Rectangle r)
     {
@@ -198,6 +206,10 @@ public class TileRandomizer
             {
                 return rand.Next(2) == 0 ? p : p - offset;
             }
+        }
+        else if (halfmode && rand.Next(2) == 0)
+        {
+            return rect2.Location;
         }
         else
         {

@@ -53,6 +53,8 @@ public class Image : UI
         }
     }
 
+    public Texture2D Texture => Renderer.Texture;
+
     public override float Depth => Renderer._layer;
 
     public void SetSprite(int x, int y)
