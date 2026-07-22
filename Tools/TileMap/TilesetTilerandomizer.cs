@@ -139,11 +139,15 @@ public class TileSetRandomized : TileSet
 
 public class TileRandomizer
 {
-    private readonly bool twoRectangle;
     private readonly Rectangle rect1, rect2;
     private readonly Point offset;
-    private readonly bool halfmode;
+    private readonly byte mode;
 
+    public TileRandomizer(Rectangle r1)
+    {
+        rect1 = r1;
+        mode = 0;
+    }
     public TileRandomizer(Point p1, Point p2)
     {
         if (p2.X <= p1.X)
@@ -153,9 +157,8 @@ public class TileRandomizer
         rect2 = new Rectangle(p2, new Point(1));
 
         offset = new Point(p2.X - p1.X, p2.Y - p1.Y);
-        twoRectangle = true;
+        mode = 1;
     }
-
     public TileRandomizer(Rectangle r1, Rectangle r2)
     {
         if (r2.X <= r1.X)
@@ -165,20 +168,14 @@ public class TileRandomizer
         rect2 = r2;
 
         offset = new Point(r2.X - r1.X, r2.Y - r1.Y);
-        twoRectangle = true;
+        mode = 2;
     }
 
-    public TileRandomizer(Rectangle r1)
-    {
-        rect1 = r1;
-        twoRectangle = false;
-    }
     public TileRandomizer(Rectangle r1, Point r2)
     {
         rect1 = r1;
         rect2 = new Rectangle(r2.X, r2.Y, 1, 1);
-        twoRectangle = true;
-        halfmode = true;
+        mode = 3;
     }
 
     private static bool PointInRect(Point p, Rectangle r)
@@ -188,7 +185,7 @@ public class TileRandomizer
 
     public bool Has(Point p)
     {
-        if (twoRectangle)
+        if (mode > 0)
             return PointInRect(p, rect1) || PointInRect(p, rect2);
         else
             return PointInRect(p, rect1);
@@ -196,7 +193,7 @@ public class TileRandomizer
 
     public Point GetTile(Point p, Random rand)
     {
-        if (twoRectangle)
+        if (mode == 1 || mode == 2)
         {
             if (p.X < rect2.X)
             {
@@ -207,7 +204,7 @@ public class TileRandomizer
                 return rand.Next(2) == 0 ? p : p - offset;
             }
         }
-        else if (halfmode && rand.Next(2) == 0)
+        else if (mode == 3 && rand.Next(4) < 3)
         {
             return rect2.Location;
         }

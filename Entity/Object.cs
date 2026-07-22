@@ -18,7 +18,11 @@ public class Object : Space, IDraw
         Renderer = new OutlineRenderer(texture);
     }
 
-    public Object(int width, int height) : base(width, height) { }
+    public Object(int width, int height) : base(width, height)
+    {
+        Renderer = new OutlineRenderer();
+        Renderer.SetSubSize(width, height);
+    }
 
     public Object(Texture2D renderer, int width, int height) : base(width, height)
     {

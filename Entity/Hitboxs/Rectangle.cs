@@ -25,6 +25,9 @@ public abstract partial class Hitbox
         public float Up => _up;
         public float Down => _down;
 
+        public Vector2 TopLeft => new Vector2(_left, _up);
+        public Vector2 TopRight => new Vector2(_right, _up);
+
 
         public Point Size => new Point(
             (int)float.Round(_width),
@@ -214,19 +217,25 @@ public abstract partial class Hitbox
             return Check(this.layer, SelectAllHitboxs, out collider);
         }
 
-        public bool Check(byte layer, ConditionToCheckCollision condition, out Sides globalSide, out CollisionData<Rectangle>[] coliders)
+        public bool Check(
+            byte layer,
+            ConditionToCheckCollision condition,
+            out Sides globalSide,
+            out CollisionData<Rectangle>[] coliders,
+            out bool[] corners)
         {
             if (!this.active)
             {
                 globalSide = Sides.Center;
                 coliders = null;
+                corners = null;
                 return false;
             }
 
             this.UpdatePosition();
 
             globalSide = Sides.Center;
-            bool[] corners = new bool[4];
+            corners = new bool[4];
 
             List<CollisionData<Rectangle>> result = new List<CollisionData<Rectangle>>();
 
@@ -431,6 +440,14 @@ public abstract partial class Hitbox
                 isRight = false;
                 touchLeftCorner = true;
                 distance = dl;
+
+                if (b <= y)
+                {
+                    touchRightCorner = true;
+                    both = true;
+                    distance = float.Min(y - b, a - x);
+                }
+
                 return true;
             }
 
@@ -439,6 +456,14 @@ public abstract partial class Hitbox
                 isRight = true;
                 touchRightCorner = true;
                 distance = dr;
+
+                if (a >= x)
+                {
+                    touchLeftCorner = true;
+                    both = true;
+                    distance = float.Min(y - b, a - x);
+                }
+
                 return true;
             }
 
@@ -482,17 +507,22 @@ public abstract partial class Hitbox
 
         public bool Check(ConditionToCheckCollision condition, out Sides globalSide, out CollisionData<Rectangle>[] coliders)
         {
-            return Check(this.layer, condition, out globalSide, out coliders);
+            return Check(this.layer, condition, out globalSide, out coliders, out _);
+        }
+
+        public bool Check(ConditionToCheckCollision condition, out Sides globalSide, out CollisionData<Rectangle>[] coliders, out bool[] corners)
+        {
+            return Check(this.layer, condition, out globalSide, out coliders, out corners);
         }
 
         public bool Check(out Sides globalSide, string tagToCheck, out CollisionData<Rectangle>[] coliders)
         {
-            return Check(this.layer, SelectTag(tagToCheck), out globalSide, out coliders);
+            return Check(this.layer, SelectTag(tagToCheck), out globalSide, out coliders, out _);
         }
 
         public bool Check(out Sides globalSide, out CollisionData<Rectangle>[] coliders)
         {
-            return Check(this.layer, SelectAllHitboxs, out globalSide, out coliders);
+            return Check(this.layer, SelectAllHitboxs, out globalSide, out coliders, out _);
         }
 
         public bool Check(string tagToCheck, out Hitbox.Rectangle col)
