@@ -21,13 +21,15 @@ public class Object : Space, IDraw
     public Object(int width, int height) : base(width, height)
     {
         Renderer = new OutlineRenderer();
-        Renderer.SetSubSize(width, height);
+        Renderer.sub.Width = width;
+        Renderer.sub.Height = height;
     }
 
     public Object(Texture2D renderer, int width, int height) : base(width, height)
     {
         Renderer = new OutlineRenderer(renderer);
-        Renderer.SetSubSize(width, height);
+        Renderer.sub.Width = width;
+        Renderer.sub.Height = height;
     }
 
     public virtual void DrawBody(SpriteBatch batch)

@@ -107,7 +107,7 @@ public class OutlineRenderer : TextureRenderer
             {
                 batch.Draw(_texture,
                     new Rectangle(rectangle.Location + p + offset.Location, rectangle.Size + offset.Size),
-                    SubRect, c, rotation, centerPoint, effect, layer);
+                    hasSubRect ? sub : null, c, rotation, centerPoint, effect, layer);
             }
         }
     }
@@ -130,7 +130,7 @@ public class OutlineRenderer : TextureRenderer
     public void DrawBody(SpriteBatch batch, Rectangle rectangle)
     {
         if (!hide)
-            batch.Draw(base._texture, rectangle, SubRect, Color, 0f, Vector2.Zero, effect, _layer);
+            batch.Draw(base._texture, rectangle, hasSubRect ? sub : null, Color, 0f, Vector2.Zero, effect, _layer);
     }
 
     public void Draw(SpriteBatch batch, Rectangle rectangle, Vector2 centerPoint, float rotation)

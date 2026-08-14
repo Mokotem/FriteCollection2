@@ -84,15 +84,16 @@ public class TextureRenderer : Renderer, IDisposable
     }
 
     public Rectangle offset = Rectangle.Empty;
-    private Rectangle sub;
-    protected Rectangle SubRect => sub;
+    
+    internal Rectangle sub;
+    private protected bool hasSubRect;
 
     private protected Texture2D _texture;
 
     public void SetRenderTarget(RenderTarget2D target)
     {
         _texture = target;
-        sub = new Rectangle(0, 0, target.Width, target.Height);
+        hasSubRect = false;
     }
 
     internal Texture2D Texture
@@ -101,7 +102,7 @@ public class TextureRenderer : Renderer, IDisposable
         set
         {
             _texture = value;
-            sub = new Rectangle(0, 0, value.Width, value.Height);
+            hasSubRect = false;
         }
     }
 
@@ -121,11 +122,13 @@ public class TextureRenderer : Renderer, IDisposable
     {
         this._texture = texture;
         sub = new Rectangle(0, 0, texture.Width, texture.Height);
+        hasSubRect = false;
     }
     public TextureRenderer(short layer, Texture2D texture, Color color) : base(layer, color)
     {
         this._texture = texture;
         sub = new Rectangle(0, 0, texture.Width, texture.Height);
+        hasSubRect = false;
     }
 
     public int SubWidth => sub.Width;
@@ -140,12 +143,20 @@ public class TextureRenderer : Renderer, IDisposable
     {
         sub.Width = width;
         sub.Height = height;
+        hasSubRect = true;
     }
 
     public void SetSprite(int x, int y)
     {
+#if DEBUG
+        if (this.sub.Width < 1 || sub.Height < 1)
+        {
+            throw new Exception("SetSubSize first");
+        }
+#endif
         this.sub.X = x * sub.Width;
         this.sub.Y = y * sub.Height;
+        hasSubRect = true;
     }
 
     public void SetSprite(Point index)
@@ -161,7 +172,7 @@ public class TextureRenderer : Renderer, IDisposable
                 rectangle.X + offset.X,
                 rectangle.Y + offset.Y,
                 rectangle.Width + offset.Width,
-                rectangle.Height + offset.Height), sub, c, rotation, centerPoint, effect, _layer);
+                rectangle.Height + offset.Height), hasSubRect ? sub : null, c, rotation, centerPoint, effect, _layer);
         }
     }
 
