@@ -34,20 +34,21 @@ public class Space
 
     }
 
-    public RectangleF ToRectangleF() => new RectangleF(Position, Scale);
-    public Rectangle ToRectangle() => new Rectangle(
-        ToScreenX(),
-        ToScreenY(),
-        (int)float.Round(Scale.X),
-        (int)float.Round(Scale.Y)
-    );
-
+    public RectangleF ToScreenF() => new RectangleF(Position, Scale);
     public Rectangle ToScreen() => new Rectangle(
         ToScreenX(),
         ToScreenY(),
         (int)float.Round(Scale.X),
         (int)float.Round(Scale.Y)
     );
+
+    public Rectangle ToRectangle() =>
+        new Rectangle(
+            int.Round(Position.X),
+            int.Round(Position.Y),
+            int.Round(Scale.X),
+            int.Round(Scale.X)
+            );
 
     public static int ToScreenX(float posX) => (int)float.Round(posX) - Camera.X;
     public static int ToScreenY(float posY) => (int)float.Round(posY) - Camera.Y;

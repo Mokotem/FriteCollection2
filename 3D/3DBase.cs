@@ -40,7 +40,7 @@ public class TriangleDrawer
         rasterizerState.CullMode = CullMode.None;
         device.RasterizerState = rasterizerState;
 
-        vertexBuffer = new VertexBuffer(device, typeof(VertexPositionColor), 128, BufferUsage.WriteOnly);
+        vertexBuffer = new VertexBuffer(device, typeof(VertexPositionColor), 64, BufferUsage.WriteOnly);
 
 
         data = new VertexPositionColor[0];
@@ -101,6 +101,7 @@ public class TriangleDrawer
     {
         if (triangles.Count > 0)
         {
+
             if (data.Length != triangles.Count)
             {
                 data = new VertexPositionColor[triangles.Count];

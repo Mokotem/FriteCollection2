@@ -275,10 +275,27 @@ public class TileMap : IDisposable, IDraw
         {
             for (int y = r.Top; y < r.Bottom; y++)
             {
-                if (!grid.grid2D[y][x].Equals(envi))
+                if (!IsFree(grid.grid2D[y][x], envi))
                     return false;
             }
         }
+        return true;
+    }
+
+    private static bool IsFree(char c, char envi)
+    {
+        if (c == '0')
+            return false;
+
+        if (envi == c)
+            return true;
+
+        if (c.Equals('u')
+            || c.Equals('d')
+            || c.Equals('l')
+            || c.Equals('r'))
+            return false;
+
         return true;
     }
 
@@ -342,7 +359,7 @@ public class TileMap : IDisposable, IDraw
             }
         }
 
-        Hitbox.Rectangle result = new Hitbox.Rectangle(this._space, model.Tags);
+        Hitbox.Rectangle result = new Hitbox.Rectangle(this._space, layer: model.layer, model.Tags);
 
         if (r.X < 1)
             result.infinitLeft = true;

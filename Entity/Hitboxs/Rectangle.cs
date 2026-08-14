@@ -25,6 +25,9 @@ public abstract partial class Hitbox
         public float Up => _up;
         public float Down => _down;
 
+        public float CenterPointX => (_left + _right) / 2f;
+        public float CenterPointY => (_up + _down) / 2f;
+
         public Vector2 TopLeft => new Vector2(_left, _up);
         public Vector2 TopRight => new Vector2(_right, _up);
 
@@ -215,6 +218,11 @@ public abstract partial class Hitbox
         public bool Check(out Rectangle collider)
         {
             return Check(this.layer, SelectAllHitboxs, out collider);
+        }
+
+        public bool Check(byte layer, out Rectangle collider)
+        {
+            return Check(layer, SelectAllHitboxs, out collider);
         }
 
         public bool Check(
