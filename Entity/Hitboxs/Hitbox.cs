@@ -31,7 +31,7 @@ public abstract partial class Hitbox : IDraw, IDisposable
         }
     }
 
-    public delegate bool HitboxMessage(Vector2 from, float dx, int value);
+    public delegate bool HitboxMessage(Hitbox from, float dx, int value);
 
     public static void CreateLayers(params Color[] debugColors)
     {
@@ -81,32 +81,24 @@ public abstract partial class Hitbox : IDraw, IDisposable
 
     public bool SendMessage(int value)
     {
-        return OnMessage(Vector2.Zero, 0f, value);
+        return OnMessage(this, 0f, value);
     }
 
-    public bool SendMessage(Vector2 from, int value)
+    public bool SendMessage(Hitbox from, int value)
     {
-        return OnMessage(from, Parent.CenterPointX - from.X, value);
+        return OnMessage(from, Parent.CenterPointX - from.CenterPoint.X, value);
     }
 
-    public bool SendMessage(Point from, int value)
-    {
-        return OnMessage(from.ToVector2(), Parent.CenterPointX - from.X, value);
-    }
     public bool SendMessage(float dx, int value)
     {
-        return OnMessage(Vector2.Zero, dx, value);
+        return OnMessage(this, dx, value);
     }
 
-    public bool SendMessage(Vector2 from, float dx, int value)
+    public bool SendMessage(Hitbox from, float dx, int value)
     {
         return OnMessage(from, dx, value);
     }
 
-    public bool SendMessage(Point from, float dx, int value)
-    {
-        return OnMessage(from.ToVector2(), dx, value);
-    }
 
     public bool active;
     public bool isStatic;

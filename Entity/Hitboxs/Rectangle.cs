@@ -25,6 +25,7 @@ public abstract partial class Hitbox
         public float Up => _up;
         public float Down => _down;
 
+        public override Vector2 CenterPoint => new Vector2((_left + _right) / 2f, (_up + _down) / 2f);
         public float CenterPointX => (_left + _right) / 2f;
         public float CenterPointY => (_up + _down) / 2f;
 
@@ -111,7 +112,6 @@ public abstract partial class Hitbox
             }
         }
 
-        public override Vector2 CenterPoint => new Vector2((_left + _right) / 2f, (_up + _down) / 2f);
 
         public Rectangle(Space parent, byte layer, params string[] tags)
             : base(parent, layer, tags)

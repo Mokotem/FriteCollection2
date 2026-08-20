@@ -47,7 +47,7 @@ public class Space
             int.Round(Position.X),
             int.Round(Position.Y),
             int.Round(Scale.X),
-            int.Round(Scale.X)
+            int.Round(Scale.Y)
             );
 
     public static int ToScreenX(float posX) => (int)float.Round(posX) - Camera.X;

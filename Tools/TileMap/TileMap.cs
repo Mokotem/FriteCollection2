@@ -284,6 +284,8 @@ public class TileMap : IDisposable, IDraw
 
     private static bool IsFree(char c, char envi)
     {
+        return c == envi;
+
         if (c == '0')
             return false;
 
