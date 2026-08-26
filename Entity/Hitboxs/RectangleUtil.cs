@@ -48,6 +48,12 @@ public abstract partial class Hitbox
             };
         }
 
+
+        public static void ApplyCollision(Space mec, CollisionData<Rectangle> c)
+		{
+			ApplyCollision(mec, c.collider, c.side);
+		}
+
         public static void ApplyCollision(Space mec, Rectangle colider, Sides side)
 		{
 			switch (side)
