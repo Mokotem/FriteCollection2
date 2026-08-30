@@ -81,19 +81,14 @@ public abstract partial class Hitbox
             return false;
         }
 
-        public bool Check(byte layer, ConditionToCheckCollision condition, out Hitbox collider)
-        {
-            return this.Check(layer, condition, out collider, out _);
-        }
-
-        public bool Check(string tagToCheck, out Hitbox collider)
-        {
-            return this.Check(layer, SelectTag(tagToCheck), out collider, out _);
-        }
-
         public override bool Check(byte layer, ConditionToCheckCollision condition)
         {
             return this.Check(layer, condition, out _, out _);
+        }
+
+        public override bool Check(byte layer, ConditionToCheckCollision condition, out Hitbox col)
+        {
+            return this.Check(layer, condition, out col, out _);
         }
 
         public bool CheckWidth(Hitbox.Circle c)

@@ -118,9 +118,14 @@ public class Animation : AnimationBase
                 currentKey += 1;
                 if (!Done)
                 {
-                    if (Delay <= 0)
+                    if (Delay < 0)
                     {
                         frames[currentKey](0);
+                    }
+                    else if (Delay == 0)
+                    {
+                        frames[currentKey](0);
+                        return;
                     }
                     else
                     {
@@ -128,6 +133,7 @@ public class Animation : AnimationBase
                     }
                 }
             }
+
             if (!Done && currentKey >= 0)
             {
                 if (IsReversed)

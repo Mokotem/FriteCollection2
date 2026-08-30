@@ -215,6 +215,13 @@ public abstract partial class Hitbox
             return Check(layer, condition, out _);
         }
 
+        public override bool Check(byte layer, ConditionToCheckCollision condition, out Hitbox col)
+        {
+            bool b = this.Check(layer, condition, out Rectangle c);
+            col = c;
+            return b;
+        }
+
         public bool Check(out Rectangle collider)
         {
             return Check(this.layer, SelectAllHitboxs, out collider);

@@ -95,6 +95,13 @@ public abstract partial class Hitbox
             return false;
         }
 
+        public override bool Check(byte layer, ConditionToCheckCollision condition, out Hitbox col)
+        {
+            bool b = this.Check(layer, condition, out Circle c, out _, out _, out _);
+            col = c;
+            return b;
+        }
+
         public bool Check(byte layer, ConditionToCheckCollision condition, out Circle collider)
         {
             return this.Check(layer, condition, out collider, out _, out _, out _);

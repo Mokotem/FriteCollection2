@@ -193,6 +193,7 @@ public abstract partial class Hitbox : IDraw, IDisposable
     }
 
     public abstract bool Check(byte layer, ConditionToCheckCollision condition);
+    public abstract bool Check(byte layer, ConditionToCheckCollision condition, out Hitbox col);
 
     public bool Check()
     {
@@ -217,6 +218,31 @@ public abstract partial class Hitbox : IDraw, IDisposable
     public bool Check(byte layer, string tagToCheck)
     {
         return Check(layer, SelectTag(tagToCheck));
+    }
+
+    public bool Check(out Hitbox col)
+    {
+        return Check(this.layer, SelectAllHitboxs, out col);
+    }
+
+    public bool Check(string tagToCheck, out Hitbox col)
+    {
+        return Check(this.layer, SelectTag(tagToCheck), out col);
+    }
+
+    public bool Check(ConditionToCheckCollision condition, out Hitbox col)
+    {
+        return Check(this.layer, condition, out col);
+    }
+
+    public bool Check(byte layer, out Hitbox col)
+    {
+        return Check(layer, SelectAllHitboxs, out col);
+    }
+
+    public bool Check(byte layer, string tagToCheck, out Hitbox col)
+    {
+        return Check(layer, SelectTag(tagToCheck), out col);
     }
 
     public abstract void Draw(SpriteBatch batch);
