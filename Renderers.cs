@@ -96,7 +96,7 @@ public class TextureRenderer : Renderer, IDisposable
         hasSubRect = false;
     }
 
-    internal Texture2D Texture
+    public Texture2D Texture
     {
         get => _texture;
         set
