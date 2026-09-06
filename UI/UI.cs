@@ -298,19 +298,19 @@ public abstract class UI : IDraw
 
     public int PositionX
     {
-        get => rect.Y;
+        get => rect.X;
         set => SetPositionX(value);
     }
 
     public void SetPositionX(int x)
     {
-        this.rect.X = x;
-        this.OnIShouldUpdatePositionsOfMyChilds();
+        this.SetPositionX(x, Align.Left);
     }
 
     public void SetPositionX(int x, Align align)
     {
-        this.SetPositionX(parent.ParentRect.X + x - BoundFunc.AlignToInt(align, rect.Width));
+        rect.X = x - BoundFunc.AlignToInt(align, rect.Width);
+        this.OnIShouldUpdatePositionsOfMyChilds();
     }
 
     public int PositionY

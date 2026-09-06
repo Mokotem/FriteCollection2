@@ -50,6 +50,8 @@ public class Text : UI
     public override float Depth => Renderer._layer;
 
     public int TextWidth => textRect.Width;
+    public int TextLeft => textRect.X;
+    public int TextRight => textRect.X + textRect.Width;
     public int TextHeight => textRect.Height;
 
     public void ChangeText(string value)
