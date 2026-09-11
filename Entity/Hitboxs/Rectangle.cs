@@ -305,6 +305,11 @@ public abstract partial class Hitbox
                     else
                         sideCol = col.alwaysCollideWidthSide;
 
+                    if (sideCol == Sides.Left)
+                    {
+
+                    }
+
                     result.Add(new CollisionData<Rectangle>(col, sideCol));
                 }
             }
@@ -430,17 +435,17 @@ public abstract partial class Hitbox
 
             if (dr < 0 || dl < 0)
             {
-                distance = -1f;
+                distance = float.PositiveInfinity;
                 both = true;
                 isRight = false;
-                if (ileft && !iright)
+                if (ileft && !iright && dr < 0)
                 {
                     touchLeftCorner = true;
                     touchRightCorner = false;
                     isRight = false;
                     both = false;
                 }
-                else if (iright && !ileft)
+                else if (iright && !ileft && dl < 0)
                 {
                     touchRightCorner = true;
                     touchLeftCorner = false;
@@ -679,6 +684,11 @@ public abstract partial class Hitbox
 
         private static bool DoIChoseTheSideX(bool isfullx, bool isfully, float dx, float dy)
         {
+            if (isfully && !isfullx)
+                return true;
+            if (!isfully && isfullx)
+                return false;
+
             if (dx < 0)
                 return true;
             if (dy < 0)
