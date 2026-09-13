@@ -179,6 +179,8 @@ public class AnimationSheet : AnimationBase
 
     public override bool Done => currentKey >= frameCount;
 
+    public float Duration => frameCount * Delay;
+
     public AnimationSheet(int frameCount, SetTexture OnTexture, float[] durations, float startTime = 0f)
         : base(startTime, durations)
     {

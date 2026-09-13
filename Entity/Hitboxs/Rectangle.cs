@@ -14,6 +14,47 @@ public abstract partial class Hitbox
     {
         public delegate float Critere(Rectangle rect);
 
+        public static bool HeyGuysDoITouchSomeone(Vector2 pos, byte layer, Hitbox.ConditionToCheckCollision condition, out Rectangle col)
+        {
+            foreach (Hitbox hit in layers[layer])
+            {
+                if (hit is Rectangle && condition(hit))
+                {
+                    col = (Rectangle)hit;
+                }
+                else
+                    continue;
+
+                if (pos.X < col._left
+                    || pos.Y < col._up
+                    || pos.X > col._right
+                    || pos.Y > col._down)
+                {
+                    continue;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+
+            col = null;
+            return false;
+        }
+
+        public static bool HeyGuysDoITouchSomeone(Vector2 pos, byte layer)
+        {
+            return HeyGuysDoITouchSomeone(pos, layer, SelectAllHitboxs, out _);
+        }
+        public static bool HeyGuysDoITouchSomeone(Vector2 pos, byte layer, ConditionToCheckCollision cond)
+        {
+            return HeyGuysDoITouchSomeone(pos, layer, cond, out _);
+        }
+        public static bool HeyGuysDoITouchSomeone(Vector2 pos, byte layer, string tag)
+        {
+            return HeyGuysDoITouchSomeone(pos, layer, SelectTag(tag), out _);
+        }
+
         private float _left, _right, _up, _down;
 
         private float _width, _height;
