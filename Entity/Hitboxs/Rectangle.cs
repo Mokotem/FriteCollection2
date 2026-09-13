@@ -305,11 +305,6 @@ public abstract partial class Hitbox
                     else
                         sideCol = col.alwaysCollideWidthSide;
 
-                    if (sideCol == Sides.Left)
-                    {
-
-                    }
-
                     result.Add(new CollisionData<Rectangle>(col, sideCol));
                 }
             }
